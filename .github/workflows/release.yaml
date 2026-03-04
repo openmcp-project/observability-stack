@@ -79,6 +79,14 @@ jobs:
         if: ${{ env.SKIP != 'true' }}
         uses: fluxcd/flux2/action@main
 
+      - name: Login to GitHub Container Registry
+        if: ${{ env.SKIP != 'true' }}
+        uses: docker/login-action@c94ce9fb468520275223c153574b00df6fe4bcc9 # v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
       - name: Create OCM CTF
         if: ${{ env.SKIP != 'true' }}
         run: |
@@ -95,14 +103,6 @@ jobs:
           prerelease: false
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Login to GitHub Container Registry
-        if: ${{ env.SKIP != 'true' }}
-        uses: docker/login-action@c94ce9fb468520275223c153574b00df6fe4bcc9 # v3
-        with:
-          registry: ghcr.io
-          username: ${{ github.actor }}
-          password: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Push CTF
         if: ${{ env.SKIP != 'true' }}
