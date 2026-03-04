@@ -24,7 +24,7 @@ components:
         input:
           type: ociImage
           path: "quay.io/jetstack/charts/cert-manager:${CERT_MANAGER_VERSION}"
-          repository: /charts/observability-stack/cert-manager
+          repository: charts/cert-manager
 
       - name: cert-manager-controller-image
         version: ${CERT_MANAGER_VERSION}
@@ -32,7 +32,7 @@ components:
         input:
           type: ociImage
           path: "quay.io/jetstack/cert-manager-controller:${CERT_MANAGER_VERSION}"
-          repository: /images/observability-stack/cert-manager-controller
+          repository: images/cert-manager-controller
 
       - name: cert-manager-webhook-image
         version: ${CERT_MANAGER_VERSION}
@@ -40,7 +40,7 @@ components:
         input:
           type: ociImage
           path: "quay.io/jetstack/cert-manager-webhook:${CERT_MANAGER_VERSION}"
-          repository: /images/observability-stack/cert-manager-webhook
+          repository: images/cert-manager-webhook
 
       - name: cert-manager-cainjector-image
         version: ${CERT_MANAGER_VERSION}
@@ -48,7 +48,7 @@ components:
         input:
           type: ociImage
           path: "quay.io/jetstack/cert-manager-cainjector:${CERT_MANAGER_VERSION}"
-          repository: /images/observability-stack/cert-manager-cainjector
+          repository: images/cert-manager-cainjector
 
       - name: cert-manager-acmesolver-image
         version: ${CERT_MANAGER_VERSION}
@@ -56,7 +56,7 @@ components:
         input:
           type: ociImage
           path: "quay.io/jetstack/cert-manager-acmesolver:${CERT_MANAGER_VERSION}"
-          repository: /images/observability-stack/cert-manager-acmesolver
+          repository: images/cert-manager-acmesolver
 
       - name: cert-manager-startupapicheck-image
         version: ${CERT_MANAGER_VERSION}
@@ -64,7 +64,7 @@ components:
         input:
           type: ociImage
           path: "quay.io/jetstack/cert-manager-startupapicheck:${CERT_MANAGER_VERSION}"
-          repository: /images/observability-stack/cert-manager-startupapicheck
+          repository: images/cert-manager-startupapicheck
 
       # kube rbac proxy
       - name: kube-rbac-proxy-image
@@ -73,7 +73,7 @@ components:
         input:
           type: ociImage
           path: "quay.io/brancz/kube-rbac-proxy:${KUBE_RBAC_PROXY_VERSION}"
-          repository: /images/observability-stack/kube-rbac-proxy
+          repository: images/kube-rbac-proxy
 
       # open telemetry operator
       - name: open-telemetry-operator-chart
@@ -82,7 +82,7 @@ components:
         input:
           type: ociImage
           path: "ghcr.io/open-telemetry/opentelemetry-helm-charts/opentelemetry-operator:${OPEN_TELEMETRY_OPERATOR_CHART_VERSION}"
-          repository: /charts/observability-stack/opentelemetry-operator
+          repository: charts/opentelemetry-operator
 
       - name: open-telemetry-operator-image
         version: ${OPEN_TELEMETRY_OPERATOR_IMAGE_VERSION}
@@ -90,7 +90,7 @@ components:
         input:
           type: ociImage
           path: "ghcr.io/open-telemetry/opentelemetry-operator/opentelemetry-operator:${OPEN_TELEMETRY_OPERATOR_IMAGE_VERSION}"
-          repository: /images/observability-stack/opentelemetry-operator
+          repository: images/opentelemetry-operator
 
       # open telemetry collector
       - name: open-telemetry-collector-kustomization
@@ -106,7 +106,7 @@ components:
         input:
           type: ociImage
           path: "docker.io/otel/opentelemetry-collector-contrib:${OPEN_TELEMETRY_COLLECTOR_IMAGE_VERSION#v}"
-          repository: /images/observability-stack/opentelemetry-collector
+          repository: images/opentelemetry-collector
 
       # prometheus operator
       - name: prometheus-operator-kustomization
@@ -122,7 +122,7 @@ components:
         input:
           type: ociImage
           path: "quay.io/prometheus-operator/prometheus-operator:${PROMETHEUS_OPERATOR_IMAGE_VERSION}"
-          repository: /images/observability-stack/prometheus-operator
+          repository: images/prometheus-operator
 
       - name: prometheus-operator-config-reloader-image
         version: ${PROMETHEUS_OPERATOR_CONFIG_RELOADER_IMAGE_VERSION}
@@ -130,7 +130,7 @@ components:
         input:
           type: ociImage
           path: "quay.io/prometheus-operator/prometheus-config-reloader:${PROMETHEUS_OPERATOR_CONFIG_RELOADER_IMAGE_VERSION}"
-          repository: /images/observability-stack/prometheus-config-reloader
+          repository: images/prometheus-config-reloader
 
       # prometheus
       - name: prometheus-kustomization
@@ -146,7 +146,7 @@ components:
         input:
           type: ociImage
           path: "quay.io/prometheus/prometheus:${PROMETHEUS_IMAGE_VERSION}"
-          repository: /images/observability-stack/prometheus
+          repository: images/prometheus
 
       # metrics
       - name: metrics-kustomization
