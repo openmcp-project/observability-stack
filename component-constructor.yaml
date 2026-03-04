@@ -1,0 +1,158 @@
+components:
+  - name: github.com/openmcp-project/observability-stack
+    version: ${OBSERVABILITY_STACK_VERSION}
+    provider:
+      name: openmcp-project
+
+    componentReferences:
+      - componentName: github.com/openmcp-project/metrics-operator
+        name: metrics-operator
+        version: ${METRICS_OPERATOR_VERSION}
+
+    resources:
+      # kro resource graph definitions
+      - name: resource-graph-definition
+        type: blob
+        input:
+          type: file
+          path: tmp/rgd-merged.yaml
+
+      # cert manager
+      - name: cert-manager-chart
+        version: ${CERT_MANAGER_VERSION}
+        type: helmChart
+        input:
+          type: ociImage
+          path: "quay.io/jetstack/charts/cert-manager:${CERT_MANAGER_VERSION}"
+          repository: /charts/observability-stack/cert-manager
+
+      - name: cert-manager-controller-image
+        version: ${CERT_MANAGER_VERSION}
+        type: ociImage
+        input:
+          type: ociImage
+          path: "quay.io/jetstack/cert-manager-controller:${CERT_MANAGER_VERSION}"
+          repository: /images/observability-stack/cert-manager-controller
+
+      - name: cert-manager-webhook-image
+        version: ${CERT_MANAGER_VERSION}
+        type: ociImage
+        input:
+          type: ociImage
+          path: "quay.io/jetstack/cert-manager-webhook:${CERT_MANAGER_VERSION}"
+          repository: /images/observability-stack/cert-manager-webhook
+
+      - name: cert-manager-cainjector-image
+        version: ${CERT_MANAGER_VERSION}
+        type: ociImage
+        input:
+          type: ociImage
+          path: "quay.io/jetstack/cert-manager-cainjector:${CERT_MANAGER_VERSION}"
+          repository: /images/observability-stack/cert-manager-cainjector
+
+      - name: cert-manager-acmesolver-image
+        version: ${CERT_MANAGER_VERSION}
+        type: ociImage
+        input:
+          type: ociImage
+          path: "quay.io/jetstack/cert-manager-acmesolver:${CERT_MANAGER_VERSION}"
+          repository: /images/observability-stack/cert-manager-acmesolver
+
+      - name: cert-manager-startupapicheck-image
+        version: ${CERT_MANAGER_VERSION}
+        type: ociImage
+        input:
+          type: ociImage
+          path: "quay.io/jetstack/cert-manager-startupapicheck:${CERT_MANAGER_VERSION}"
+          repository: /images/observability-stack/cert-manager-startupapicheck
+
+      # kube rbac proxy
+      - name: kube-rbac-proxy-image
+        version: ${KUBE_RBAC_PROXY_VERSION}
+        type: ociImage
+        input:
+          type: ociImage
+          path: "quay.io/brancz/kube-rbac-proxy:${KUBE_RBAC_PROXY_VERSION}"
+          repository: /images/observability-stack/kube-rbac-proxy
+
+      # open telemetry operator
+      - name: open-telemetry-operator-chart
+        version: ${OPEN_TELEMETRY_OPERATOR_CHART_VERSION}
+        type: helmChart
+        input:
+          type: ociImage
+          path: "ghcr.io/open-telemetry/opentelemetry-helm-charts/opentelemetry-operator:${OPEN_TELEMETRY_OPERATOR_CHART_VERSION}"
+          repository: /charts/observability-stack/opentelemetry-operator
+
+      - name: open-telemetry-operator-image
+        version: ${OPEN_TELEMETRY_OPERATOR_IMAGE_VERSION}
+        type: ociImage
+        input:
+          type: ociImage
+          path: "ghcr.io/open-telemetry/opentelemetry-operator/opentelemetry-operator:${OPEN_TELEMETRY_OPERATOR_IMAGE_VERSION}"
+          repository: /images/observability-stack/opentelemetry-operator
+
+      # open telemetry collector
+      - name: open-telemetry-collector-kustomization
+        version: ${OBSERVABILITY_STACK_VERSION}
+        type: kustomization
+        access:
+          type: ociArtifact
+          imageReference: "${KUSTOMIZATIONS_LOCATION_PREFIX}/open-telemetry-collector:${OBSERVABILITY_STACK_VERSION}"
+
+      - name: open-telemetry-collector-image
+        version: ${OPEN_TELEMETRY_COLLECTOR_IMAGE_VERSION}
+        type: ociImage
+        input:
+          type: ociImage
+          path: "docker.io/otel/opentelemetry-collector-contrib:${OPEN_TELEMETRY_COLLECTOR_IMAGE_VERSION#v}"
+          repository: /images/observability-stack/opentelemetry-collector
+
+      # prometheus operator
+      - name: prometheus-operator-kustomization
+        version: ${OBSERVABILITY_STACK_VERSION}
+        type: kustomization
+        access:
+          type: ociArtifact
+          imageReference: "${KUSTOMIZATIONS_LOCATION_PREFIX}/prometheus-operator:${OBSERVABILITY_STACK_VERSION}"
+
+      - name: prometheus-operator-image
+        version: ${PROMETHEUS_OPERATOR_IMAGE_VERSION}
+        type: ociImage
+        input:
+          type: ociImage
+          path: "quay.io/prometheus-operator/prometheus-operator:${PROMETHEUS_OPERATOR_IMAGE_VERSION}"
+          repository: /images/observability-stack/prometheus-operator
+
+      - name: prometheus-operator-config-reloader-image
+        version: ${PROMETHEUS_OPERATOR_CONFIG_RELOADER_IMAGE_VERSION}
+        type: ociImage
+        input:
+          type: ociImage
+          path: "quay.io/prometheus-operator/prometheus-config-reloader:${PROMETHEUS_OPERATOR_CONFIG_RELOADER_IMAGE_VERSION}"
+          repository: /images/observability-stack/prometheus-config-reloader
+
+      # prometheus
+      - name: prometheus-kustomization
+        version: ${OBSERVABILITY_STACK_VERSION}
+        type: kustomization
+        access:
+          type: ociArtifact
+          imageReference: "${KUSTOMIZATIONS_LOCATION_PREFIX}/prometheus:${OBSERVABILITY_STACK_VERSION}"
+
+      - name: prometheus-image
+        version: ${PROMETHEUS_OPERATOR_IMAGE_VERSION}
+        type: ociImage
+        input:
+          type: ociImage
+          path: "quay.io/prometheus/prometheus:${PROMETHEUS_IMAGE_VERSION}"
+          repository: /images/observability-stack/prometheus
+
+      # metrics
+      - name: metrics-kustomization
+        version: ${OBSERVABILITY_STACK_VERSION}
+        type: kustomization
+        access:
+          type: ociArtifact
+          imageReference: "${KUSTOMIZATIONS_LOCATION_PREFIX}/metrics:${OBSERVABILITY_STACK_VERSION}"
+

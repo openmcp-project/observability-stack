@@ -1,0 +1,18 @@
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: otel-collector
+  labels:
+    prometheus: enabled
+spec:
+  selector:
+    matchLabels:
+      app.kubernetes.io/component: opentelemetry-collector
+      app.kubernetes.io/instance: opentelemetry-collector-system.default
+      app.kubernetes.io/name: default-collector
+      operator.opentelemetry.io/collector-service-type: base
+  endpoints:
+  - port: prometheus
+    interval: 30s
+    path: /metrics
+

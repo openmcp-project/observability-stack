@@ -1,0 +1,33 @@
+apiVersion: clusters.openmcp.cloud/v1alpha1
+kind: AccessRequest
+metadata:
+  name: onboarding-cluster
+spec:
+  clusterRef:
+    name: onboarding
+    namespace: openmcp-system
+  token:
+    permissions:
+    - rules:
+      - apiGroups:
+        - core.openmcp.cloud
+        - openmcp.cloud
+        resources:
+        - '*'
+        verbs:
+        - get
+        - list
+        - watch
+---
+apiVersion: metrics.openmcp.cloud/v1alpha1
+kind: FederatedClusterAccess
+metadata:
+  name: onboarding-cluster
+  namespace: obs-system
+spec:
+  fieldSelector: "metadata.name=onboarding-cluster,metadata.namespace=obs-system"
+  target:
+    kind: AccessRequest
+    group: clusters.openmcp.cloud
+    version: v1alpha1
+  secretRefPath: status.secretRef

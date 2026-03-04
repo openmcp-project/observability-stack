@@ -1,0 +1,181 @@
+apiVersion: kro.run/v1alpha1
+kind: ResourceGraphDefinition
+metadata:
+  name: prometheus
+spec:
+  schema:
+    apiVersion: v1alpha1
+    kind: Prometheus
+    spec:
+      componentRef:
+        name: string | default="obs-stack-component"
+      imagePullSecretRef:
+        name: string | default="imgpull"
+        namespace: string | default="obs-stack"
+      openMCPGatewayRef:
+        name: string | default="default"
+        namespace: string | default="openmcp-system"
+      forProvider:
+        namespace: string | default="prometheus-system"
+        dashboard:
+          port: integer | default=8443 minimum=1024 maximum=49151
+    status:
+      ready: ${prometheusKustomization.status.conditions.exists(c, c.type == "Ready" && c.status == "True")}
+      lastAttemptedRevisionDigest: ${prometheusKustomization.status.lastAttemptedRevision}
+
+  resources:
+     # this is the shared image pull secret that will be copied into the cert-manager namespace
+    - id: sharedImagePullSecret
+      externalRef:
+        apiVersion: v1
+        kind: Secret
+        metadata:
+          name: ${schema.spec.imagePullSecretRef.name}
+          namespace: ${schema.spec.imagePullSecretRef.namespace}
+
+    # the openMCP default gateway is used to acquire the DNS base domain
+    - id: sharedGateway
+      externalRef:
+        apiVersion: gateway.networking.k8s.io/v1
+        kind: Gateway
+        metadata:
+          name: ${schema.spec.openMCPGatewayRef.name}
+          namespace: ${schema.spec.openMCPGatewayRef.namespace}
+
+    - id: prometheusKustomizationResource
+      template:
+        apiVersion: delivery.ocm.software/v1alpha1
+        kind: Resource
+        metadata:
+          name: prometheus-kustomization
+          namespace: ${schema.metadata.namespace}
+        spec:
+          componentRef: ${schema.spec.componentRef}
+          resource:
+            byReference:
+              resource:
+                name: prometheus-kustomization
+          additionalStatusFields:
+            registry: resource.access.imageReference.toOCI().registry
+            repository: resource.access.imageReference.toOCI().repository
+            tag: resource.access.imageReference.toOCI().tag
+          interval: 1m
+
+    - id: prometheusImage
+      template:
+        apiVersion: delivery.ocm.software/v1alpha1
+        kind: Resource
+        metadata:
+          name: prometheus-image
+          namespace: ${schema.metadata.namespace}
+        spec:
+          componentRef: ${schema.spec.componentRef}
+          resource:
+            byReference:
+              resource:
+                name: prometheus-image
+          additionalStatusFields:
+            registry: resource.access.imageReference.toOCI().registry
+            repository: resource.access.imageReference.toOCI().repository
+            tag: resource.access.imageReference.toOCI().tag
+          interval: 1m
+
+    - id: prometheusOCIRepository
+      template:
+        apiVersion: source.toolkit.fluxcd.io/v1
+        kind: OCIRepository
+        metadata:
+          name: prometheus-ocirepository
+          namespace: ${schema.metadata.namespace}
+        spec:
+          interval: 1m0s
+          insecure: true
+          layerSelector:
+            mediaType: "application/vnd.cncf.flux.content.v1.tar+gzip"
+            operation: copy
+          url: oci://${prometheusKustomizationResource.status.additional.registry}/${prometheusKustomizationResource.status.additional.repository}
+          ref:
+            tag: ${prometheusKustomizationResource.status.additional.tag}
+          secretRef:
+            name: ${schema.spec.imagePullSecretRef.name}
+
+    - id: prometheusNamespace
+      template:
+        apiVersion: v1
+        kind: Namespace
+        metadata:
+          name: ${schema.spec.forProvider.namespace}
+
+    - id: prometheusImagePullSecret
+      template:
+        apiVersion: v1
+        kind: Secret
+        metadata:
+          name: prometheus-imgpull
+          namespace: ${prometheusNamespace.metadata.name}
+        type:  ${sharedImagePullSecret.type}
+        data: ${sharedImagePullSecret.data}
+
+    - id: prometheusKustomization
+      template:
+        apiVersion: kustomize.toolkit.fluxcd.io/v1
+        kind: Kustomization
+        metadata:
+          name: prometheus-kustomization
+          namespace: ${schema.metadata.namespace}
+        spec:
+          interval: 1m
+          targetNamespace: ${prometheusNamespace.metadata.name}
+          sourceRef:
+            kind: OCIRepository
+            name: ${prometheusOCIRepository.metadata.name}
+          path: ""
+          prune: true
+          timeout: 1m
+          patches:
+          - target:
+              kind: HTTPRoute
+              name: prometheus
+            patch: |-
+              - op: add
+                path: /spec/hostnames
+                value:
+                - prometheus.${prometheusNamespace.metadata.name}.${sharedGateway.metadata.annotations["dns.openmcp.cloud/base-domain"]}
+          - target:
+              kind: Certificate
+              name: prometheus-gateway-cert
+            patch: |-
+              - op: add
+                path: /spec/dnsNames
+                value:
+                - prometheus.${prometheusNamespace.metadata.name}.${sharedGateway.metadata.annotations["dns.openmcp.cloud/base-domain"]}
+          - target:
+              kind: Gateway
+              name: prometheus
+            patch: |-
+              - op: replace
+                path: /spec/listeners/0/port
+                value: ${"%d".format([schema.spec.forProvider.dashboard.port])}
+              - op: replace
+                path: /spec/listeners/0/tls/certificateRefs/0/namespace
+                value: ${prometheusNamespace.metadata.name}
+          - target:
+              kind: HTTPRoute
+              name: prometheus
+            patch: |-
+              - op: replace
+                path: /spec/parentRefs/0/namespace
+                value: ${prometheusNamespace.metadata.name}
+          - target:
+              kind: Prometheus
+              name: prometheus
+            patch: |-
+              - op: add
+                path: /spec/image
+                value: ${prometheusImage.status.resource.access.imageReference}
+              - op: add
+                path: /spec/imagePullSecrets
+                value:
+                - name: ${prometheusImagePullSecret.metadata.name}
+      readyWhen:
+        - ${prometheusKustomization.status.conditions.exists(c, c.type == "Ready" && c.status == "True")}

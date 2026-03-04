@@ -1,0 +1,176 @@
+apiVersion: kro.run/v1alpha1
+kind: ResourceGraphDefinition
+metadata:
+  name: open-telemetry-operator
+spec:
+  schema:
+    apiVersion: v1alpha1
+    kind: OpenTelemetryOperator
+    spec:
+      componentRef:
+        name: string | default="obs-stack-component"
+      imagePullSecretRef:
+        name: string | default="imgpull"
+        namespace: string | default="obs-stack"
+      forProvider:
+        namespace: string | default="open-telemetry-operator-system"
+    status:
+      ready: ${openTelemetryOperatorHelmRelease.status.conditions.exists(c, c.type == "Ready" && c.status == "True")}
+      lastAttemptedRevisionDigest: ${openTelemetryOperatorHelmRelease.status.lastAttemptedRevisionDigest}
+
+  resources:
+     # this is the shared image pull secret that will be copied into the cert-manager namespace
+    - id: sharedImagePullSecret
+      externalRef:
+        apiVersion: v1
+        kind: Secret
+        metadata:
+          name: ${schema.spec.imagePullSecretRef.name}
+          namespace: ${schema.spec.imagePullSecretRef.namespace}
+
+    - id: openTelemetryOperatorChart
+      template:
+        apiVersion: delivery.ocm.software/v1alpha1
+        kind: Resource
+        metadata:
+          name: open-telemetry-operator-chart
+          namespace: ${schema.metadata.namespace}
+        spec:
+          componentRef: ${schema.spec.componentRef}
+          resource:
+            byReference:
+              resource:
+                name: open-telemetry-operator-chart
+          additionalStatusFields:
+            registry: resource.access.imageReference.toOCI().registry
+            repository: resource.access.imageReference.toOCI().repository
+            tag: resource.access.imageReference.toOCI().tag
+          interval: 1m
+
+    - id: openTelemetryOperatorImage
+      template:
+        apiVersion: delivery.ocm.software/v1alpha1
+        kind: Resource
+        metadata:
+          name: open-telemetry-operator-image
+          namespace: ${schema.metadata.namespace}
+        spec:
+          componentRef: ${schema.spec.componentRef}
+          resource:
+            byReference:
+              resource:
+                name: open-telemetry-operator-image
+          additionalStatusFields:
+            registry: resource.access.imageReference.toOCI().registry
+            repository: resource.access.imageReference.toOCI().repository
+            tag: resource.access.imageReference.toOCI().tag
+          interval: 1m
+
+    - id: openTelemetryCollectorImage
+      template:
+        apiVersion: delivery.ocm.software/v1alpha1
+        kind: Resource
+        metadata:
+          name: open-telemetry-collector-image
+          namespace: ${schema.metadata.namespace}
+        spec:
+          componentRef: ${schema.spec.componentRef}
+          resource:
+            byReference:
+              resource:
+                name: open-telemetry-collector-image
+          additionalStatusFields:
+            registry: resource.access.imageReference.toOCI().registry
+            repository: resource.access.imageReference.toOCI().repository
+            tag: resource.access.imageReference.toOCI().tag
+          interval: 1m
+
+    - id: kubeRBACProxyImage
+      template:
+        apiVersion: delivery.ocm.software/v1alpha1
+        kind: Resource
+        metadata:
+          name: kube-rbac-proxy-image
+          namespace: ${schema.metadata.namespace}
+        spec:
+          componentRef: ${schema.spec.componentRef}
+          resource:
+            byReference:
+              resource:
+                name: kube-rbac-proxy-image
+          additionalStatusFields:
+            registry: resource.access.imageReference.toOCI().registry
+            repository: resource.access.imageReference.toOCI().repository
+            tag: resource.access.imageReference.toOCI().tag
+          interval: 1m
+
+    - id: openTelemetryOperatorOCIRepository
+      template:
+        apiVersion: source.toolkit.fluxcd.io/v1
+        kind: OCIRepository
+        metadata:
+          name: open-telemetry-operator-ocirepository
+          namespace: ${schema.metadata.namespace}
+        spec:
+          interval: 1m0s
+          insecure: true
+          layerSelector:
+            mediaType: "application/vnd.cncf.helm.chart.content.v1.tar+gzip"
+            operation: copy
+          url: oci://${openTelemetryOperatorChart.status.additional.registry}/${openTelemetryOperatorChart.status.additional.repository}
+          ref:
+            tag: ${openTelemetryOperatorChart.status.additional.tag}
+          secretRef:
+            name: ${schema.spec.imagePullSecretRef.name}
+
+    - id: openTelemetryOperatorNamespace
+      template:
+        apiVersion: v1
+        kind: Namespace
+        metadata:
+          name: ${schema.spec.forProvider.namespace}
+
+    - id: openTelemetryOperatorImagePullSecret
+      template:
+        apiVersion: v1
+        kind: Secret
+        metadata:
+          name: open-telemetry-operator-imgpull
+          namespace: ${openTelemetryOperatorNamespace.metadata.name}
+        type:  ${sharedImagePullSecret.type}
+        data: ${sharedImagePullSecret.data}
+
+    - id: openTelemetryOperatorHelmRelease
+      template:
+        apiVersion: helm.toolkit.fluxcd.io/v2
+        kind: HelmRelease
+        metadata:
+          name: open-telemetry-operator-helmrelease
+          namespace: ${schema.metadata.namespace}
+        spec:
+          releaseName: open-telemetry-operator-release
+          targetNamespace: ${openTelemetryOperatorNamespace.metadata.name}
+          install:
+            createNamespace: false
+            crds: CreateReplace
+          interval: 1m
+          timeout: 5m
+          chartRef:
+            kind: OCIRepository
+            name: ${openTelemetryOperatorOCIRepository.metadata.name}
+          values:
+            imagePullSecrets:
+              - name: ${openTelemetryOperatorImagePullSecret.metadata.name}
+            manager:
+              image:
+                repository: ${openTelemetryOperatorImage.status.additional.registry}/${openTelemetryOperatorImage.status.additional.repository}
+                tag: ${openTelemetryOperatorImage.status.additional.tag}
+              collectorImage:
+                repository: ${openTelemetryCollectorImage.status.additional.registry}/${openTelemetryCollectorImage.status.additional.repository}
+                tag: ${openTelemetryCollectorImage.status.additional.tag}
+            kubeRBACProxy:
+              image:
+                repository: ${kubeRBACProxyImage.status.additional.registry}/${kubeRBACProxyImage.status.additional.repository}
+                tag: ${kubeRBACProxyImage.status.additional.tag}
+      readyWhen:
+        - ${openTelemetryOperatorHelmRelease.status.conditions.exists(c, c.type == "Ready" && c.status == "True")}
