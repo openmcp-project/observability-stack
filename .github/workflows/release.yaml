@@ -75,6 +75,10 @@ jobs:
         if: ${{ env.SKIP != 'true' }}
         uses: open-component-model/ocm-setup-action@main
 
+      - name: setup Flux CLI
+        if: ${{ env.SKIP != 'true' }}
+        uses: fluxcd/flux2/action@main
+
       - name: Create OCM CTF
         if: ${{ env.SKIP != 'true' }}
         run: |
