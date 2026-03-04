@@ -1,0 +1,25 @@
+apiVersion: metrics.openmcp.cloud/v1alpha1
+kind: Metric
+metadata:
+  name: serviceprovider
+spec:
+  name: serviceprovider
+  description: openMCP Service Providers
+  target:
+    kind: ServiceProvider
+    group: openmcp.cloud
+    version: v1alpha1
+  interval: "1m"
+  dataSinkRef:
+    name: default
+  projections:
+    - name: sp_name
+      fieldPath: "metadata.name"
+      type: primitive
+
+    - name: sp_phase
+      fieldPath: "status.phase"
+      type: primitive
+      default: Unknown
+
+

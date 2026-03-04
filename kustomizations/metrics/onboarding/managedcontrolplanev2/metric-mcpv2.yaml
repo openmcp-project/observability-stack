@@ -1,0 +1,31 @@
+apiVersion: metrics.openmcp.cloud/v1alpha1
+kind: FederatedMetric
+metadata:
+  name: managedcontrolplanev2
+spec:
+  name: managedcontrolplanev2
+  description: Managed Control Plane V2 Metrics
+  target:
+    kind: ManagedControlPlaneV2
+    group: core.openmcp.cloud
+    version: v2alpha1
+  interval: "1m"
+  dataSinkRef:
+    name: default
+  projections:
+    - name: mcp_namespace
+      fieldPath: "metadata.namespace"
+      type: primitive
+
+    - name: mcp_name
+      fieldPath: "metadata.name"
+      type: primitive
+
+    - name: mcp_phase
+      fieldPath: "status.phase"
+      type: primitive
+      default: Unknown
+
+  federateClusterAccessRef:
+    name: onboarding-cluster
+    namespace: obs-system

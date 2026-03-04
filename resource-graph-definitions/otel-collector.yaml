@@ -1,0 +1,119 @@
+apiVersion: kro.run/v1alpha1
+kind: ResourceGraphDefinition
+metadata:
+  name: open-telemetry-collector
+spec:
+  schema:
+    apiVersion: v1alpha1
+    kind: OpenTelemetryCollector
+    spec:
+      componentRef:
+        name: string | default="obs-stack-component"
+      imagePullSecretRef:
+        name: string | default="imgpull"
+        namespace: string | default="obs-stack"
+      forProvider:
+        namespace: string | default="open-telemetry-collector-system"
+    status:
+      ready: ${openTelemetryCollectorKustomization.status.conditions.exists(c, c.type == "Ready" && c.status == "True")}
+      lastAttemptedRevisionDigest: ${openTelemetryCollectorKustomization.status.lastAttemptedRevision}
+
+  resources:
+     # this is the shared image pull secret that will be copied into the cert-manager namespace
+    - id: sharedImagePullSecret
+      externalRef:
+        apiVersion: v1
+        kind: Secret
+        metadata:
+          name: ${schema.spec.imagePullSecretRef.name}
+          namespace: ${schema.spec.imagePullSecretRef.namespace}
+
+    - id: openTelemetryCollectorKustomizationResource
+      template:
+        apiVersion: delivery.ocm.software/v1alpha1
+        kind: Resource
+        metadata:
+          name: open-telemetry-collector-kustomization
+          namespace: ${schema.metadata.namespace}
+        spec:
+          componentRef: ${schema.spec.componentRef}
+          resource:
+            byReference:
+              resource:
+                name: open-telemetry-collector-kustomization
+          additionalStatusFields:
+            registry: resource.access.imageReference.toOCI().registry
+            repository: resource.access.imageReference.toOCI().repository
+            tag: resource.access.imageReference.toOCI().tag
+          interval: 1m
+
+    - id: openTelemetryCollectorOCIRepository
+      template:
+        apiVersion: source.toolkit.fluxcd.io/v1
+        kind: OCIRepository
+        metadata:
+          name: open-telemetry-collector-ocirepository
+          namespace: ${schema.metadata.namespace}
+        spec:
+          interval: 1m0s
+          insecure: true
+          layerSelector:
+            mediaType: "application/vnd.cncf.flux.content.v1.tar+gzip"
+            operation: copy
+          url: oci://${openTelemetryCollectorKustomizationResource.status.additional.registry}/${openTelemetryCollectorKustomizationResource.status.additional.repository}
+          ref:
+            tag: ${openTelemetryCollectorKustomizationResource.status.additional.tag}
+          secretRef:
+            name: ${schema.spec.imagePullSecretRef.name}
+
+    - id: openTelemetryCollectorNamespace
+      template:
+        apiVersion: v1
+        kind: Namespace
+        metadata:
+          name: ${schema.spec.forProvider.namespace}
+
+    - id: openTelemetryCollectorImagePullSecret
+      template:
+        apiVersion: v1
+        kind: Secret
+        metadata:
+          name: open-telemetry-collector-imgpull
+          namespace: ${openTelemetryCollectorNamespace.metadata.name}
+        type:  ${sharedImagePullSecret.type}
+        data: ${sharedImagePullSecret.data}
+
+    - id: openTelemetryCollectorKustomization
+      template:
+        apiVersion: kustomize.toolkit.fluxcd.io/v1
+        kind: Kustomization
+        metadata:
+          name: open-telemetry-collector-kustomization
+          namespace: ${schema.metadata.namespace}
+        spec:
+          interval: 1m
+          targetNamespace: ${openTelemetryCollectorNamespace.metadata.name}
+          sourceRef:
+            kind: OCIRepository
+            name: ${openTelemetryCollectorOCIRepository.metadata.name}
+          path: ""
+          prune: true
+          timeout: 1m
+          patches:
+          - target:
+              kind: ServiceAccount
+              name: open-telemetry-collector
+            patch: |-
+              - op: add
+                path: /imagePullSecrets
+                value:
+                - name: ${openTelemetryCollectorImagePullSecret.metadata.name}
+          - target:
+              kind: ServiceMonitor
+              name: otel-collector
+            patch: |-
+              - op: add
+                path: /spec/selector/matchLabels/app.kubernetes.io~1instance
+                value: ${openTelemetryCollectorNamespace.metadata.name}.default
+      readyWhen:
+        - ${openTelemetryCollectorKustomization.status.conditions.exists(c, c.type == "Ready" && c.status == "True")}

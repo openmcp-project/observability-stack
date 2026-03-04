@@ -1,0 +1,33 @@
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: flux-kustomization-alerts
+  labels:
+    prometheus: prometheus
+    app: prometheus
+spec:
+  groups:
+    - name: flux.kustomization
+      interval: 30s
+      rules:
+        - alert: KustomizationNotReady
+          expr: |
+            kustomization{kust_ready_status=~"False|Unknown"}
+          for: 5m
+          labels:
+            severity: warning
+            component: flux
+          annotations:
+            summary: "Kustomization {{ $labels.kust_name }} is not ready"
+            description: "Kustomization {{ $labels.kust_name }} in namespace {{ $labels.kust_namespace }} on cluster {{ $labels.cluster }} has not been ready for 5 minutes."
+
+        - alert: KustomizationNotHealthy
+          expr: |
+            kustomization{kust_healthy_status="False"}
+          for: 5m
+          labels:
+            severity: warning
+            component: flux
+          annotations:
+            summary: "Kustomization {{ $labels.kust_name }} is not healthy"
+            description: "Kustomization {{ $labels.kust_name }} in namespace {{ $labels.kust_namespace }} on cluster {{ $labels.cluster }} is not healthy."

@@ -1,0 +1,225 @@
+apiVersion: kro.run/v1alpha1
+kind: ResourceGraphDefinition
+metadata:
+  name: cert-manager
+spec:
+  schema:
+    apiVersion: v1alpha1
+    kind: CertManager
+    spec:
+      componentRef:
+        name: string | default="obs-stack-component"
+      imagePullSecretRef:
+        name: string | default="imgpull"
+        namespace: string | default="obs-stack"
+      forProvider:
+        namespace: string | default="cert-manager-system"
+    status:
+      ready: ${certManagerHelmRelease.status.conditions.exists(c, c.type == "Ready" && c.status == "True")}
+      lastAttemptedRevisionDigest: ${certManagerHelmRelease.status.lastAttemptedRevisionDigest}
+
+  resources:
+    # this is the shared image pull secret that will be copied into the cert-manager namespace
+    - id: sharedImagePullSecret
+      externalRef:
+        apiVersion: v1
+        kind: Secret
+        metadata:
+          name: ${schema.spec.imagePullSecretRef.name}
+          namespace: ${schema.spec.imagePullSecretRef.namespace}
+
+    - id: certManagerChart
+      template:
+        apiVersion: delivery.ocm.software/v1alpha1
+        kind: Resource
+        metadata:
+          name: cert-manager-chart
+          namespace: ${schema.metadata.namespace}
+        spec:
+          componentRef: ${schema.spec.componentRef}
+          resource:
+            byReference:
+              resource:
+                name: cert-manager-chart
+          additionalStatusFields:
+            registry: resource.access.imageReference.toOCI().registry
+            repository: resource.access.imageReference.toOCI().repository
+            tag: resource.access.imageReference.toOCI().tag
+          interval: 1m
+
+    - id: certManagerControllerImage
+      template:
+        apiVersion: delivery.ocm.software/v1alpha1
+        kind: Resource
+        metadata:
+          name: cert-manager-controller-image
+          namespace: ${schema.metadata.namespace}
+        spec:
+          componentRef: ${schema.spec.componentRef}
+          resource:
+            byReference:
+              resource:
+                name: cert-manager-controller-image
+          additionalStatusFields:
+            registry: resource.access.imageReference.toOCI().registry
+            repository: resource.access.imageReference.toOCI().repository
+            tag: resource.access.imageReference.toOCI().tag
+          interval: 1m
+
+    - id: certManagerWebhookImage
+      template:
+        apiVersion: delivery.ocm.software/v1alpha1
+        kind: Resource
+        metadata:
+          name: cert-manager-webhook-image
+          namespace: ${schema.metadata.namespace}
+        spec:
+          componentRef: ${schema.spec.componentRef}
+          resource:
+            byReference:
+              resource:
+                name: cert-manager-webhook-image
+          additionalStatusFields:
+            registry: resource.access.imageReference.toOCI().registry
+            repository: resource.access.imageReference.toOCI().repository
+            tag: resource.access.imageReference.toOCI().tag
+          interval: 1m
+
+    - id: certManagerCAInjectorImage
+      template:
+        apiVersion: delivery.ocm.software/v1alpha1
+        kind: Resource
+        metadata:
+          name: cert-manager-cainjector-image
+          namespace: ${schema.metadata.namespace}
+        spec:
+          componentRef: ${schema.spec.componentRef}
+          resource:
+            byReference:
+              resource:
+                name: cert-manager-cainjector-image
+          additionalStatusFields:
+            registry: resource.access.imageReference.toOCI().registry
+            repository: resource.access.imageReference.toOCI().repository
+            tag: resource.access.imageReference.toOCI().tag
+          interval: 1m
+
+    - id: certManagerACMESolverImage
+      template:
+        apiVersion: delivery.ocm.software/v1alpha1
+        kind: Resource
+        metadata:
+          name: cert-manager-acmesolver-image
+          namespace: ${schema.metadata.namespace}
+        spec:
+          componentRef: ${schema.spec.componentRef}
+          resource:
+            byReference:
+              resource:
+                name: cert-manager-acmesolver-image
+          additionalStatusFields:
+            registry: resource.access.imageReference.toOCI().registry
+            repository: resource.access.imageReference.toOCI().repository
+            tag: resource.access.imageReference.toOCI().tag
+          interval: 1m
+
+    - id: certManagerStartupAPICheckImage
+      template:
+        apiVersion: delivery.ocm.software/v1alpha1
+        kind: Resource
+        metadata:
+          name: cert-manager-startupapicheck-image
+          namespace: ${schema.metadata.namespace}
+        spec:
+          componentRef: ${schema.spec.componentRef}
+          resource:
+            byReference:
+              resource:
+                name: cert-manager-startupapicheck-image
+          additionalStatusFields:
+            registry: resource.access.imageReference.toOCI().registry
+            repository: resource.access.imageReference.toOCI().repository
+            tag: resource.access.imageReference.toOCI().tag
+          interval: 1m
+
+    - id: certManagerOCIRepository
+      template:
+        apiVersion: source.toolkit.fluxcd.io/v1
+        kind: OCIRepository
+        metadata:
+          name: cert-manager-ocirepository
+          namespace: ${schema.metadata.namespace}
+        spec:
+          interval: 1m0s
+          insecure: true
+          layerSelector:
+            mediaType: "application/vnd.cncf.helm.chart.content.v1.tar+gzip"
+            operation: copy
+          url: oci://${certManagerChart.status.additional.registry}/${certManagerChart.status.additional.repository}
+          ref:
+            tag: ${certManagerChart.status.additional.tag}
+          secretRef:
+            name: ${schema.spec.imagePullSecretRef.name}
+
+    - id: certManagerNamespace
+      template:
+        apiVersion: v1
+        kind: Namespace
+        metadata:
+          name: ${schema.spec.forProvider.namespace}
+
+    - id: certManagerImagePullSecret
+      template:
+        apiVersion: v1
+        kind: Secret
+        metadata:
+          name: cert-manager-imgpull
+          namespace: ${certManagerNamespace.metadata.name}
+        type:  ${sharedImagePullSecret.type}
+        data: ${sharedImagePullSecret.data}
+
+    - id: certManagerHelmRelease
+      template:
+        apiVersion: helm.toolkit.fluxcd.io/v2
+        kind: HelmRelease
+        metadata:
+          name: cert-manager-helmrelease
+          namespace: ${schema.metadata.namespace}
+        spec:
+          releaseName: cert-manager-release
+          targetNamespace: ${certManagerNamespace.metadata.name}
+          install:
+            createNamespace: false
+            crds: CreateReplace
+          interval: 1m
+          timeout: 5m
+          chartRef:
+            kind: OCIRepository
+            name: ${certManagerOCIRepository.metadata.name}
+          values:
+            global:
+              imagePullSecrets:
+                - name: ${certManagerImagePullSecret.metadata.name}
+            crds:
+              enabled: true
+            image:
+              repository: ${certManagerControllerImage.status.additional.registry}/${certManagerControllerImage.status.additional.repository}
+              tag: ${certManagerControllerImage.status.additional.tag}
+            webhook:
+              image:
+                repository: ${certManagerWebhookImage.status.additional.registry}/${certManagerWebhookImage.status.additional.repository}
+                tag: ${certManagerWebhookImage.status.additional.tag}
+            cainjector:
+              image:
+                repository: ${certManagerCAInjectorImage.status.additional.registry}/${certManagerCAInjectorImage.status.additional.repository}
+                tag: ${certManagerCAInjectorImage.status.additional.tag}
+            acmesolver:
+              image:
+                repository: ${certManagerACMESolverImage.status.additional.registry}/${certManagerACMESolverImage.status.additional.repository}
+                tag: ${certManagerACMESolverImage.status.additional.tag}
+            startupapicheck:
+              image:
+                repository: ${certManagerStartupAPICheckImage.status.additional.registry}/${certManagerStartupAPICheckImage.status.additional.repository}
+                tag: ${certManagerStartupAPICheckImage.status.additional.tag}
+      readyWhen:
+        - ${certManagerHelmRelease.status.conditions.exists(c, c.type == "Ready" && c.status == "True")}

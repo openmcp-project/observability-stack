@@ -1,0 +1,22 @@
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: openmcp-serviceprovider-alerts
+  labels:
+    prometheus: prometheus
+    app: prometheus
+spec:
+  groups:
+    - name: openmcp.serviceprovider
+      interval: 30s
+      rules:
+        - alert: ServiceProviderPhaseNotReady
+          expr: |
+            serviceprovider{sp_phase!="Ready"}
+          for: 5m
+          labels:
+            severity: warning
+            component: deployment
+          annotations:
+            summary: "ServiceProvider {{ $labels.sp_name }} is not in phase Ready"
+            description: "ServiceProvider {{ $labels.sp_name }} on cluster {{ $labels.cluster }} is not in phase Ready."

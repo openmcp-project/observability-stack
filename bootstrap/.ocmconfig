@@ -1,0 +1,21 @@
+type: generic.config.ocm.software/v1
+configurations:
+  - type: credentials.config.ocm.software
+    consumers:
+      - identity:
+          type: OCIRepository
+          scheme: https
+          hostname: ghcr.io
+        credentials:
+          - type: Credentials
+            properties:
+              username: <your-username>
+              password: <your-password/token>
+      - identity:
+          type: OCIRepository
+          hostname: ghcr.io
+        credentials:
+          - type: Credentials
+            properties:
+              username: <your-username>
+              password: <your-password/token>

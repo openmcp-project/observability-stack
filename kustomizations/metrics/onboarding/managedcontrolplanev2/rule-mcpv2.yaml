@@ -1,0 +1,22 @@
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: openmcp-mcpv2-alerts
+  labels:
+    prometheus: prometheus
+    app: prometheus
+spec:
+  groups:
+    - name: openmcp.mcpv2
+      interval: 30s
+      rules:
+        - alert: ManagedControlPlaneV2PhaseNotReady
+          expr: |
+            managedcontrolplanev2{mcp_phase!="Ready"}
+          for: 30m
+          labels:
+            severity: warning
+            component: deployment
+          annotations:
+            summary: "ManagedControlPlaneV2 {{ $labels.mcp_name }} in namespace {{ $labels.mcp_namespace }} is not in phase Ready"
+            description: "ManagedControlPlaneV2 {{ $labels.mcp_name }} in namespace {{ $labels.mcp_namespace }} on cluster {{ $labels.cluster }} is not in phase Ready."

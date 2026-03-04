@@ -1,0 +1,157 @@
+apiVersion: kro.run/v1alpha1
+kind: ResourceGraphDefinition
+metadata:
+  name: prometheus-operator
+spec:
+  schema:
+    apiVersion: v1alpha1
+    kind: PrometheusOperator
+    spec:
+      componentRef:
+        name: string | default="obs-stack-component"
+      imagePullSecretRef:
+        name: string | default="imgpull"
+        namespace: string | default="obs-stack"
+      forProvider:
+        namespace: string | default="prometheus-operator-system"
+    status:
+      ready: ${prometheusOperatorKustomization.status.conditions.exists(c, c.type == "Ready" && c.status == "True")}
+      lastAttemptedRevisionDigest: ${prometheusOperatorKustomization.status.lastAttemptedRevision}
+
+  resources:
+     # this is the shared image pull secret that will be copied into the cert-manager namespace
+    - id: sharedImagePullSecret
+      externalRef:
+        apiVersion: v1
+        kind: Secret
+        metadata:
+          name: ${schema.spec.imagePullSecretRef.name}
+          namespace: ${schema.spec.imagePullSecretRef.namespace}
+
+    - id: prometheusOperatorKustomizationResource
+      template:
+        apiVersion: delivery.ocm.software/v1alpha1
+        kind: Resource
+        metadata:
+          name: prometheus-operator-kustomization
+          namespace: ${schema.metadata.namespace}
+        spec:
+          componentRef: ${schema.spec.componentRef}
+          resource:
+            byReference:
+              resource:
+                name: prometheus-operator-kustomization
+          additionalStatusFields:
+            registry: resource.access.imageReference.toOCI().registry
+            repository: resource.access.imageReference.toOCI().repository
+            tag: resource.access.imageReference.toOCI().tag
+          interval: 1m
+
+    - id: prometheusOperatorImage
+      template:
+        apiVersion: delivery.ocm.software/v1alpha1
+        kind: Resource
+        metadata:
+          name: prometheus-operator-image
+          namespace: ${schema.metadata.namespace}
+        spec:
+          componentRef: ${schema.spec.componentRef}
+          resource:
+            byReference:
+              resource:
+                name: prometheus-operator-image
+          additionalStatusFields:
+            registry: resource.access.imageReference.toOCI().registry
+            repository: resource.access.imageReference.toOCI().repository
+            tag: resource.access.imageReference.toOCI().tag
+          interval: 1m
+
+    - id: prometheusOperatorConfigReloaderImage
+      template:
+        apiVersion: delivery.ocm.software/v1alpha1
+        kind: Resource
+        metadata:
+          name: prometheus-operator-config-reloader-image
+          namespace: ${schema.metadata.namespace}
+        spec:
+          componentRef: ${schema.spec.componentRef}
+          resource:
+            byReference:
+              resource:
+                name: prometheus-operator-config-reloader-image
+          additionalStatusFields:
+            registry: resource.access.imageReference.toOCI().registry
+            repository: resource.access.imageReference.toOCI().repository
+            tag: resource.access.imageReference.toOCI().tag
+          interval: 1m
+
+    - id: prometheusOperatorOCIRepository
+      template:
+        apiVersion: source.toolkit.fluxcd.io/v1
+        kind: OCIRepository
+        metadata:
+          name: prometheus-operator-ocirepository
+          namespace: ${schema.metadata.namespace}
+        spec:
+          interval: 1m0s
+          insecure: true
+          layerSelector:
+            mediaType: "application/vnd.cncf.flux.content.v1.tar+gzip"
+            operation: copy
+          url: oci://${prometheusOperatorKustomizationResource.status.additional.registry}/${prometheusOperatorKustomizationResource.status.additional.repository}
+          ref:
+            tag: ${prometheusOperatorKustomizationResource.status.additional.tag}
+          secretRef:
+            name: ${schema.spec.imagePullSecretRef.name}
+
+    - id: prometheusOperatorNamespace
+      template:
+        apiVersion: v1
+        kind: Namespace
+        metadata:
+          name: ${schema.spec.forProvider.namespace}
+
+    - id: prometheusOperatorImagePullSecret
+      template:
+        apiVersion: v1
+        kind: Secret
+        metadata:
+          name: prometheus-operator-imgpull
+          namespace: ${prometheusOperatorNamespace.metadata.name}
+        type:  ${sharedImagePullSecret.type}
+        data: ${sharedImagePullSecret.data}
+
+    - id: prometheusOperatorKustomization
+      template:
+        apiVersion: kustomize.toolkit.fluxcd.io/v1
+        kind: Kustomization
+        metadata:
+          name: prometheus-operator-kustomization
+          namespace: ${schema.metadata.namespace}
+        spec:
+          interval: 1m
+          targetNamespace: ${prometheusOperatorNamespace.metadata.name}
+          sourceRef:
+            kind: OCIRepository
+            name: ${prometheusOperatorOCIRepository.metadata.name}
+          path: ""
+          prune: true
+          timeout: 1m
+          patches:
+          - target:
+              kind: Deployment
+              name: prometheus-operator
+            patch: |-
+              - op: replace
+                path: /spec/template/spec/containers/0/image
+                value: ${prometheusOperatorImage.status.resource.access.imageReference}
+              - op: replace
+                path: /spec/template/spec/containers/0/args/1
+                value: -prometheus-config-reloader=${prometheusOperatorConfigReloaderImage.status.resource.access.imageReference}
+              - op: add
+                path: /spec/template/spec/imagePullSecrets
+                value:
+                - name: ${prometheusOperatorImagePullSecret.metadata.name}
+      readyWhen:
+        - ${prometheusOperatorKustomization.status.conditions.exists(c, c.type == "Ready" && c.status == "True")}
+

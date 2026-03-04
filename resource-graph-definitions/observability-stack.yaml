@@ -1,0 +1,153 @@
+apiVersion: kro.run/v1alpha1
+kind: ResourceGraphDefinition
+metadata:
+  name: obs-stack
+spec:
+  schema:
+    apiVersion: v1alpha1
+    kind: ObservabilityStack
+    spec:
+      componentRef:
+        name: string | default="obs-stack-component"
+      imagePullSecretRef:
+        name: string | default="imgpull"
+        namespace: string | default="obs-stack"
+      openMCPGatewayRef:
+        name: string | default="default"
+        namespace: string | default="openmcp-system"
+      certManager:
+        namespace: string | default="cert-manager-system"
+      metricsOperator:
+        namespace: string | default="metrics-operator-system"
+      metrics:
+        namespace: string | default="metrics-operator-system"
+      openTelemetryOperator:
+        namespace: string | default="open-telemetry-operator-system"
+      openTelemetryCollector:
+        namespace: string | default="open-telemetry-collector-system"
+      prometheusOperator:
+        namespace: string | default="prometheus-operator-system"
+      prometheus:
+        namespace: string | default="prometheus-system"
+        dashboard:
+          port: integer | default=8443 minimum=1024 maximum=49151
+    status:
+      certManager:
+        ready: ${certManager.status.ready}
+      metricsOperator:
+        ready: ${metricsOperator.status.ready}
+      metrics:
+        ready: ${metrics.status.ready}
+      openTelemetryOperator:
+        ready: ${openTelemetryOperator.status.ready}
+      openTelemetryCollector:
+        ready: ${openTelemetryCollector.status.ready}
+      prometheusOperator:
+        ready: ${prometheusOperator.status.ready}
+      prometheus:
+        ready: ${prometheus.status.ready}
+      ready:
+        ${(certManager.status.ready == true) && (metricsOperator.status.ready) && (openTelemetryOperator.status.ready == true) && (prometheusOperator.status.ready == true) && (prometheus.status.ready == true) && (openTelemetryCollector.status.ready == true) && metrics.status.ready == true}
+
+  resources:
+    - id: certManager
+      template:
+        apiVersion: kro.run/v1alpha1
+        kind: CertManager
+        metadata:
+          name: cert-manager
+        spec:
+          componentRef: ${schema.spec.componentRef}
+          imagePullSecretRef: ${schema.spec.imagePullSecretRef}
+          forProvider: ${schema.spec.certManager}
+      readyWhen:
+        - ${certManager.status.ready == true}
+
+    - id: metricsOperator
+      template:
+        apiVersion: kro.run/v1alpha1
+        kind: MetricsOperator
+        metadata:
+          name: metrics-operator
+        spec:
+          componentRef: ${schema.spec.componentRef}
+          imagePullSecretRef: ${schema.spec.imagePullSecretRef}
+          forProvider: ${schema.spec.metricsOperator}
+      readyWhen:
+        - ${metricsOperator.status.ready == true}
+
+    - id: metrics
+      template:
+        apiVersion: kro.run/v1alpha1
+        kind: OpenMCPMetric
+        metadata:
+          name: openmcp-metrics
+          annotations:
+            dependency/prometheus-operator: ${prometheusOperator.status.lastAttemptedRevisionDigest}
+        spec:
+          componentRef: ${schema.spec.componentRef}
+          imagePullSecretRef: ${schema.spec.imagePullSecretRef}
+          openTelemetryCollector: ${schema.spec.openTelemetryCollector}
+          forProvider: ${schema.spec.metrics}
+      readyWhen:
+        - ${metrics.status.ready == true}
+
+    - id: openTelemetryOperator
+      template:
+        apiVersion: kro.run/v1alpha1
+        kind: OpenTelemetryOperator
+        metadata:
+          name: open-telemetry-operator
+          annotations:
+            dependency/cert-manager: ${certManager.status.lastAttemptedRevisionDigest}
+        spec:
+          componentRef: ${schema.spec.componentRef}
+          imagePullSecretRef: ${schema.spec.imagePullSecretRef}
+          forProvider: ${schema.spec.openTelemetryOperator}
+      readyWhen:
+        - ${openTelemetryOperator.status.ready == true}
+
+    - id: openTelemetryCollector
+      template:
+        apiVersion: kro.run/v1alpha1
+        kind: OpenTelemetryCollector
+        metadata:
+          name: open-telemetry-collector
+          annotations:
+            dependency/cert-manager: ${certManager.status.lastAttemptedRevisionDigest}
+            dependency/prometheus-operator: ${prometheusOperator.status.lastAttemptedRevisionDigest}
+        spec:
+          componentRef: ${schema.spec.componentRef}
+          imagePullSecretRef: ${schema.spec.imagePullSecretRef}
+          forProvider: ${schema.spec.openTelemetryCollector}
+      readyWhen:
+        - ${openTelemetryCollector.status.ready == true}
+
+    - id: prometheusOperator
+      template:
+        apiVersion: kro.run/v1alpha1
+        kind: PrometheusOperator
+        metadata:
+          name: prometheus-operator
+        spec:
+          componentRef: ${schema.spec.componentRef}
+          imagePullSecretRef: ${schema.spec.imagePullSecretRef}
+          forProvider: ${schema.spec.prometheusOperator}
+      readyWhen:
+        - ${prometheusOperator.status.ready == true}
+
+    - id: prometheus
+      template:
+        apiVersion: kro.run/v1alpha1
+        kind: Prometheus
+        metadata:
+          name: prometheus
+          annotations:
+            dependency/cert-manager: ${certManager.status.lastAttemptedRevisionDigest}
+        spec:
+          componentRef: ${schema.spec.componentRef}
+          imagePullSecretRef: ${schema.spec.imagePullSecretRef}
+          openMCPGatewayRef: ${schema.spec.openMCPGatewayRef}
+          forProvider: ${schema.spec.prometheus}
+      readyWhen:
+        - ${prometheus.status.ready == true}
