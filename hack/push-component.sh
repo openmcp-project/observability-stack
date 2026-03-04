@@ -19,5 +19,5 @@ if [ -z "$COMPONENTS_LOCATION" ]; then
 fi
 
 echo "Pushing component to $REPOSITORY_CONTEXT..."
-ocm transfer ctf --copy-resources --recursive ./ctf "$COMPONENTS_LOCATION"
+ocm transfer ctf --copy-resources --recursive --lookup ghcr.io/openmcp-project/components ./ctf "$COMPONENTS_LOCATION"
 
