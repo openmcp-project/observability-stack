@@ -1,4 +1,5 @@
-REPOSITORY_CONTEXT: ghcr.io/reshnm
+REPOSITORY_CONTEXT: ghcr.io/openmcp-project
+COMPONENTS_LOCATION: ${REPOSITORY_CONTEXT}/components
 KUSTOMIZATIONS_LOCATION_PREFIX: ${REPOSITORY_CONTEXT}/observability-stack/kustomizations
 
 # cert-manager
