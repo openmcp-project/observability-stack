@@ -15,8 +15,11 @@ Before setting up the observability stack, ensure you have the following:
 - A Kubernetes cluster (v1.27+)
 - `kubectl` configured to access your cluster
 - `OCM Kubernetes Controllers` installed in your cluster (<https://github.com/open-component-model/open-component-model/tree/main/kubernetes/controller>)
+- `Flux CD` installed in your cluster (<https://fluxcd.io/>)
 - `kro` (Kubernetes Resource Orchestrator) installed in your cluster (<https://kro.run>)
 - Access to GitHub Container Registry (ghcr.io)
+
+For a local setup, you can use the `local-dev` script in [cluster-provider-kind](https://github.com/openmcp-project/cluster-provider-kind/blob/main/README.md#%E2%80%8D-development).
 
 ### Installation Steps
 
