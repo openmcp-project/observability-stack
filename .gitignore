@@ -1,4 +1,12 @@
 .claude
+.vscode
 
 ctf
 tmp
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
