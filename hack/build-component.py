@@ -81,17 +81,20 @@ def push_kustomizations(repo_root: Path, version: str) -> None:
     try:
         git_origin = run_command(
             ["git", "config", "--get", "remote.origin.url"],
-            cwd=repo_root
+            cwd=repo_root,
+            capture_output=True
         ).stdout.strip()
 
         git_tag = run_command(
             ["git", "tag", "--points-at", "HEAD"],
-            cwd=repo_root
+            cwd=repo_root,
+            capture_output=True
         ).stdout.strip()
 
         git_sha = run_command(
             ["git", "rev-parse", "HEAD"],
-            cwd=repo_root
+            cwd=repo_root,
+            capture_output=True
         ).stdout.strip()
 
         revision = f"{git_tag}@sha1:{git_sha}" if git_tag else f"main@sha1:{git_sha}"

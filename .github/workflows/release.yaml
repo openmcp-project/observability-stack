@@ -103,7 +103,9 @@ jobs:
       - name: Create OCM CTF
         if: ${{ env.SKIP != 'true' }}
         run: |
-          python3 ./hack/build-component.py
+          python3 -u ./hack/build-component.py
+        env:
+          PYTHONUNBUFFERED: "1"
 
       - name: Create GitHub release
         if: ${{ env.SKIP != 'true' }}
@@ -120,4 +122,6 @@ jobs:
       - name: Push CTF
         if: ${{ env.SKIP != 'true' }}
         run: |
-          python3 ./hack/push-component.py
+          python3 -u ./hack/push-component.py
+        env:
+          PYTHONUNBUFFERED: "1"

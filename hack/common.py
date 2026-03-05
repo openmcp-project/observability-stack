@@ -13,7 +13,7 @@ from typing import Dict, Optional, Tuple
 try:
     import yaml
 except ImportError:
-    print("Error: PyYAML is required. Install it with: pip install pyyaml")
+    print("Error: PyYAML is required. Install it with: pip install pyyaml", flush=True)
     sys.exit(1)
 
 
@@ -27,8 +27,8 @@ def detect_repo_root() -> Tuple[Path, Path]:
     script_dir = Path(__file__).resolve().parent
     repo_root = script_dir.parent
 
-    print(f"Script directory: {script_dir}")
-    print(f"Repository root: {repo_root}")
+    print(f"Script directory: {script_dir}", flush=True)
+    print(f"Repository root: {repo_root}", flush=True)
 
     return script_dir, repo_root
 
@@ -54,7 +54,7 @@ def load_component_settings(repo_root: Path) -> Tuple[Optional[Path], Dict[str, 
 
     # Load environment variables from component-settings.yaml if it exists
     if settings_file and settings_file.exists():
-        print(f"Loading environment variables from {settings_file}...")
+        print(f"Loading environment variables from {settings_file}...", flush=True)
 
         with open(settings_file, 'r', encoding='utf-8') as f:
             try:
@@ -71,17 +71,17 @@ def load_component_settings(repo_root: Path) -> Tuple[Optional[Path], Dict[str, 
                         # Store and export the variable
                         env_vars[key] = value_str
                         os.environ[key] = value_str
-                        print(f"  {key}={value_str}")
+                        print(f"  {key}={value_str}", flush=True)
                 else:
-                    print("Warning: Settings file is empty or not a valid YAML dictionary")
+                    print("Warning: Settings file is empty or not a valid YAML dictionary", flush=True)
 
             except yaml.YAMLError as e:
-                print(f"Error parsing YAML file: {e}")
+                print(f"Error parsing YAML file: {e}", flush=True)
                 sys.exit(1)
 
-        print("Environment variables loaded.")
+        print("Environment variables loaded.", flush=True)
     else:
-        print("Warning: Settings file not found. Using existing environment variables.")
+        print("Warning: Settings file not found. Using existing environment variables.", flush=True)
         settings_file = None
 
     return settings_file, env_vars
@@ -125,7 +125,7 @@ def read_version_file(repo_root: Path) -> str:
     version_file = repo_root / "VERSION"
 
     if not version_file.exists():
-        print(f"Error: VERSION file not found at {version_file}")
+        print(f"Error: VERSION file not found at {version_file}", flush=True)
         sys.exit(1)
 
     version = version_file.read_text().strip()
@@ -144,7 +144,7 @@ def read_version_file(repo_root: Path) -> str:
         version = f"{version}-{git_commit}"
 
     os.environ["OBSERVABILITY_STACK_VERSION"] = version
-    print(f"Observability stack version: {version}")
+    print(f"Observability stack version: {version}", flush=True)
 
     return version
 
@@ -159,7 +159,7 @@ def merge_rgd_files(repo_root: Path) -> Path:
     Returns:
         Path to the merged YAML file
     """
-    print("Merging RGD files...")
+    print("Merging RGD files...", flush=True)
 
     rgd_dir = repo_root / "resource-graph-definitions"
     tmp_dir = repo_root / "tmp"
@@ -169,7 +169,7 @@ def merge_rgd_files(repo_root: Path) -> Path:
     merged_file.unlink(missing_ok=True)
 
     if not rgd_dir.exists():
-        print(f"Warning: RGD directory not found at {rgd_dir}")
+        print(f"Warning: RGD directory not found at {rgd_dir}", flush=True)
         return merged_file
 
     # Merge all yaml files from rgd folder
@@ -182,9 +182,9 @@ def merge_rgd_files(repo_root: Path) -> Path:
                     outfile.write("---\n")
                 outfile.write(yaml_file.read_text())
 
-        print(f"RGD files merged into {merged_file}")
+        print(f"RGD files merged into {merged_file}", flush=True)
     else:
-        print(f"Warning: No YAML files found in {rgd_dir}")
+        print(f"Warning: No YAML files found in {rgd_dir}", flush=True)
 
     return merged_file
 
@@ -217,7 +217,7 @@ def build_ocm_vars(settings_file: Optional[Path], base_vars: Dict[str, str]) -> 
                         ocm_vars[key] = value_str
 
             except yaml.YAMLError as e:
-                print(f"Warning: Error parsing YAML file: {e}")
+                print(f"Warning: Error parsing YAML file: {e}", flush=True)
 
     return ocm_vars
 
@@ -225,15 +225,18 @@ def build_ocm_vars(settings_file: Optional[Path], base_vars: Dict[str, str]) -> 
 def run_command(
     cmd: list,
     cwd: Optional[Path] = None,
-    check: bool = True
+    check: bool = True,
+    capture_output: bool = False
 ) -> subprocess.CompletedProcess:
     """
-    Run a shell command with better error handling.
+    Run a shell command with real-time output streaming.
 
     Args:
         cmd: Command as a list of strings
         cwd: Working directory for the command
         check: Whether to raise an exception on non-zero exit code
+        capture_output: If True, capture output instead of streaming
+                       (useful for parsing command output)
 
     Returns:
         CompletedProcess object
@@ -241,28 +244,44 @@ def run_command(
     Raises:
         subprocess.CalledProcessError: If command fails and check=True
     """
-    print(f"Running: {' '.join(cmd)}")
+    print(f"Running: {' '.join(cmd)}", flush=True)
 
     try:
-        result = subprocess.run(
-            cmd,
-            cwd=cwd,
-            check=check,
-            text=True,
-            capture_output=True
-        )
+        if capture_output:
+            # Capture mode: for commands where we need to parse output
+            result = subprocess.run(
+                cmd,
+                cwd=cwd,
+                check=check,
+                text=True,
+                capture_output=True
+            )
 
-        if result.stdout:
-            print(result.stdout)
-        if result.stderr:
-            print(result.stderr, file=sys.stderr)
+            if result.stdout:
+                print(result.stdout, flush=True)
+            if result.stderr:
+                print(result.stderr, file=sys.stderr, flush=True)
 
-        return result
+            return result
+        else:
+            # Streaming mode: real-time output for long-running commands
+            result = subprocess.run(
+                cmd,
+                cwd=cwd,
+                check=check,
+                text=True,
+                stdout=None,  # Inherit parent's stdout for streaming
+                stderr=None   # Inherit parent's stderr for streaming
+            )
+
+            return result
 
     except subprocess.CalledProcessError as e:
-        print(f"Error: Command failed with exit code {e.returncode}")
-        if e.stdout:
-            print(f"stdout: {e.stdout}")
-        if e.stderr:
-            print(f"stderr: {e.stderr}", file=sys.stderr)
+        print(f"Error: Command failed with exit code {e.returncode}",
+              file=sys.stderr, flush=True)
+        if capture_output:
+            if e.stdout:
+                print(f"stdout: {e.stdout}", flush=True)
+            if e.stderr:
+                print(f"stderr: {e.stderr}", file=sys.stderr, flush=True)
         raise
