@@ -4,6 +4,8 @@ resources:
   - metric-kustomizations.yaml
   - metric-helmreleases.yaml
   - metric-gitrepositories.yaml
+  - metric-ocirepositories.yaml
   - rule-kustomizations.yaml
   - rule-helmreleases.yaml
   - rule-gitrepositories.yaml
+  - rule-ocirepositories.yaml

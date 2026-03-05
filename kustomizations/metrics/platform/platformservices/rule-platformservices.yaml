@@ -18,5 +18,5 @@ spec:
             severity: warning
             component: deployment
           annotations:
-            summary: "PlatformService {{ $labels.cp_name }} is not in phase Ready"
-            description: "PlatformService {{ $labels.cp_name }} on cluster {{ $labels.cluster }} is not in phase Ready."
+            summary: "PlatformService {{ $labels.ps_name }} is not in phase Ready"
+            description: "PlatformService {{ $labels.ps_name }} on cluster {{ $labels.cluster }} is not in phase Ready."

@@ -4,7 +4,7 @@ metadata:
   name: helmrelease
 spec:
   name: co_helmrelease
-  description: FluxCD HelReleases
+  description: FluxCD HelmReleases
   target:
     kind: HelmRelease
     group: helm.toolkit.fluxcd.io/v2

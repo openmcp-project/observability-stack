@@ -19,4 +19,4 @@ spec:
             component: flux
           annotations:
             summary: "HelmRelease {{ $labels.hr_name }} is not ready"
-            description: "Kustomization {{ $labels.hr_name }} in namespace {{ $labels.hr_namespace }} on cluster {{ $labels.cluster }} has not been ready for 5 minutes."
+            description: "HelmRelease {{ $labels.hr_name }} in namespace {{ $labels.hr_namespace }} on cluster {{ $labels.cluster }} has not been ready for 5 minutes."
