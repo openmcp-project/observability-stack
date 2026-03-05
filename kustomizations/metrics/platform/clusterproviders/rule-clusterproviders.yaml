@@ -1,0 +1,22 @@
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: openmcp-clusterprovider-alerts
+  labels:
+    prometheus: prometheus
+    app: prometheus
+spec:
+  groups:
+    - name: openmcp.clusterprovider
+      interval: 30s
+      rules:
+        - alert: ClusterProviderPhaseNotReady
+          expr: |
+            co_clusterprovider{cp_phase!="Ready"}
+          for: 5m
+          labels:
+            severity: warning
+            component: deployment
+          annotations:
+            summary: "ClusterProvider {{ $labels.cp_name }} is not in phase Ready"
+            description: "ClusterProvider {{ $labels.cp_name }} on cluster {{ $labels.cluster }} is not in phase Ready."

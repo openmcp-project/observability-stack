@@ -1,0 +1,22 @@
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: openmcp-platformservices-alerts
+  labels:
+    prometheus: prometheus
+    app: prometheus
+spec:
+  groups:
+    - name: openmcp.platformservice
+      interval: 30s
+      rules:
+        - alert: PlatformServicePhaseNotReady
+          expr: |
+            co_platformservice{ps_phase!="Ready"}
+          for: 5m
+          labels:
+            severity: warning
+            component: deployment
+          annotations:
+            summary: "PlatformService {{ $labels.cp_name }} is not in phase Ready"
+            description: "PlatformService {{ $labels.cp_name }} on cluster {{ $labels.cluster }} is not in phase Ready."

@@ -12,7 +12,7 @@ spec:
       rules:
         - alert: ServiceProviderPhaseNotReady
           expr: |
-            serviceprovider{sp_phase!="Ready"}
+            co_serviceprovider{sp_phase!="Ready"}
           for: 5m
           labels:
             severity: warning

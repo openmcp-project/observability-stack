@@ -1,0 +1,33 @@
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: openmcp-gateway-alerts
+  labels:
+    prometheus: prometheus
+    app: prometheus
+spec:
+  groups:
+    - name: openmcp.gateway
+      interval: 30s
+      rules:
+        - alert: GatewayNotProgrammed
+          expr: |
+            co_gateway{gw_programmed_status!="True"}
+          for: 5m
+          labels:
+            severity: warning
+            component: deployment
+          annotations:
+            summary: "Gateway {{ $labels.gw_name }} is not in Programmed"
+            description: "Gateway {{ $labels.gw_name }} in namespace {{ $labels.gw_namespace }} is not in Programmed."
+
+        - alert: GatewayNotAccepted
+          expr: |
+            co_gateway{gw_accepted_status!="True"}
+          for: 5m
+          labels:
+            severity: warning
+            component: deployment
+          annotations:
+            summary: "Gateway {{ $labels.gw_name }} is not in Accepted"
+            description: "Gateway {{ $labels.gw_name }} in namespace {{ $labels.gw_namespace }} is not in Accepted."

@@ -1,23 +1,23 @@
 apiVersion: metrics.openmcp.cloud/v1alpha1
 kind: Metric
 metadata:
-  name: serviceprovider
+  name: clusterprovider
 spec:
-  name: co_serviceprovider
-  description: openMCP Service Providers
+  name: co_clusterprovider
+  description: openMCP Cluster Providers
   target:
-    kind: ServiceProvider
+    kind: ClusterProvider
     group: openmcp.cloud
     version: v1alpha1
   interval: "1m"
   dataSinkRef:
     name: default
   projections:
-    - name: sp_name
+    - name: cp_name
       fieldPath: "metadata.name"
       type: primitive
 
-    - name: sp_phase
+    - name: cp_phase
       fieldPath: "status.phase"
       type: primitive
       default: Unknown

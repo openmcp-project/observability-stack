@@ -2,4 +2,8 @@ apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
 resources:
   - metric-kustomizations.yaml
+  - metric-helmreleases.yaml
+  - metric-gitrepositories.yaml
   - rule-kustomizations.yaml
+  - rule-helmreleases.yaml
+  - rule-gitrepositories.yaml

@@ -3,7 +3,7 @@ kind: FederatedMetric
 metadata:
   name: managedcontrolplanev2
 spec:
-  name: managedcontrolplanev2
+  name: co_managedcontrolplanev2
   description: Managed Control Plane V2 Metrics
   target:
     kind: ManagedControlPlaneV2

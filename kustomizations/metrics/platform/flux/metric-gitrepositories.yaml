@@ -1,32 +1,27 @@
 apiVersion: metrics.openmcp.cloud/v1alpha1
 kind: Metric
 metadata:
-  name: kustomization
+  name: gitrepository
 spec:
-  name: co_kustomization
-  description: FluxCD Kustomizations
+  name: co_gitrepository
+  description: FluxCD GitRepository
   target:
-    kind: Kustomization
-    group: kustomize.toolkit.fluxcd.io
+    kind: GitRepository
+    group: source.toolkit.fluxcd.io
     version: v1
   interval: "1m"
   dataSinkRef:
     name: default
   projections:
-    - name: kust_namespace
+    - name: gr_namespace
       fieldPath: "metadata.namespace"
       type: primitive
 
-    - name: kust_name
+    - name: gr_name
       fieldPath: "metadata.name"
       type: primitive
 
-    - name: kust_ready_status
+    - name: gr_ready_status
       fieldPath: "status.conditions[?(@.type=='Ready')].status"
-      type: primitive
-      default: Unknown
-
-    - name: kust_healthy_status
-      fieldPath: "status.conditions[?(@.type=='Healthy')].status"
       type: primitive
       default: Unknown
