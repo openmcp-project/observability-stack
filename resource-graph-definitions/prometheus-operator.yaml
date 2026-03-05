@@ -19,7 +19,7 @@ spec:
       lastAttemptedRevisionDigest: ${prometheusOperatorKustomization.status.lastAttemptedRevision}
 
   resources:
-     # this is the shared image pull secret that will be copied into the cert-manager namespace
+     # this is the shared image pull secret that will be copied into the Prometheus operator namespace
     - id: sharedImagePullSecret
       externalRef:
         apiVersion: v1

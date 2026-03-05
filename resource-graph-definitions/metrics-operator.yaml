@@ -19,7 +19,7 @@ spec:
       lastAttemptedRevisionDigest: ${metricsOperatorHelmRelease.status.lastAttemptedRevisionDigest}
 
   resources:
-     # this is the shared image pull secret that will be copied into the cert-manager namespace
+     # this is the shared image pull secret that will be copied into the metrics-operator namespace
     - id: sharedImagePullSecret
       externalRef:
         apiVersion: v1

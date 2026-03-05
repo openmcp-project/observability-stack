@@ -19,7 +19,7 @@ spec:
       lastAttemptedRevisionDigest: ${openTelemetryCollectorKustomization.status.lastAttemptedRevision}
 
   resources:
-     # this is the shared image pull secret that will be copied into the cert-manager namespace
+     # this is the shared image pull secret that will be copied into the OpenTelemetry collector namespace
     - id: sharedImagePullSecret
       externalRef:
         apiVersion: v1
