@@ -28,7 +28,7 @@ kubectl create namespace obs-stack
 
 #### 2. Configure OCM Registry Credentials
 
-Create an OCM configuration file for accessing the component registry. You can use the example from [bootstrap/.ocmconfig](bootstrap/.ocmconfig) as a template:
+Create an OCM configuration file for accessing the component registry:
 
 ```bash
 # Create the OCM config with your GitHub credentials
@@ -79,7 +79,7 @@ kubectl create secret docker-registry regcred \
 
 #### 4. Deploy the Observability Stack
 
-Apply the deployment manifests. You can use the example from [bootstrap/manifests.yaml](bootstrap/manifests.yaml):
+Apply the deployment manifests:
 
 ```bash
 kubectl apply -f - <<EOF
@@ -268,10 +268,6 @@ curl --cert client.crt --key client.key --insecure "https://${HOSTNAME}:8443/api
 4. When prompted for the client certificate password, use: `prometheus` (or the password you set in step 1)
 
 5. Navigate to the Prometheus dashboard URL and select the client certificate when prompted
-
-### Clean Up
-
-After successfully deploying using the setup instructions above, you can safely remove the bootstrap folder from your local copy as it was only needed as a reference for the deployment configuration.
 
 ### Configuration Options
 
