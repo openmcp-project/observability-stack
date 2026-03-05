@@ -30,16 +30,6 @@ spec:
           name: ${schema.spec.imagePullSecretRef.name}
           namespace: ${schema.spec.imagePullSecretRef.namespace}
 
-    # the prometheus operator kustomization is added here as external because the
-    # metrics can't be deployed until the prometheus operator is ready
-    - id: prometheusOperatorKustomization
-      externalRef:
-        apiVersion: kustomize.toolkit.fluxcd.io/v1
-        kind: Kustomization
-        metadata:
-          name: prometheus-operator-kustomization
-          namespace: ${schema.metadata.namespace}
-
     - id: metricsKustomizationResource
       template:
         apiVersion: delivery.ocm.software/v1alpha1
