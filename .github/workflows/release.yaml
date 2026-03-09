@@ -107,13 +107,133 @@ jobs:
         env:
           PYTHONUNBUFFERED: "1"
 
+      - name: Generate changelog
+        if: ${{ env.SKIP != 'true' }}
+        id: changelog
+        run: |
+          # Get the previous tag
+          PREVIOUS_TAG=$(git tag --sort=-version:refname | grep -v "${{ env.version }}" | head -1)
+
+          if [ -z "$PREVIOUS_TAG" ]; then
+            echo "No previous tag found, using all commits"
+            PREVIOUS_TAG=$(git rev-list --max-parents=0 HEAD)
+          fi
+
+          echo "Generating changelog from $PREVIOUS_TAG to ${{ env.version }}"
+
+          # Get all merged PRs since last tag
+          PR_LIST=$(git log ${PREVIOUS_TAG}..HEAD --merges --pretty=format:"%s" | grep -oE "#[0-9]+" | sort -u)
+
+          # Initialize changelog sections
+          BREAKING_CHANGES=""
+          FEATURES=""
+          BUGFIXES=""
+          DOCUMENTATION=""
+          DEPENDENCIES=""
+          OTHER=""
+
+          # Process each PR
+          for PR_NUM in $PR_LIST; do
+            PR_NUM_CLEAN=${PR_NUM#\#}
+
+            # Fetch PR body
+            PR_DATA=$(gh pr view $PR_NUM_CLEAN --json title,body,author,labels 2>/dev/null || echo "")
+
+            if [ -n "$PR_DATA" ]; then
+              PR_TITLE=$(echo "$PR_DATA" | jq -r '.title // empty')
+              PR_BODY=$(echo "$PR_DATA" | jq -r '.body // empty')
+              PR_AUTHOR=$(echo "$PR_DATA" | jq -r '.author.login // empty')
+
+              # Extract release note from PR body
+              RELEASE_NOTE=$(echo "$PR_BODY" | sed -n '/```[a-z]* [a-z]*/,/```/p' | sed '1d;$d')
+              RELEASE_NOTE_HEADER=$(echo "$PR_BODY" | grep -oE '```[a-z]* [a-z]*' | sed 's/```//' || echo "")
+
+              # Skip if no release note or NONE
+              if [ -z "$RELEASE_NOTE" ] || echo "$RELEASE_NOTE" | grep -qi "NONE"; then
+                continue
+              fi
+
+              # Determine category from header or labels
+              CATEGORY=$(echo "$RELEASE_NOTE_HEADER" | awk '{print $1}')
+              TARGET_GROUP=$(echo "$RELEASE_NOTE_HEADER" | awk '{print $2}')
+
+              # Format the entry
+              ENTRY="- ${RELEASE_NOTE} (#${PR_NUM_CLEAN}) @${PR_AUTHOR}"
+
+              # Add to appropriate section
+              case "$CATEGORY" in
+                breaking)
+                  BREAKING_CHANGES="${BREAKING_CHANGES}${ENTRY}\n"
+                  ;;
+                feature)
+                  FEATURES="${FEATURES}${ENTRY}\n"
+                  ;;
+                bugfix)
+                  BUGFIXES="${BUGFIXES}${ENTRY}\n"
+                  ;;
+                doc)
+                  DOCUMENTATION="${DOCUMENTATION}${ENTRY}\n"
+                  ;;
+                dependency)
+                  DEPENDENCIES="${DEPENDENCIES}${ENTRY}\n"
+                  ;;
+                *)
+                  OTHER="${OTHER}${ENTRY}\n"
+                  ;;
+              esac
+            fi
+          done
+
+          # Build final changelog
+          CHANGELOG="## What's Changed\n\n"
+
+          if [ -n "$BREAKING_CHANGES" ]; then
+            CHANGELOG="${CHANGELOG}### ⚠️ Breaking Changes\n${BREAKING_CHANGES}\n"
+          fi
+
+          if [ -n "$FEATURES" ]; then
+            CHANGELOG="${CHANGELOG}### ✨ New Features\n${FEATURES}\n"
+          fi
+
+          if [ -n "$BUGFIXES" ]; then
+            CHANGELOG="${CHANGELOG}### 🐛 Bug Fixes\n${BUGFIXES}\n"
+          fi
+
+          if [ -n "$DEPENDENCIES" ]; then
+            CHANGELOG="${CHANGELOG}### 📦 Dependency Updates\n${DEPENDENCIES}\n"
+          fi
+
+          if [ -n "$DOCUMENTATION" ]; then
+            CHANGELOG="${CHANGELOG}### 📝 Documentation\n${DOCUMENTATION}\n"
+          fi
+
+          if [ -n "$OTHER" ]; then
+            CHANGELOG="${CHANGELOG}### 🔧 Other Changes\n${OTHER}\n"
+          fi
+
+          # Add full changelog link
+          CHANGELOG="${CHANGELOG}\n**Full Changelog**: https://github.com/${{ github.repository }}/compare/${PREVIOUS_TAG}...${{ env.version }}"
+
+          # Save to file and output
+          echo -e "$CHANGELOG" > /tmp/changelog.md
+          cat /tmp/changelog.md
+
+          # Set multiline output
+          {
+            echo 'changelog<<EOF'
+            cat /tmp/changelog.md
+            echo EOF
+          } >> $GITHUB_OUTPUT
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
       - name: Create GitHub release
         if: ${{ env.SKIP != 'true' }}
         uses: softprops/action-gh-release@a06a81a03ee405af7f2048a818ed3f03bbf83c7b # v2
         with:
           tag_name: ${{ env.version }}
           name: Release ${{ env.version }}
-          body: Release ${{ env.version }}
+          body: ${{ steps.changelog.outputs.changelog }}
           draft: true
           prerelease: false
         env:
