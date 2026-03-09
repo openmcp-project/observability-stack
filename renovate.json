@@ -4,58 +4,88 @@
     "config:recommended",
     ":dependencyDashboard"
   ],
-  "labels": ["dependencies"],
+  "labels": [
+    "dependencies"
+  ],
   "semanticCommits": "enabled",
   "commitMessagePrefix": "chore(deps):",
   "commitMessageAction": "update",
   "timezone": "UTC",
-  "schedule": ["before 6am every weekday"],
+  "schedule": [
+    "before 6am every weekday"
+  ],
   "prConcurrentLimit": 5,
   "prCreation": "not-pending",
   "prHourlyLimit": 2,
   "separateMajorMinor": true,
   "separateMinorPatch": false,
-  "postUpdateOptions": ["gomodTidy"],
+  "postUpdateOptions": [
+    "gomodTidy"
+  ],
   "vulnerabilityAlerts": {
     "enabled": true,
-    "labels": ["security"]
+    "labels": [
+      "security"
+    ]
   },
   "packageRules": [
     {
       "description": "Group all cert-manager updates together",
-      "matchDatasources": ["docker", "helm"],
-      "matchPackagePatterns": ["^quay\\.io/jetstack/cert-manager"],
-      "groupName": "cert-manager"
+      "matchDatasources": [
+        "docker",
+        "helm"
+      ],
+      "groupName": "cert-manager",
+      "matchPackageNames": [
+        "/^quay\\.io/jetstack/cert-manager/"
+      ]
     },
     {
       "description": "Group all OpenTelemetry updates together",
-      "matchDatasources": ["docker", "helm"],
-      "matchPackagePatterns": [
-        "opentelemetry-operator",
-        "opentelemetry-collector"
+      "matchDatasources": [
+        "docker",
+        "helm"
       ],
-      "groupName": "opentelemetry"
+      "groupName": "opentelemetry",
+      "matchPackageNames": [
+        "/opentelemetry-operator/",
+        "/opentelemetry-collector/"
+      ]
     },
     {
       "description": "Group all Prometheus updates together",
-      "matchDatasources": ["docker", "github-releases"],
-      "matchPackagePatterns": ["prometheus-operator", "^quay\\.io/prometheus/prometheus"],
-      "groupName": "prometheus"
+      "matchDatasources": [
+        "docker",
+        "github-releases"
+      ],
+      "groupName": "prometheus",
+      "matchPackageNames": [
+        "/prometheus-operator/",
+        "/^quay\\.io/prometheus/prometheus/"
+      ]
     },
     {
       "description": "Automerge minor and patch updates",
-      "matchUpdateTypes": ["minor", "patch", "digest"],
+      "matchUpdateTypes": [
+        "minor",
+        "patch",
+        "digest"
+      ],
       "automerge": false,
       "automergeType": "pr"
     },
     {
       "description": "Require approval for major updates",
-      "matchUpdateTypes": ["major"],
+      "matchUpdateTypes": [
+        "major"
+      ],
       "automerge": false
     },
     {
       "description": "GitHub Actions updates",
-      "matchManagers": ["github-actions"],
+      "matchManagers": [
+        "github-actions"
+      ],
       "groupName": "github-actions",
       "automerge": true,
       "automergeType": "pr"
@@ -65,7 +95,9 @@
     {
       "description": "Update versions in component-settings.yaml",
       "customType": "regex",
-      "fileMatch": ["^component-settings\\.yaml$"],
+      "managerFilePatterns": [
+        "/^component-settings\\.yaml$/"
+      ],
       "matchStrings": [
         "# cert-manager\\s*\\n\\s*CERT_MANAGER_VERSION:\\s*\"(?<currentValue>v[0-9.]+)\"",
         "# metrics-operator\\s*\\n\\s*METRICS_OPERATOR_VERSION:\\s*\"(?<currentValue>v[0-9.]+)\"",
@@ -83,7 +115,9 @@
     {
       "description": "Update cert-manager version in component-settings.yaml",
       "customType": "regex",
-      "fileMatch": ["^component-settings\\.yaml$"],
+      "managerFilePatterns": [
+        "/^component-settings\\.yaml$/"
+      ],
       "matchStrings": [
         "CERT_MANAGER_VERSION:\\s*\"(?<currentValue>v[0-9.]+)\""
       ],
@@ -94,7 +128,9 @@
     {
       "description": "Update metrics-operator version in component-settings.yaml",
       "customType": "regex",
-      "fileMatch": ["^component-settings\\.yaml$"],
+      "managerFilePatterns": [
+        "/^component-settings\\.yaml$/"
+      ],
       "matchStrings": [
         "METRICS_OPERATOR_VERSION:\\s*\"(?<currentValue>v[0-9.]+)\""
       ],
@@ -105,7 +141,9 @@
     {
       "description": "Update kube-rbac-proxy version in component-settings.yaml",
       "customType": "regex",
-      "fileMatch": ["^component-settings\\.yaml$"],
+      "managerFilePatterns": [
+        "/^component-settings\\.yaml$/"
+      ],
       "matchStrings": [
         "KUBE_RBAC_PROXY_VERSION:\\s*\"(?<currentValue>v[0-9.]+)\""
       ],
@@ -116,7 +154,9 @@
     {
       "description": "Update OpenTelemetry Operator chart version in component-settings.yaml",
       "customType": "regex",
-      "fileMatch": ["^component-settings\\.yaml$"],
+      "managerFilePatterns": [
+        "/^component-settings\\.yaml$/"
+      ],
       "matchStrings": [
         "OPEN_TELEMETRY_OPERATOR_CHART_VERSION:\\s*\"(?<currentValue>[0-9.]+)\""
       ],
@@ -127,7 +167,9 @@
     {
       "description": "Update OpenTelemetry Operator image version in component-settings.yaml",
       "customType": "regex",
-      "fileMatch": ["^component-settings\\.yaml$"],
+      "managerFilePatterns": [
+        "/^component-settings\\.yaml$/"
+      ],
       "matchStrings": [
         "OPEN_TELEMETRY_OPERATOR_IMAGE_VERSION:\\s*\"(?<currentValue>v[0-9.]+)\""
       ],
@@ -138,7 +180,9 @@
     {
       "description": "Update OpenTelemetry Collector image version in component-settings.yaml",
       "customType": "regex",
-      "fileMatch": ["^component-settings\\.yaml$"],
+      "managerFilePatterns": [
+        "/^component-settings\\.yaml$/"
+      ],
       "matchStrings": [
         "OPEN_TELEMETRY_COLLECTOR_IMAGE_VERSION:\\s*\"(?<currentValue>v[0-9.]+)\""
       ],
@@ -149,7 +193,9 @@
     {
       "description": "Update Prometheus Operator image version in component-settings.yaml",
       "customType": "regex",
-      "fileMatch": ["^component-settings\\.yaml$"],
+      "managerFilePatterns": [
+        "/^component-settings\\.yaml$/"
+      ],
       "matchStrings": [
         "PROMETHEUS_OPERATOR_IMAGE_VERSION:\\s*\"(?<currentValue>v[0-9.]+)\""
       ],
@@ -160,7 +206,9 @@
     {
       "description": "Update Prometheus Operator config reloader version in component-settings.yaml",
       "customType": "regex",
-      "fileMatch": ["^component-settings\\.yaml$"],
+      "managerFilePatterns": [
+        "/^component-settings\\.yaml$/"
+      ],
       "matchStrings": [
         "PROMETHEUS_OPERATOR_CONFIG_RELOADER_IMAGE_VERSION:\\s*\"(?<currentValue>v[0-9.]+)\""
       ],
@@ -171,7 +219,9 @@
     {
       "description": "Update Prometheus image version in component-settings.yaml",
       "customType": "regex",
-      "fileMatch": ["^component-settings\\.yaml$"],
+      "managerFilePatterns": [
+        "/^component-settings\\.yaml$/"
+      ],
       "matchStrings": [
         "PROMETHEUS_IMAGE_VERSION:\\s*\"(?<currentValue>v[0-9.]+)\""
       ],
@@ -182,7 +232,9 @@
     {
       "description": "Track Prometheus Operator bundle.yaml version via operator.yaml annotation",
       "customType": "regex",
-      "fileMatch": ["^kustomizations/prometheus-operator/operator\\.yaml$"],
+      "managerFilePatterns": [
+        "/^kustomizations/prometheus-operator/operator\\.yaml$/"
+      ],
       "matchStrings": [
         "operator\\.prometheus\\.io/version:\\s*(?<currentValue>[0-9.]+)"
       ],
@@ -199,6 +251,6 @@
     "github-actions",
     "kubernetes",
     "kustomize",
-    "regex"
+    "custom.regex"
   ]
 }
