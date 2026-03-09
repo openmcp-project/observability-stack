@@ -137,25 +137,32 @@ jobs:
             PR_NUM_CLEAN=${PR_NUM#\#}
 
             # Fetch PR body
-            PR_DATA=$(gh pr view $PR_NUM_CLEAN --json title,body,author,labels 2>/dev/null || echo "")
+            PR_DATA=$(gh pr view $PR_NUM_CLEAN --json title,body,author 2>/dev/null || echo "")
 
             if [ -n "$PR_DATA" ]; then
               PR_TITLE=$(echo "$PR_DATA" | jq -r '.title // empty')
               PR_BODY=$(echo "$PR_DATA" | jq -r '.body // empty')
               PR_AUTHOR=$(echo "$PR_DATA" | jq -r '.author.login // empty')
 
-              # Extract release note from PR body
+              # Extract release note from PR body (template format)
               RELEASE_NOTE=$(echo "$PR_BODY" | sed -n '/```[a-z]* [a-z]*/,/```/p' | sed '1d;$d')
               RELEASE_NOTE_HEADER=$(echo "$PR_BODY" | grep -oE '```[a-z]* [a-z]*' | sed 's/```//' || echo "")
 
-              # Skip if no release note or NONE
-              if [ -z "$RELEASE_NOTE" ] || echo "$RELEASE_NOTE" | grep -qi "NONE"; then
-                continue
-              fi
-
-              # Determine category from header or labels
+              # Determine category and target group
               CATEGORY=$(echo "$RELEASE_NOTE_HEADER" | awk '{print $1}')
               TARGET_GROUP=$(echo "$RELEASE_NOTE_HEADER" | awk '{print $2}')
+
+              # Handle PRs without template
+              if [ -z "$RELEASE_NOTE" ] || echo "$RELEASE_NOTE" | grep -qi "NONE"; then
+                # Check if it's a Renovate/Dependabot PR
+                if echo "$PR_AUTHOR" | grep -qi "renovate\|dependabot"; then
+                  CATEGORY="dependency"
+                  RELEASE_NOTE="$PR_TITLE"
+                else
+                  # Skip PRs without proper template (not Renovate)
+                  continue
+                fi
+              fi
 
               # Format the entry
               ENTRY="- ${RELEASE_NOTE} (#${PR_NUM_CLEAN}) @${PR_AUTHOR}"
