@@ -81,7 +81,7 @@ jobs:
 
       - name: Setup Python
         if: ${{ env.SKIP != 'true' }}
-        uses: actions/setup-python@v5
+        uses: actions/setup-python@v6
         with:
           python-version: '3.11'
           cache: 'pip'
@@ -94,7 +94,7 @@ jobs:
 
       - name: Login to GitHub Container Registry
         if: ${{ env.SKIP != 'true' }}
-        uses: docker/login-action@c94ce9fb468520275223c153574b00df6fe4bcc9 # v3
+        uses: docker/login-action@b45d80f862d83dbcd57f89517bcf500b2ab88fb2 # v4
         with:
           registry: ghcr.io
           username: ${{ github.actor }}
