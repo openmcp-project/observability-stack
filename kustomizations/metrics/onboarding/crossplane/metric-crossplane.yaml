@@ -1,0 +1,31 @@
+apiVersion: metrics.openmcp.cloud/v1alpha1
+kind: FederatedMetric
+metadata:
+  name: crossplane
+spec:
+  name: co_crossplane
+  description: Crossplane Service Provider Metrics
+  target:
+    kind: Crossplane
+    group: crossplane.services.openmcp.cloud
+    version: v1alpha1
+  interval: "1m"
+  dataSinkRef:
+    name: default
+  projections:
+    - name: xp_namespace
+      fieldPath: "metadata.namespace"
+      type: primitive
+
+    - name: xp_name
+      fieldPath: "metadata.name"
+      type: primitive
+
+    - name: xp_phase
+      fieldPath: "status.phase"
+      type: primitive
+      default: Unknown
+
+  federateClusterAccessRef:
+    name: onboarding-cluster
+    namespace: obs-system

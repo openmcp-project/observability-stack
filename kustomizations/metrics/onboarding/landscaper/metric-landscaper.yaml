@@ -1,0 +1,31 @@
+apiVersion: metrics.openmcp.cloud/v1alpha1
+kind: FederatedMetric
+metadata:
+  name: landscaper
+spec:
+  name: co_landscaper
+  description: Landscaper Service Provider Metrics
+  target:
+    kind: Landscaper
+    group: landscaper.services.openmcp.cloud
+    version: v1alpha2
+  interval: "1m"
+  dataSinkRef:
+    name: default
+  projections:
+    - name: ls_namespace
+      fieldPath: "metadata.namespace"
+      type: primitive
+
+    - name: ls_name
+      fieldPath: "metadata.name"
+      type: primitive
+
+    - name: ls_phase
+      fieldPath: "status.phase"
+      type: primitive
+      default: Unknown
+
+  federateClusterAccessRef:
+    name: onboarding-cluster
+    namespace: obs-system
