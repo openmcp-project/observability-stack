@@ -1,6 +1,19 @@
-# Version Injection Usage
+# E2E Test Helpers Usage
 
-The helper functions added to `main_test.go` allow you to inject the VERSION into YAML files before applying them.
+The helper functions added to `main_test.go` allow you to inject VERSION and environment variables into YAML files before applying them.
+
+## Prerequisites
+
+Before running the e2e tests, set the following environment variables with your GitHub credentials:
+
+```bash
+export OCM_GITHUB_USERNAME="your-github-username"
+export OCM_GITHUB_TOKEN="your-github-token"
+```
+
+Note: You can also use `GITHUB_USERNAME` and `GITHUB_TOKEN` as fallbacks, but `OCM_` prefixed variables are recommended to avoid conflicts with Helm.
+
+These will be automatically injected into the `ocm-config-secret.yaml` file during test execution.
 
 ## Available Functions
 
@@ -13,10 +26,10 @@ version, err := getVersion()
 ```
 
 ### 2. `injectVersion(yamlContent string, version string) string`
-Replaces `<VERSION_TO_TESTY>` placeholder with the actual version.
+Replaces `<VERSION_TO_TEST>` placeholder with the actual version.
 
 ```go
-content := "semver: \"<VERSION_TO_TESTY>\""
+content := "semver: \"<VERSION_TO_TEST>\""
 result := injectVersion(content, "v0.0.3")
 // Returns: "semver: \"v0.0.3\""
 ```

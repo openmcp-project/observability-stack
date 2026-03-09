@@ -156,6 +156,23 @@ func injectVersion(yamlContent string, version string) string {
 	return strings.ReplaceAll(yamlContent, "<VERSION_TO_TEST>", version)
 }
 
+// injectEnvVars replaces environment variable placeholders in YAML files
+func injectEnvVars(yamlContent string) string {
+	result := yamlContent
+	// Try OCM-specific env vars first, fallback to generic GITHUB_ vars
+	username := os.Getenv("OCM_GITHUB_USERNAME")
+	if username == "" {
+		username = os.Getenv("GITHUB_USERNAME")
+	}
+	token := os.Getenv("OCM_GITHUB_TOKEN")
+	if token == "" {
+		token = os.Getenv("GITHUB_TOKEN")
+	}
+	result = strings.ReplaceAll(result, "${GITHUB_USERNAME}", username)
+	result = strings.ReplaceAll(result, "${GITHUB_TOKEN}", token)
+	return result
+}
+
 // processYAMLFile reads a YAML file, injects the version, and returns the content
 func processYAMLFile(filePath string) (string, error) {
 	version, err := getVersion()
@@ -168,5 +185,7 @@ func processYAMLFile(filePath string) (string, error) {
 		return "", fmt.Errorf("failed to read file %s: %w", filePath, err)
 	}
 
-	return injectVersion(string(data), version), nil
+	result := injectVersion(string(data), version)
+	result = injectEnvVars(result)
+	return result, nil
 }

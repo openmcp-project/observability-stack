@@ -20,16 +20,26 @@ import (
 	"github.com/openmcp-project/openmcp-testing/pkg/resources"
 )
 
+const (
+	obsStackNamespace = "obs-stack"
+)
+
 func TestObsStack(t *testing.T) {
 	var objectList []k8s.Object
 	obsStackTest := features.New("observability-stack test").
 		Setup(func(ctx context.Context, t *testing.T, c *envconf.Config) context.Context {
-			if _, err := resources.CreateObjectsFromDir(ctx, c, "platform"); err != nil {
-				t.Errorf("failed to create platform cluster objects: %v", err)
+			// create the obs-stack namespace
+			namespace := &corev1.Namespace{}
+			namespace.SetName(obsStackNamespace)
+
+			if err := c.Client().Resources().Create(ctx, namespace); err != nil {
+				t.Errorf("failed to create namespace: %v", err)
 			}
 
+			objectList = append(objectList, namespace)
+
 			// Process and apply onboarding YAML files with version injection (in-memory)
-			files, _ := filepath.Glob("onboarding/*.yaml")
+			files, _ := filepath.Glob("platform/*.yaml")
 			for _, file := range files {
 				content, err := processYAMLFile(file)
 				if err != nil {
@@ -53,8 +63,6 @@ func TestObsStack(t *testing.T) {
 			return ctx
 		}).
 		Assess("verify that the repository, component, resource and deployment are ready", func(ctx context.Context, t *testing.T, config *envconf.Config) context.Context {
-			obsStackNamespace := "obs-stack"
-
 			repository := &ocmv1alpha1.Repository{}
 			repository.SetName("obs-stack-repository")
 			repository.SetNamespace(obsStackNamespace)
