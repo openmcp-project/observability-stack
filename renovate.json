@@ -16,14 +16,6 @@
   "separateMajorMinor": true,
   "separateMinorPatch": false,
   "postUpdateOptions": ["gomodTidy"],
-  "allowedPostUpgradeCommands": [
-    "^curl -fsSL https://raw\\.githubusercontent\\.com/prometheus-operator/prometheus-operator/.*/bundle\\.yaml -o kustomizations/prometheus-operator/operator\\.yaml$",
-    "^sed -i '1i# Source: https://github\\.com/prometheus-operator/prometheus-operator/blob/main/bundle\\.yaml' kustomizations/prometheus-operator/operator\\.yaml$",
-    "^sed -i '2i# This file is tracked by Renovate for automatic updates' kustomizations/prometheus-operator/operator\\.yaml$",
-    "^sed -i '3i# renovate: datasource=github-releases depName=prometheus-operator/prometheus-operator' kustomizations/prometheus-operator/operator\\.yaml$",
-    "^sed -i '4i' kustomizations/prometheus-operator/operator\\.yaml$"
-  ],
-  "allowPostUpgradeCommandTemplating": true,
   "vulnerabilityAlerts": {
     "enabled": true,
     "labels": ["security"]
@@ -49,23 +41,6 @@
       "matchDatasources": ["docker", "github-releases"],
       "matchPackagePatterns": ["prometheus-operator", "^quay\\.io/prometheus/prometheus"],
       "groupName": "prometheus"
-    },
-    {
-      "description": "Prometheus Operator bundle.yaml update with post-upgrade tasks",
-      "matchFiles": ["kustomizations/prometheus-operator/operator.yaml"],
-      "matchDatasources": ["github-releases"],
-      "matchPackageNames": ["prometheus-operator/prometheus-operator"],
-      "postUpgradeTasks": {
-        "commands": [
-          "curl -fsSL https://raw.githubusercontent.com/prometheus-operator/prometheus-operator/{{{newVersion}}}/bundle.yaml -o kustomizations/prometheus-operator/operator.yaml",
-          "sed -i '1i# Source: https://github.com/prometheus-operator/prometheus-operator/blob/main/bundle.yaml' kustomizations/prometheus-operator/operator.yaml",
-          "sed -i '2i# This file is tracked by Renovate for automatic updates' kustomizations/prometheus-operator/operator.yaml",
-          "sed -i '3i# renovate: datasource=github-releases depName=prometheus-operator/prometheus-operator' kustomizations/prometheus-operator/operator.yaml",
-          "sed -i '4i' kustomizations/prometheus-operator/operator.yaml"
-        ],
-        "fileFilters": ["kustomizations/prometheus-operator/operator.yaml"],
-        "executionMode": "update"
-      }
     },
     {
       "description": "Automerge minor and patch updates",
