@@ -11,7 +11,7 @@
   "commitMessagePrefix": "chore(deps):",
   "commitMessageAction": "update",
   "prConcurrentLimit": 5,
-  "prCreation": "not-pending",
+  "prCreation": "immediate",
   "prHourlyLimit": 2,
   "separateMajorMinor": true,
   "separateMinorPatch": false,
