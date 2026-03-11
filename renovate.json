@@ -279,7 +279,7 @@
       "customType": "regex",
       "fileMatch": ["^component-settings\\.yaml$"],
       "matchStrings": [
-        "OCM_K8S_TOOLKIT_VERSION:\\s*\"(?<currentValue>[0-9.]+-[a-f0-9]+)\""
+        "OCM_K8S_TOOLKIT_VERSION:\\s*\"(?<currentValue>[0-9.]+-[a-zA-Z0-9.]+)\""
       ],
       "datasourceTemplate": "docker",
       "depNameTemplate": "ghcr.io/open-component-model/kubernetes/controller/chart",
