@@ -103,7 +103,7 @@ jobs:
       - name: Run E2E tests
         run: |
           cd test/e2e
-          go test -v -timeout 30m ./...
+          stdbuf -oL -eL go test -v -timeout 30m ./...
         env:
           GITHUB_USERNAME: ${{ github.actor }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
