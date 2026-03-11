@@ -135,9 +135,10 @@
       "matchStrings": [
         "OPEN_TELEMETRY_OPERATOR_CHART_VERSION:\\s*\"(?<currentValue>[0-9.]+)\""
       ],
-      "datasourceTemplate": "docker",
-      "depNameTemplate": "ghcr.io/open-telemetry/opentelemetry-helm-charts/opentelemetry-operator",
-      "versioningTemplate": "semver"
+      "datasourceTemplate": "github-releases",
+      "depNameTemplate": "open-telemetry/opentelemetry-helm-charts",
+      "versioningTemplate": "semver",
+      "extractVersionTemplate": "^opentelemetry-operator-(?<version>.*)$"
     },
     {
       "description": "Update OpenTelemetry Operator image version in component-settings.yaml",
