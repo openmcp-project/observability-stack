@@ -29,6 +29,7 @@ jobs:
   build-and-test:
     name: Build Component & Run E2E Tests
     runs-on: ubuntu-latest-8core
+    if: github.event.pull_request.head.repo.full_name == github.repository
     steps:
       - name: Checkout code
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
@@ -77,7 +78,7 @@ jobs:
         uses: docker/login-action@b45d80f862d83dbcd57f89517bcf500b2ab88fb2 # v4
         with:
           registry: ghcr.io
-          username: ${{ github.actor }}
+          username: ${{ github.repository_owner }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Build OCM component
@@ -108,7 +109,7 @@ jobs:
           cd test/e2e
           go test -v -timeout 30m ./...
         env:
-          GITHUB_USERNAME: ${{ github.actor }}
+          GITHUB_USERNAME: ${{ github.repository_owner }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Cleanup
