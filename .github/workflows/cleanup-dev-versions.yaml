@@ -1,0 +1,91 @@
+name: Cleanup Old Dev Versions
+
+# This workflow removes old PR dev versions from the container registry
+# It runs weekly and deletes versions older than 30 days that match the pattern:
+# <version>-pr<number>-<sha> (e.g., v0.0.3-pr123-abc1234)
+
+on:
+  schedule:
+    # Run every Sunday at 2 AM UTC
+    - cron: '0 2 * * 0'
+  workflow_dispatch: # Allow manual triggering
+
+permissions:
+  packages: write # to delete old package versions
+  contents: read
+
+jobs:
+  cleanup:
+    name: Cleanup Old Dev Versions
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Delete old dev versions
+        uses: actions/delete-package-versions@v5
+        with:
+          package-name: 'components/github.com/openmcp-project/observability-stack'
+          package-type: 'container'
+          min-versions-to-keep: 5 # Always keep at least 5 most recent versions
+          delete-only-pre-release-versions: false
+          token: ${{ secrets.GITHUB_TOKEN }}
+          ignore-versions: '^v[0-9]+\.[0-9]+\.[0-9]+$' # Keep official releases (e.g., v0.0.3)
+          delete-only-untagged-versions: false
+
+      - name: Delete old PR versions
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const packageName = 'components/github.com/openmcp-project/observability-stack';
+            const daysToKeep = 30;
+            const cutoffDate = new Date();
+            cutoffDate.setDate(cutoffDate.getDate() - daysToKeep);
+
+            console.log(`Cleaning up PR versions older than ${cutoffDate.toISOString()}`);
+
+            // Get package versions
+            const { data: versions } = await github.rest.packages.getAllPackageVersionsForPackageOwnedByOrg({
+              package_type: 'container',
+              package_name: packageName,
+              org: context.repo.owner,
+              per_page: 100,
+              state: 'active'
+            });
+
+            console.log(`Found ${versions.length} total versions`);
+
+            // Filter for PR versions older than cutoff date
+            const prVersionsToDelete = versions.filter(version => {
+              // Check if this is a PR version (contains -pr)
+              const isPrVersion = version.metadata?.container?.tags?.some(tag =>
+                tag.match(/-pr\d+-[a-f0-9]+$/)
+              );
+
+              if (!isPrVersion) {
+                return false;
+              }
+
+              // Check if older than cutoff
+              const createdAt = new Date(version.created_at);
+              return createdAt < cutoffDate;
+            });
+
+            console.log(`Found ${prVersionsToDelete.length} PR versions to delete`);
+
+            // Delete old PR versions
+            for (const version of prVersionsToDelete) {
+              const tags = version.metadata?.container?.tags || [];
+              console.log(`Deleting version ${version.id} (tags: ${tags.join(', ')}) created at ${version.created_at}`);
+
+              try {
+                await github.rest.packages.deletePackageVersionForOrg({
+                  package_type: 'container',
+                  package_name: packageName,
+                  org: context.repo.owner,
+                  package_version_id: version.id
+                });
+                console.log(`  ✓ Deleted successfully`);
+              } catch (error) {
+                console.log(`  ✗ Failed to delete: ${error.message}`);
+              }
+            }
+
+            console.log('Cleanup completed!');

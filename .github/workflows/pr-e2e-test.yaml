@@ -1,0 +1,116 @@
+name: PR E2E Test
+
+# This workflow runs end-to-end tests on pull requests
+# It builds a dev version of the component, pushes it to ghcr.io,
+# and runs the E2E test suite against it.
+#
+# The dev version format is: <base-version>-pr<pr-number>-<short-sha>
+# Example: v0.0.3-pr123-abc1234
+# Note: We don't use "-dev" prefix because build-component.py
+# automatically appends SHA when "-dev" is present in the version.
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+    branches:
+      - main
+
+permissions:
+  contents: read
+  packages: write # to push dev images to ghcr.io
+  attestations: write
+  id-token: write
+
+env:
+  PYTHON_VERSION: '3.14'
+  GO_VERSION: '1.26'
+
+jobs:
+  build-and-test:
+    name: Build Component & Run E2E Tests
+    runs-on: ubuntu-latest-8core
+    if: github.event.pull_request.head.repo.full_name == github.repository
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        with:
+          fetch-depth: 0
+          submodules: recursive
+
+      - name: Set up dev version
+        id: dev-version
+        run: |
+          # Read the base version from VERSION file
+          BASE_VERSION=$(cat VERSION)
+          # Create a PR version with PR number and short SHA
+          # Note: We avoid using "-dev" prefix because build-component.py
+          # automatically appends SHA when "-dev" is present
+          SHORT_SHA=$(git rev-parse --short HEAD)
+          DEV_VERSION="${BASE_VERSION}-pr${{ github.event.pull_request.number }}-${SHORT_SHA}"
+          echo "Dev version: $DEV_VERSION"
+          echo "dev_version=$DEV_VERSION" >> $GITHUB_OUTPUT
+          echo "short_sha=$SHORT_SHA" >> $GITHUB_OUTPUT
+
+          # Temporarily update VERSION file for build
+          echo "$DEV_VERSION" > VERSION
+
+      - name: Setup OCM
+        uses: open-component-model/ocm-setup-action@main
+
+      - name: Setup Flux CLI
+        uses: fluxcd/flux2/action@main
+
+      - name: Setup Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+          cache: 'pip'
+          cache-dependency-path: 'hack/requirements.txt'
+
+      - name: Install Python dependencies
+        run: |
+          pip install -r hack/requirements.txt
+
+      - name: Login to GitHub Container Registry
+        uses: docker/login-action@b45d80f862d83dbcd57f89517bcf500b2ab88fb2 # v4
+        with:
+          registry: ghcr.io
+          username: ${{ github.repository_owner }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build OCM component
+        run: |
+          python3 -u ./hack/build-component.py
+        env:
+          PYTHONUNBUFFERED: "1"
+
+      - name: Push OCM component to registry
+        run: |
+          python3 -u ./hack/push-component.py
+        env:
+          PYTHONUNBUFFERED: "1"
+
+      - name: Setup Go
+        uses: actions/setup-go@v6
+        with:
+          go-version: ${{ env.GO_VERSION }}
+          cache-dependency-path: test/e2e/go.sum
+
+      - name: Install test dependencies
+        run: |
+          cd test/e2e
+          go mod download
+
+      - name: Run E2E tests
+        run: |
+          cd test/e2e
+          go test -v -timeout 30m ./...
+        env:
+          GITHUB_USERNAME: ${{ github.repository_owner }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Cleanup
+        if: always()
+        run: |
+          # Restore original VERSION file
+          git checkout VERSION

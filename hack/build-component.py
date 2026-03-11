@@ -147,6 +147,7 @@ def build_ocm_component(
 
     # Remove existing CTF directory
     if ctf_dir.exists():
+        print(f"Removing existing CTF directory: {ctf_dir}")
         shutil.rmtree(ctf_dir)
 
     # Build variable arguments for OCM command

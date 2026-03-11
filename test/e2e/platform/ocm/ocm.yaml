@@ -1,0 +1,132 @@
+apiVersion: v1
+kind: Secret
+metadata:
+  name: ocm-config
+  namespace: obs-stack
+stringData:
+  .ocmconfig: |
+    type: generic.config.ocm.software/v1
+    configurations:
+      - type: credentials.config.ocm.software
+        consumers:
+          - identity:
+              type: OCIRepository
+              scheme: https
+              hostname: ghcr.io
+            credentials:
+              - type: Credentials
+                properties:
+                  username: {{.GITHUB_USERNAME}}
+                  password: {{.GITHUB_TOKEN}}
+          - identity:
+              type: OCIRepository
+              hostname: ghcr.io
+            credentials:
+              - type: Credentials
+                properties:
+                  username: {{.GITHUB_USERNAME}}
+                  password: {{.GITHUB_TOKEN}}
+
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: ocm-controller-custom
+rules:
+  - apiGroups:
+      - kro.run
+    resources:
+      - resourcegraphdefinitions
+    verbs:
+      - create
+      - delete
+      - list
+      - patch
+      - update
+      - watch
+  - apiGroups:
+      - apps
+    resources:
+      - deployments
+    verbs:
+      - create
+      - delete
+      - get
+      - list
+      - patch
+      - update
+      - watch
+  - apiGroups:
+      - ""
+    resources:
+      - services
+    verbs:
+      - create
+      - delete
+      - get
+      - list
+      - patch
+      - update
+      - watch
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: ocm-controller-custom
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: ocm-controller-custom
+subjects:
+  - kind: ServiceAccount
+    name: ocm-k8s-toolkit-controller-manager
+    namespace: ocm-k8s-toolkit-system
+---
+apiVersion: delivery.ocm.software/v1alpha1
+kind: Repository
+metadata:
+  name: obs-stack-repository
+  namespace: obs-stack
+spec:
+  repositorySpec:
+    baseUrl: ghcr.io/openmcp-project/components
+    type: OCIRegistry
+  interval: 1m
+  ocmConfig:
+    - kind: Secret
+      name: ocm-config
+---
+apiVersion: delivery.ocm.software/v1alpha1
+kind: Component
+metadata:
+  name: obs-stack-component
+  namespace: obs-stack
+spec:
+  component: github.com/openmcp-project/observability-stack
+  repositoryRef:
+    name: obs-stack-repository
+  semver: "{{.VERSION}}"
+  interval: 1m
+---
+apiVersion: delivery.ocm.software/v1alpha1
+kind: Resource
+metadata:
+  name: resource-graph-definition
+  namespace: obs-stack
+spec:
+  componentRef:
+    name: obs-stack-component
+  resource:
+    byReference:
+      resource:
+        name: resource-graph-definition
+  interval: 1m
+---
+apiVersion: delivery.ocm.software/v1alpha1
+kind: Deployer
+metadata:
+  name: resource-graph-definition
+spec:
+  resourceRef:
+    name: resource-graph-definition
+    namespace: obs-stack

@@ -39,10 +39,10 @@ def push_component(repo_root: Path, components_location: str) -> None:
     repository_context = os.environ.get("REPOSITORY_CONTEXT", "")
     print(f"Pushing component to {repository_context or components_location}...")
 
-    # Execute OCM transfer command
     run_command([
         "ocm", "transfer", "ctf",
         "--copy-resources",
+        "--no-update",
         str(ctf_dir),
         components_location
     ])

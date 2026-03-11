@@ -1,0 +1,27 @@
+apiVersion: kro.run/v1alpha1
+kind: ObservabilityStack
+metadata:
+  name: stack
+  namespace: obs-stack
+spec:
+  componentRef:
+    name: obs-stack-component
+  imagePullSecretRef:
+    name: regcred
+    namespace: obs-stack
+  certManager:
+    namespace: cert-manager-system
+  metricsOperator:
+    namespace: metrics-operator-system
+  metrics:
+    namespace: metrics-operator-system
+  openTelemetryOperator:
+    namespace: open-telemetry-operator-system
+  openTelemetryCollector:
+    namespace: open-telemetry-collector-system
+  prometheusOperator:
+    namespace: prometheus-operator-system
+  prometheus:
+    namespace: prometheus-system
+    dashboard:
+      port: 8443
