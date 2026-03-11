@@ -98,9 +98,9 @@
       "description": "Group all E2E test dependency updates together",
       "matchFileNames": ["component-settings.yaml"],
       "matchPackagePatterns": [
-        "openmcp-project/openmcp",
-        "kubernetes-sigs/kro",
-        "open-component-model/open-component-model"
+        "openmcp-project/images",
+        "kro/charts/kro",
+        "open-component-model/kubernetes"
       ],
       "groupName": "e2e-test-dependencies",
       "automerge": false
@@ -228,33 +228,39 @@
       "customType": "regex",
       "fileMatch": ["^component-settings\\.yaml$"],
       "matchStrings": [
-        "OPENMCP_OPERATOR_VERSION:\\s*\"(?<currentValue>v[0-9.]+)\""
+        "OPENMCP_OPERATOR_VERSION:\\s*\"v(?<currentValue>[0-9.]+)\""
       ],
       "datasourceTemplate": "docker",
       "depNameTemplate": "ghcr.io/openmcp-project/images/openmcp-operator",
-      "versioningTemplate": "semver"
+      "versioningTemplate": "semver",
+      "extractVersionTemplate": "^v?(?<version>.*)$",
+      "autoReplaceStringTemplate": "OPENMCP_OPERATOR_VERSION: \"v{{{newValue}}}\""
     },
     {
       "description": "Update Cluster Provider Kind version in component-settings.yaml (E2E test dependency)",
       "customType": "regex",
       "fileMatch": ["^component-settings\\.yaml$"],
       "matchStrings": [
-        "CLUSTER_PROVIDER_KIND_VERSION:\\s*\"(?<currentValue>v[0-9.]+)\""
+        "CLUSTER_PROVIDER_KIND_VERSION:\\s*\"v(?<currentValue>[0-9.]+)\""
       ],
       "datasourceTemplate": "docker",
       "depNameTemplate": "ghcr.io/openmcp-project/images/cluster-provider-kind",
-      "versioningTemplate": "semver"
+      "versioningTemplate": "semver",
+      "extractVersionTemplate": "^v?(?<version>.*)$",
+      "autoReplaceStringTemplate": "CLUSTER_PROVIDER_KIND_VERSION: \"v{{{newValue}}}\""
     },
     {
       "description": "Update Platform Service Gateway version in component-settings.yaml (E2E test dependency)",
       "customType": "regex",
       "fileMatch": ["^component-settings\\.yaml$"],
       "matchStrings": [
-        "PLATFORM_SERVICE_GATEWAY_VERSION:\\s*\"(?<currentValue>v[0-9.]+)\""
+        "PLATFORM_SERVICE_GATEWAY_VERSION:\\s*\"v(?<currentValue>[0-9.]+)\""
       ],
       "datasourceTemplate": "docker",
       "depNameTemplate": "ghcr.io/openmcp-project/images/platform-service-gateway",
-      "versioningTemplate": "semver"
+      "versioningTemplate": "semver",
+      "extractVersionTemplate": "^v?(?<version>.*)$",
+      "autoReplaceStringTemplate": "PLATFORM_SERVICE_GATEWAY_VERSION: \"v{{{newValue}}}\""
     },
     {
       "description": "Update KRO version in component-settings.yaml (E2E test dependency)",
