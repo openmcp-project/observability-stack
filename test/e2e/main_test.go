@@ -9,6 +9,7 @@ import (
 	"path/filepath"
 	"strings"
 	"testing"
+	"text/template"
 
 	"k8s.io/klog/v2"
 	"sigs.k8s.io/e2e-framework/klient/decoder"
@@ -79,29 +80,38 @@ func getVersion() (string, error) {
 	return strings.TrimSpace(string(data)), nil
 }
 
-// injectVersion replaces version placeholders in YAML files
-func injectVersion(yamlContent string, version string) string {
-	return strings.ReplaceAll(yamlContent, "<VERSION_TO_TEST>", version)
+// processYAMLContent processes YAML content by executing it as a Go template.
+// It supports {{.VERSION}} for version and {{.VAR_NAME}} for environment variables.
+func processYAMLContent(yamlContent string, version string) (string, error) {
+	// Create a data map with version and all environment variables
+	data := make(map[string]string)
+
+	// Add version to the data map
+	data["VERSION"] = version
+
+	// Add all environment variables to the data map
+	for _, env := range os.Environ() {
+		parts := strings.SplitN(env, "=", 2)
+		if len(parts) == 2 {
+			data[parts[0]] = parts[1]
+		}
+	}
+
+	// Create and execute template directly
+	tmpl, err := template.New("yaml").Parse(yamlContent)
+	if err != nil {
+		return "", fmt.Errorf("failed to parse template: %w", err)
+	}
+
+	var buf bytes.Buffer
+	if err := tmpl.Execute(&buf, data); err != nil {
+		return "", fmt.Errorf("failed to execute template: %w", err)
+	}
+
+	return buf.String(), nil
 }
 
-// injectEnvVars replaces environment variable placeholders in YAML files
-func injectEnvVars(yamlContent string) string {
-	result := yamlContent
-	// Try OCM-specific env vars first, fallback to generic GITHUB_ vars
-	username := os.Getenv("OCM_GITHUB_USERNAME")
-	if username == "" {
-		username = os.Getenv("GITHUB_USERNAME")
-	}
-	token := os.Getenv("OCM_GITHUB_TOKEN")
-	if token == "" {
-		token = os.Getenv("GITHUB_TOKEN")
-	}
-	result = strings.ReplaceAll(result, "${GITHUB_USERNAME}", username)
-	result = strings.ReplaceAll(result, "${GITHUB_TOKEN}", token)
-	return result
-}
-
-// processYAMLFile reads a YAML file, injects the version, and returns the content
+// processYAMLFile reads a YAML file, processes version and environment variables, and returns the content
 func processYAMLFile(filePath string) (string, error) {
 	version, err := getVersion()
 	if err != nil {
@@ -113,8 +123,11 @@ func processYAMLFile(filePath string) (string, error) {
 		return "", fmt.Errorf("failed to read file %s: %w", filePath, err)
 	}
 
-	result := injectVersion(string(data), version)
-	result = injectEnvVars(result)
+	result, err := processYAMLContent(string(data), version)
+	if err != nil {
+		return "", fmt.Errorf("failed to process YAML content: %w", err)
+	}
+
 	return result, nil
 }
 
@@ -150,4 +163,3 @@ func applyYAMLFilesFromGlob(ctx context.Context, t *testing.T, cfg *envconf.Conf
 
 	return objectList, nil
 }
-
