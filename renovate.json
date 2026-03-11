@@ -40,12 +40,13 @@
       "description": "Group all OpenTelemetry updates together",
       "matchDatasources": [
         "docker",
-        "helm"
+        "github-releases"
       ],
       "groupName": "opentelemetry",
       "matchPackageNames": [
         "/opentelemetry-operator/",
-        "/opentelemetry-collector/"
+        "/opentelemetry-collector/",
+        "/opentelemetry-helm-charts/"
       ]
     },
     {
