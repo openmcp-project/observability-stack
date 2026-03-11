@@ -12,7 +12,7 @@
   "commitMessageAction": "update",
   "prConcurrentLimit": 5,
   "prCreation": "immediate",
-  "prHourlyLimit": 2,
+  "prHourlyLimit": 5,
   "separateMajorMinor": true,
   "separateMinorPatch": false,
   "postUpdateOptions": [
