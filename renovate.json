@@ -10,10 +10,6 @@
   "semanticCommits": "enabled",
   "commitMessagePrefix": "chore(deps):",
   "commitMessageAction": "update",
-  "timezone": "UTC",
-  "schedule": [
-    "before 6am every weekday"
-  ],
   "prConcurrentLimit": 5,
   "prCreation": "not-pending",
   "prHourlyLimit": 2,
