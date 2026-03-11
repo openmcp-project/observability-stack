@@ -85,35 +85,20 @@
       "groupName": "github-actions",
       "automerge": true,
       "automergeType": "pr"
+    },
+    {
+      "description": "Disable digest pinning for custom regex managers",
+      "matchManagers": [
+        "custom.regex"
+      ],
+      "pinDigests": false
     }
   ],
   "customManagers": [
     {
-      "description": "Update versions in component-settings.yaml",
-      "customType": "regex",
-      "managerFilePatterns": [
-        "/^component-settings\\.yaml$/"
-      ],
-      "matchStrings": [
-        "# cert-manager\\s*\\n\\s*CERT_MANAGER_VERSION:\\s*\"(?<currentValue>v[0-9.]+)\"",
-        "# metrics-operator\\s*\\n\\s*METRICS_OPERATOR_VERSION:\\s*\"(?<currentValue>v[0-9.]+)\"",
-        "# Kube RBAC Proxy\\s*\\n\\s*KUBE_RBAC_PROXY_VERSION:\\s*\"(?<currentValue>v[0-9.]+)\"",
-        "# open telemetry operator and collector\\s*\\n\\s*OPEN_TELEMETRY_OPERATOR_CHART_VERSION:\\s*\"(?<currentValue>[0-9.]+)\"",
-        "OPEN_TELEMETRY_OPERATOR_IMAGE_VERSION:\\s*\"(?<currentValue>v[0-9.]+)\"",
-        "OPEN_TELEMETRY_COLLECTOR_IMAGE_VERSION:\\s*\"(?<currentValue>v[0-9.]+)\"",
-        "# prometheus operator\\s*\\n\\s*PROMETHEUS_OPERATOR_IMAGE_VERSION:\\s*\"(?<currentValue>v[0-9.]+)\"",
-        "PROMETHEUS_OPERATOR_CONFIG_RELOADER_IMAGE_VERSION:\\s*\"(?<currentValue>v[0-9.]+)\"",
-        "# prometheus\\s*\\n\\s*PROMETHEUS_IMAGE_VERSION:\\s*\"(?<currentValue>v[0-9.]+)\""
-      ],
-      "datasourceTemplate": "github-releases",
-      "depNameTemplate": "{{#if (containsString currentValue 'CERT_MANAGER')}}cert-manager/cert-manager{{/if}}{{#if (containsString currentValue 'METRICS_OPERATOR')}}openmcp-project/metrics-operator{{/if}}{{#if (containsString currentValue 'KUBE_RBAC_PROXY')}}brancz/kube-rbac-proxy{{/if}}{{#if (containsString currentValue 'PROMETHEUS_OPERATOR')}}prometheus-operator/prometheus-operator{{/if}}{{#if (containsString currentValue 'PROMETHEUS_IMAGE')}}prometheus/prometheus{{/if}}"
-    },
-    {
       "description": "Update cert-manager version in component-settings.yaml",
       "customType": "regex",
-      "managerFilePatterns": [
-        "/^component-settings\\.yaml$/"
-      ],
+      "fileMatch": ["^component-settings\\.yaml$"],
       "matchStrings": [
         "CERT_MANAGER_VERSION:\\s*\"(?<currentValue>v[0-9.]+)\""
       ],
@@ -124,9 +109,7 @@
     {
       "description": "Update metrics-operator version in component-settings.yaml",
       "customType": "regex",
-      "managerFilePatterns": [
-        "/^component-settings\\.yaml$/"
-      ],
+      "fileMatch": ["^component-settings\\.yaml$"],
       "matchStrings": [
         "METRICS_OPERATOR_VERSION:\\s*\"(?<currentValue>v[0-9.]+)\""
       ],
@@ -137,9 +120,7 @@
     {
       "description": "Update kube-rbac-proxy version in component-settings.yaml",
       "customType": "regex",
-      "managerFilePatterns": [
-        "/^component-settings\\.yaml$/"
-      ],
+      "fileMatch": ["^component-settings\\.yaml$"],
       "matchStrings": [
         "KUBE_RBAC_PROXY_VERSION:\\s*\"(?<currentValue>v[0-9.]+)\""
       ],
@@ -150,9 +131,7 @@
     {
       "description": "Update OpenTelemetry Operator chart version in component-settings.yaml",
       "customType": "regex",
-      "managerFilePatterns": [
-        "/^component-settings\\.yaml$/"
-      ],
+      "fileMatch": ["^component-settings\\.yaml$"],
       "matchStrings": [
         "OPEN_TELEMETRY_OPERATOR_CHART_VERSION:\\s*\"(?<currentValue>[0-9.]+)\""
       ],
@@ -163,9 +142,7 @@
     {
       "description": "Update OpenTelemetry Operator image version in component-settings.yaml",
       "customType": "regex",
-      "managerFilePatterns": [
-        "/^component-settings\\.yaml$/"
-      ],
+      "fileMatch": ["^component-settings\\.yaml$"],
       "matchStrings": [
         "OPEN_TELEMETRY_OPERATOR_IMAGE_VERSION:\\s*\"(?<currentValue>v[0-9.]+)\""
       ],
@@ -176,9 +153,7 @@
     {
       "description": "Update OpenTelemetry Collector image version in component-settings.yaml",
       "customType": "regex",
-      "managerFilePatterns": [
-        "/^component-settings\\.yaml$/"
-      ],
+      "fileMatch": ["^component-settings\\.yaml$"],
       "matchStrings": [
         "OPEN_TELEMETRY_COLLECTOR_IMAGE_VERSION:\\s*\"(?<currentValue>v[0-9.]+)\""
       ],
@@ -189,9 +164,7 @@
     {
       "description": "Update Prometheus Operator image version in component-settings.yaml",
       "customType": "regex",
-      "managerFilePatterns": [
-        "/^component-settings\\.yaml$/"
-      ],
+      "fileMatch": ["^component-settings\\.yaml$"],
       "matchStrings": [
         "PROMETHEUS_OPERATOR_IMAGE_VERSION:\\s*\"(?<currentValue>v[0-9.]+)\""
       ],
@@ -202,9 +175,7 @@
     {
       "description": "Update Prometheus Operator config reloader version in component-settings.yaml",
       "customType": "regex",
-      "managerFilePatterns": [
-        "/^component-settings\\.yaml$/"
-      ],
+      "fileMatch": ["^component-settings\\.yaml$"],
       "matchStrings": [
         "PROMETHEUS_OPERATOR_CONFIG_RELOADER_IMAGE_VERSION:\\s*\"(?<currentValue>v[0-9.]+)\""
       ],
@@ -215,9 +186,7 @@
     {
       "description": "Update Prometheus image version in component-settings.yaml",
       "customType": "regex",
-      "managerFilePatterns": [
-        "/^component-settings\\.yaml$/"
-      ],
+      "fileMatch": ["^component-settings\\.yaml$"],
       "matchStrings": [
         "PROMETHEUS_IMAGE_VERSION:\\s*\"(?<currentValue>v[0-9.]+)\""
       ],
@@ -228,9 +197,7 @@
     {
       "description": "Track Prometheus Operator bundle.yaml version via operator.yaml annotation",
       "customType": "regex",
-      "managerFilePatterns": [
-        "/^kustomizations/prometheus-operator/operator\\.yaml$/"
-      ],
+      "fileMatch": ["^kustomizations/prometheus-operator/operator\\.yaml$"],
       "matchStrings": [
         "operator\\.prometheus\\.io/version:\\s*(?<currentValue>[0-9.]+)"
       ],
@@ -238,6 +205,61 @@
       "depNameTemplate": "prometheus-operator/prometheus-operator",
       "versioningTemplate": "semver",
       "extractVersionTemplate": "^v(?<version>.*)$"
+    },
+    {
+      "description": "Update OpenMCP Operator version in component-settings.yaml (E2E test dependency)",
+      "customType": "regex",
+      "fileMatch": ["^component-settings\\.yaml$"],
+      "matchStrings": [
+        "OPENMCP_OPERATOR_VERSION:\\s*\"(?<currentValue>v[0-9.]+)\""
+      ],
+      "datasourceTemplate": "docker",
+      "depNameTemplate": "ghcr.io/openmcp-project/images/openmcp-operator",
+      "versioningTemplate": "semver"
+    },
+    {
+      "description": "Update Cluster Provider Kind version in component-settings.yaml (E2E test dependency)",
+      "customType": "regex",
+      "fileMatch": ["^component-settings\\.yaml$"],
+      "matchStrings": [
+        "CLUSTER_PROVIDER_KIND_VERSION:\\s*\"(?<currentValue>v[0-9.]+)\""
+      ],
+      "datasourceTemplate": "docker",
+      "depNameTemplate": "ghcr.io/openmcp-project/images/cluster-provider-kind",
+      "versioningTemplate": "semver"
+    },
+    {
+      "description": "Update Platform Service Gateway version in component-settings.yaml (E2E test dependency)",
+      "customType": "regex",
+      "fileMatch": ["^component-settings\\.yaml$"],
+      "matchStrings": [
+        "PLATFORM_SERVICE_GATEWAY_VERSION:\\s*\"(?<currentValue>v[0-9.]+)\""
+      ],
+      "datasourceTemplate": "docker",
+      "depNameTemplate": "ghcr.io/openmcp-project/images/platform-service-gateway",
+      "versioningTemplate": "semver"
+    },
+    {
+      "description": "Update KRO version in component-settings.yaml (E2E test dependency)",
+      "customType": "regex",
+      "fileMatch": ["^component-settings\\.yaml$"],
+      "matchStrings": [
+        "KRO_VERSION:\\s*\"(?<currentValue>[0-9.]+)\""
+      ],
+      "datasourceTemplate": "docker",
+      "depNameTemplate": "registry.k8s.io/kro/charts/kro",
+      "versioningTemplate": "semver"
+    },
+    {
+      "description": "Update OCM K8s Toolkit version in component-settings.yaml (E2E test dependency)",
+      "customType": "regex",
+      "fileMatch": ["^component-settings\\.yaml$"],
+      "matchStrings": [
+        "OCM_K8S_TOOLKIT_VERSION:\\s*\"(?<currentValue>[0-9.]+-[a-f0-9]+)\""
+      ],
+      "datasourceTemplate": "docker",
+      "depNameTemplate": "ghcr.io/open-component-model/kubernetes/controller/chart",
+      "versioningTemplate": "loose"
     }
   ],
   "ignoreDeps": [],
