@@ -70,14 +70,8 @@ jobs:
         run: |
           pip install -r hack/requirements.txt
 
-      - name: Cache OCM CTF directory
-        id: cache-ctf
-        uses: actions/cache@v4
-        with:
-          path: ctf
-          key: ${{ runner.os }}-ocm-ctf-${{ hashFiles('component-constructor.yaml', 'component-settings.yaml', 'kustomizations/**', 'resourcegraphdefinitions/**') }}
-          restore-keys: |
-            ${{ runner.os }}-ocm-ctf-
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
 
       - name: Login to GitHub Container Registry
         uses: docker/login-action@b45d80f862d83dbcd57f89517bcf500b2ab88fb2 # v4
@@ -87,7 +81,6 @@ jobs:
           password: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Build OCM component
-        if: steps.cache-ctf.outputs.cache-hit != 'true'
         run: |
           python3 -u ./hack/build-component.py
         env:
