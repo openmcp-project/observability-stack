@@ -58,18 +58,18 @@ func (k *Kro) Install(ctx context.Context, cfg *envconf.Config) error {
 		return fmt.Errorf("failed to initialize Helm action config: %w", err)
 	}
 
-	// Create install action
-	client := action.NewInstall(actionConfig)
-	client.Namespace = namespace
-	client.ReleaseName = releaseName
-	client.CreateNamespace = true
-
-	// Set up registry client for OCI
+	// Set up registry client for OCI (must be done before LocateChart)
 	registryClient, err := registry.NewClient()
 	if err != nil {
 		return fmt.Errorf("failed to create registry client: %w", err)
 	}
 	actionConfig.RegistryClient = registryClient
+
+	// Create install action
+	client := action.NewInstall(actionConfig)
+	client.Namespace = namespace
+	client.ReleaseName = releaseName
+	client.CreateNamespace = true
 
 	// Load the chart from OCI registry
 	chartRef := fmt.Sprintf("oci://registry.k8s.io/kro/charts/kro")

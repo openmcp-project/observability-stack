@@ -1,6 +1,8 @@
 package e2e
 
 import (
+	"bytes"
+	"context"
 	"flag"
 	"fmt"
 	"os"
@@ -9,14 +11,17 @@ import (
 	"testing"
 
 	"k8s.io/klog/v2"
+	"sigs.k8s.io/e2e-framework/klient/decoder"
+	"sigs.k8s.io/e2e-framework/klient/k8s"
 	"sigs.k8s.io/e2e-framework/pkg/env"
 	"sigs.k8s.io/e2e-framework/pkg/envconf"
 
+	localextensions "github.com/openmcp-project/observability-stack/extensions"
+	"github.com/openmcp-project/openmcp-testing/pkg/platformservices"
 	"github.com/openmcp-project/openmcp-testing/pkg/providers"
 	"github.com/openmcp-project/openmcp-testing/pkg/setup"
 	"github.com/openmcp-project/openmcp-testing/pkg/setup/extensions"
 	"github.com/openmcp-project/openmcp-testing/pkg/setup/extensions/fluxcd"
-	localextensions "github.com/openmcp-project/observability-stack/extensions"
 )
 
 var testenv env.Environment
@@ -35,6 +40,13 @@ func TestMain(m *testing.M) {
 			{
 				Name:  "kind",
 				Image: "ghcr.io/openmcp-project/images/cluster-provider-kind:v0.0.15",
+			},
+		},
+		PlatformServices: []platformservices.PlatformServiceSetup{
+			{
+				Name:                      "gateway",
+				Image:                     "ghcr.io/openmcp-project/images/platform-service-gateway:v0.0.9",
+				PlatformServiceConfigsDir: "platform/gateway",
 			},
 		},
 		Extensions: []extensions.Extension{
@@ -105,3 +117,37 @@ func processYAMLFile(filePath string) (string, error) {
 	result = injectEnvVars(result)
 	return result, nil
 }
+
+// applyYAMLFilesFromGlob processes and applies YAML files matching a glob pattern to the cluster.
+// It returns a list of created objects and any error encountered.
+func applyYAMLFilesFromGlob(ctx context.Context, t *testing.T, cfg *envconf.Config, pattern string) ([]k8s.Object, error) {
+	var objectList []k8s.Object
+
+	files, err := filepath.Glob(pattern)
+	if err != nil {
+		return nil, fmt.Errorf("failed to glob pattern %s: %w", pattern, err)
+	}
+
+	for _, file := range files {
+		content, err := processYAMLFile(file)
+		if err != nil {
+			return nil, fmt.Errorf("failed to process %s: %w", file, err)
+		}
+
+		// Decode and create objects from the processed YAML content
+		objs, err := decoder.DecodeAll(ctx, bytes.NewReader([]byte(content)))
+		if err != nil {
+			return nil, fmt.Errorf("failed to decode %s: %w", file, err)
+		}
+
+		for _, obj := range objs {
+			if err := cfg.Client().Resources().Create(ctx, obj); err != nil {
+				return nil, fmt.Errorf("failed to create object from %s: %w", file, err)
+			}
+			objectList = append(objectList, obj)
+		}
+	}
+
+	return objectList, nil
+}
+
