@@ -20,17 +20,6 @@ jobs:
     name: Cleanup Old Dev Versions
     runs-on: ubuntu-24.04
     steps:
-      - name: Delete old dev versions
-        uses: actions/delete-package-versions@v5
-        with:
-          package-name: 'components/github.com/openmcp-project/observability-stack'
-          package-type: 'container'
-          min-versions-to-keep: 5 # Always keep at least 5 most recent versions
-          delete-only-pre-release-versions: false
-          token: ${{ secrets.GITHUB_TOKEN }}
-          ignore-versions: '^v[0-9]+\.[0-9]+\.[0-9]+$' # Keep official releases (e.g., v0.0.3)
-          delete-only-untagged-versions: false
-
       - name: Delete old PR and dev versions
         uses: actions/github-script@v7
         with:
