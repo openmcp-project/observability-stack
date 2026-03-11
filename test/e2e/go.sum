@@ -271,6 +271,8 @@ github.com/opencontainers/image-spec v1.1.1 h1:y0fUlFfIZhPF1W537XOLg0/fcx6zcHCJw
 github.com/opencontainers/image-spec v1.1.1/go.mod h1:qpqAh3Dmcf36wStyyWU+kCeDgrGnAve2nCC8+7h8Q0M=
 github.com/openmcp-project/openmcp-operator/api v0.18.1 h1:jBc0b8FxgDZR+8l+wkrLaCj/h31RYJTkdio+yIHH8hU=
 github.com/openmcp-project/openmcp-operator/api v0.18.1/go.mod h1:eI3caa7YYHXV3eD0BD/vfQLb2epxOBRgdDK4T2xr12w=
+github.com/openmcp-project/openmcp-testing v0.2.1-0.20260311063238-9abbc2e68d1e h1:F9ROfVyrYUz7GMyijttxwK3nT4yGj2U2u32v8b5QlTk=
+github.com/openmcp-project/openmcp-testing v0.2.1-0.20260311063238-9abbc2e68d1e/go.mod h1:2latEOjNRYIFLtKPzvbcfesz965goXfOc81aLJU9Ab0=
 github.com/pelletier/go-toml v1.9.5 h1:4yBQzkHv+7BHq2PQUZF3Mx0IYxG7LsP222s7Agd3ve8=
 github.com/pelletier/go-toml v1.9.5/go.mod h1:u1nR/EPcESfeI/szUZKdtJ0xRNbUoANCkoOuaOx1Y+c=
 github.com/peterbourgon/diskv v2.0.1+incompatible h1:UBdAOUP5p4RWqPBg048CAvpKN+vxiaj6gdUUzhl4XmI=

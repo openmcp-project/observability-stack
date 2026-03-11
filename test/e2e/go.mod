@@ -4,7 +4,7 @@ go 1.26.1
 
 require (
 	github.com/kubernetes-sigs/kro v0.8.5
-	github.com/openmcp-project/openmcp-testing v0.2.0
+	github.com/openmcp-project/openmcp-testing v0.2.1-0.20260311063238-9abbc2e68d1e
 	helm.sh/helm/v3 v3.20.0
 	k8s.io/api v0.35.2
 	k8s.io/apimachinery v0.35.2
@@ -164,7 +164,4 @@ require (
 	sigs.k8s.io/structured-merge-diff/v6 v6.3.2 // indirect
 )
 
-replace (
-	github.com/openmcp-project/openmcp-testing => /Users/d064470/SAPDevelop/work/go/src/github.com/openmcp-project/openmcp-testing
-	ocm.software/open-component-model/kubernetes/controller => github.com/open-component-model/open-component-model/kubernetes/controller v0.0.0-20260309125853-5b3f0348ad58
-)
+replace ocm.software/open-component-model/kubernetes/controller => github.com/open-component-model/open-component-model/kubernetes/controller v0.0.0-20260309125853-5b3f0348ad58
