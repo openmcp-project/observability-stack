@@ -1,8 +1,9 @@
 name: Cleanup Old Dev Versions
 
-# This workflow removes old PR dev versions from the container registry
-# It runs weekly and deletes versions older than 30 days that match the pattern:
-# <version>-pr<number>-<sha> (e.g., v0.0.3-pr123-abc1234)
+# This workflow removes old dev versions from the container registry
+# It runs weekly and deletes versions older than 30 days that match the patterns:
+# - PR versions: <version>-pr<number>-<sha> (e.g., v0.0.3-pr123-abc1234)
+# - Main branch dev versions: <version>-dev-<sha> (e.g., v0.0.3-dev-abc1234)
 
 on:
   schedule:
@@ -30,7 +31,7 @@ jobs:
           ignore-versions: '^v[0-9]+\.[0-9]+\.[0-9]+$' # Keep official releases (e.g., v0.0.3)
           delete-only-untagged-versions: false
 
-      - name: Delete old PR versions
+      - name: Delete old PR and dev versions
         uses: actions/github-script@v7
         with:
           script: |
@@ -39,7 +40,7 @@ jobs:
             const cutoffDate = new Date();
             cutoffDate.setDate(cutoffDate.getDate() - daysToKeep);
 
-            console.log(`Cleaning up PR versions older than ${cutoffDate.toISOString()}`);
+            console.log(`Cleaning up dev versions older than ${cutoffDate.toISOString()}`);
 
             // Get package versions
             const { data: versions } = await github.rest.packages.getAllPackageVersionsForPackageOwnedByOrg({
@@ -52,14 +53,14 @@ jobs:
 
             console.log(`Found ${versions.length} total versions`);
 
-            // Filter for PR versions older than cutoff date
-            const prVersionsToDelete = versions.filter(version => {
-              // Check if this is a PR version (contains -pr)
-              const isPrVersion = version.metadata?.container?.tags?.some(tag =>
-                tag.match(/-pr\d+-[a-f0-9]+$/)
+            // Filter for dev versions (PR and main branch) older than cutoff date
+            const devVersionsToDelete = versions.filter(version => {
+              // Check if this is a dev version (contains -pr or -dev)
+              const isDevVersion = version.metadata?.container?.tags?.some(tag =>
+                tag.match(/-pr\d+-[a-f0-9]+$/) || tag.match(/-dev-[a-f0-9]+$/)
               );
 
-              if (!isPrVersion) {
+              if (!isDevVersion) {
                 return false;
               }
 
@@ -68,10 +69,10 @@ jobs:
               return createdAt < cutoffDate;
             });
 
-            console.log(`Found ${prVersionsToDelete.length} PR versions to delete`);
+            console.log(`Found ${devVersionsToDelete.length} dev versions to delete`);
 
-            // Delete old PR versions
-            for (const version of prVersionsToDelete) {
+            // Delete old dev versions
+            for (const version of devVersionsToDelete) {
               const tags = version.metadata?.container?.tags || [];
               console.log(`Deleting version ${version.id} (tags: ${tags.join(', ')}) created at ${version.created_at}`);
 
