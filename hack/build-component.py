@@ -145,8 +145,17 @@ def build_ocm_component(
 
     ctf_dir = repo_root / "ctf"
 
+    # Check if we should use cached CTF directory
+    use_cache = os.environ.get("USE_CTF_CACHE", "").lower() == "true"
+
+    if ctf_dir.exists() and use_cache:
+        print(f"Using cached CTF directory: {ctf_dir}")
+        print("Skipping build as cache is available")
+        return
+
     # Remove existing CTF directory
     if ctf_dir.exists():
+        print(f"Removing existing CTF directory: {ctf_dir}")
         shutil.rmtree(ctf_dir)
 
     # Build variable arguments for OCM command

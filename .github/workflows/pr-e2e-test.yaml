@@ -73,16 +73,14 @@ jobs:
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
 
-      - name: Cache Docker layers and OCM registry
+      - name: Cache OCM CTF directory
+        id: cache-ctf
         uses: actions/cache@v4
         with:
-          path: |
-            ~/.docker
-            ~/.ocm
-            /var/lib/docker
-          key: ${{ runner.os }}-docker-ocm-${{ hashFiles('component-constructor.yaml', 'component-settings.yaml') }}
+          path: ctf
+          key: ${{ runner.os }}-ocm-ctf-${{ hashFiles('component-constructor.yaml', 'component-settings.yaml', 'VERSION', 'kustomizations/**', 'resourcegraphdefinitions/**') }}
           restore-keys: |
-            ${{ runner.os }}-docker-ocm-
+            ${{ runner.os }}-ocm-ctf-
 
       - name: Login to GitHub Container Registry
         uses: docker/login-action@b45d80f862d83dbcd57f89517bcf500b2ab88fb2 # v4
@@ -91,33 +89,12 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Pre-pull images in parallel
-        run: |
-          # Extract versions from component-settings.yaml
-          eval $(grep -E '^[A-Z_]+: ' component-settings.yaml | sed 's/: /=/g' | sed 's/"//g')
-
-          # Build list of images with versions from settings
-          cat << EOF | xargs -P 8 -n 1 docker pull || true
-          quay.io/jetstack/charts/cert-manager:${CERT_MANAGER_VERSION}
-          quay.io/jetstack/cert-manager-controller:${CERT_MANAGER_VERSION}
-          quay.io/jetstack/cert-manager-webhook:${CERT_MANAGER_VERSION}
-          quay.io/jetstack/cert-manager-cainjector:${CERT_MANAGER_VERSION}
-          quay.io/jetstack/cert-manager-acmesolver:${CERT_MANAGER_VERSION}
-          quay.io/jetstack/cert-manager-startupapicheck:${CERT_MANAGER_VERSION}
-          quay.io/brancz/kube-rbac-proxy:${KUBE_RBAC_PROXY_VERSION}
-          ghcr.io/open-telemetry/opentelemetry-helm-charts/opentelemetry-operator:${OPEN_TELEMETRY_OPERATOR_CHART_VERSION}
-          ghcr.io/open-telemetry/opentelemetry-operator/opentelemetry-operator:${OPEN_TELEMETRY_OPERATOR_IMAGE_VERSION}
-          docker.io/otel/opentelemetry-collector-contrib:${OPEN_TELEMETRY_COLLECTOR_IMAGE_VERSION#v}
-          quay.io/prometheus-operator/prometheus-operator:${PROMETHEUS_OPERATOR_IMAGE_VERSION}
-          quay.io/prometheus-operator/prometheus-config-reloader:${PROMETHEUS_OPERATOR_CONFIG_RELOADER_IMAGE_VERSION}
-          quay.io/prometheus/prometheus:${PROMETHEUS_IMAGE_VERSION}
-          EOF
-
       - name: Build OCM component
         run: |
           python3 -u ./hack/build-component.py
         env:
           PYTHONUNBUFFERED: "1"
+          USE_CTF_CACHE: ${{ steps.cache-ctf.outputs.cache-hit }}
 
       - name: Push OCM component to registry
         run: |
