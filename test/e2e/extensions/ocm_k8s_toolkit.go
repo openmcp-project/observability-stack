@@ -34,7 +34,7 @@ func (t *OCMK8sToolkit) Name() string {
 func (t *OCMK8sToolkit) Install(ctx context.Context, cfg *envconf.Config) error {
 	chartVersion := t.ChartVersion
 	if chartVersion == "" {
-		chartVersion = "0.0.0-5b3f034"
+		return fmt.Errorf("ChartVersion is required for OCM K8s Toolkit installation")
 	}
 
 	namespace := t.Namespace

@@ -29,31 +29,47 @@ var testenv env.Environment
 
 func TestMain(m *testing.M) {
 	initLogging()
+
+	// Load component settings from component-settings.yaml
+	settings, err := LoadComponentSettings()
+	if err != nil {
+		klog.Fatalf("Failed to load component settings: %v", err)
+	}
+
+	// Set environment variables from settings so they can be used throughout the test
+	if err := SetEnvFromSettings(settings); err != nil {
+		klog.Fatalf("Failed to set environment variables from settings: %v", err)
+	}
+
 	openmcp := setup.OpenMCPSetup{
 		Namespace: "openmcp-system",
 		Operator: setup.OpenMCPOperatorSetup{
 			Name:         "openmcp-operator",
-			Image:        "ghcr.io/openmcp-project/images/openmcp-operator:v0.17.1",
+			Image:        fmt.Sprintf("ghcr.io/openmcp-project/images/openmcp-operator:%s", settings.MustGetSetting("OPENMCP_OPERATOR_VERSION")),
 			Environment:  "debug",
 			PlatformName: "platform",
 		},
 		ClusterProviders: []providers.ClusterProviderSetup{
 			{
 				Name:  "kind",
-				Image: "ghcr.io/openmcp-project/images/cluster-provider-kind:v0.0.15",
+				Image: fmt.Sprintf("ghcr.io/openmcp-project/images/cluster-provider-kind:%s", settings.MustGetSetting("CLUSTER_PROVIDER_KIND_VERSION")),
 			},
 		},
 		PlatformServices: []platformservices.PlatformServiceSetup{
 			{
 				Name:                      "gateway",
-				Image:                     "ghcr.io/openmcp-project/images/platform-service-gateway:v0.0.9",
+				Image:                     fmt.Sprintf("ghcr.io/openmcp-project/images/platform-service-gateway:%s", settings.MustGetSetting("PLATFORM_SERVICE_GATEWAY_VERSION")),
 				PlatformServiceConfigsDir: "platform/gateway",
 			},
 		},
 		Extensions: []extensions.Extension{
 			&fluxcd.FluxCD{},
-			&localextensions.Kro{},
-			&localextensions.OCMK8sToolkit{},
+			&localextensions.Kro{
+				ChartVersion: settings.MustGetSetting("KRO_VERSION"),
+			},
+			&localextensions.OCMK8sToolkit{
+				ChartVersion: settings.MustGetSetting("OCM_K8S_TOOLKIT_VERSION"),
+			},
 		},
 		ServiceProviders: []providers.ServiceProviderSetup{},
 	}

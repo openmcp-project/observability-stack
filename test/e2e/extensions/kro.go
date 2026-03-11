@@ -32,7 +32,7 @@ func (k *Kro) Name() string {
 func (k *Kro) Install(ctx context.Context, cfg *envconf.Config) error {
 	chartVersion := k.ChartVersion
 	if chartVersion == "" {
-		chartVersion = "latest"
+		return fmt.Errorf("ChartVersion is required for Kro installation")
 	}
 
 	namespace := k.Namespace
