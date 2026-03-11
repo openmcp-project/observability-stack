@@ -14,6 +14,10 @@ permissions:
   attestations: write # we need this to be able to push ocm packages
   id-token: write # we need this to be able to push ocm packages
 
+env:
+  PYTHON_VERSION: '3.14'
+  GO_VERSION: '1.26'
+
 jobs:
   release_tag:
     name: Release version
@@ -106,6 +110,35 @@ jobs:
           python3 -u ./hack/build-component.py
         env:
           PYTHONUNBUFFERED: "1"
+
+      - name: Push OCM component to registry
+        if: ${{ env.SKIP != 'true' }}
+        run: |
+          python3 -u ./hack/push-component.py
+        env:
+          PYTHONUNBUFFERED: "1"
+
+      - name: Setup Go
+        if: ${{ env.SKIP != 'true' }}
+        uses: actions/setup-go@v6
+        with:
+          go-version: ${{ env.GO_VERSION }}
+          cache-dependency-path: test/e2e/go.sum
+
+      - name: Install test dependencies
+        if: ${{ env.SKIP != 'true' }}
+        run: |
+          cd test/e2e
+          go mod download
+
+      - name: Run E2E tests
+        if: ${{ env.SKIP != 'true' }}
+        run: |
+          cd test/e2e
+          go test -v -timeout 30m ./...
+        env:
+          GITHUB_USERNAME: ${{ github.repository_owner }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Generate changelog
         if: ${{ env.SKIP != 'true' }}
@@ -245,10 +278,3 @@ jobs:
           prerelease: false
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Push CTF
-        if: ${{ env.SKIP != 'true' }}
-        run: |
-          python3 -u ./hack/push-component.py
-        env:
-          PYTHONUNBUFFERED: "1"
