@@ -39,16 +39,10 @@ def push_component(repo_root: Path, components_location: str) -> None:
     repository_context = os.environ.get("REPOSITORY_CONTEXT", "")
     print(f"Pushing component to {repository_context or components_location}...")
 
-    # Execute OCM transfer command with optimized flags
-    # --copy-resources: Copy resources to target registry
-    # --no-update: Don't update if version exists
-    # --stop-on-existing: Stop early if component version already exists
-    # Note: OCM will still deduplicate layers if they exist in the target registry
     run_command([
         "ocm", "transfer", "ctf",
         "--copy-resources",
         "--no-update",
-        "--stop-on-existing",
         str(ctf_dir),
         components_location
     ])
