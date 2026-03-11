@@ -271,7 +271,8 @@
       ],
       "datasourceTemplate": "docker",
       "depNameTemplate": "registry.k8s.io/kro/charts/kro",
-      "versioningTemplate": "semver"
+      "versioningTemplate": "semver",
+      "autoReplaceStringTemplate": "KRO_VERSION: \"{{{newValue}}}\""
     },
     {
       "description": "Update OCM K8s Toolkit version in component-settings.yaml (E2E test dependency)",
@@ -282,7 +283,8 @@
       ],
       "datasourceTemplate": "docker",
       "depNameTemplate": "ghcr.io/open-component-model/kubernetes/controller/chart",
-      "versioningTemplate": "loose"
+      "versioningTemplate": "loose",
+      "autoReplaceStringTemplate": "OCM_K8S_TOOLKIT_VERSION: \"{{{newValue}}}\""
     }
   ],
   "ignoreDeps": [],
