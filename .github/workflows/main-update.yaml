@@ -29,6 +29,23 @@ jobs:
           fetch-depth: 0
           submodules: recursive
 
+      - name: Set up dev version
+        id: dev-version
+        run: |
+          # Read the base version from VERSION file
+          BASE_VERSION=$(cat VERSION)
+          # Remove -dev suffix if present to get base version
+          BASE_VERSION=${BASE_VERSION%-dev*}
+          # Create a dev version with short SHA
+          SHORT_SHA=$(git rev-parse --short HEAD)
+          DEV_VERSION="${BASE_VERSION}-dev-${SHORT_SHA}"
+          echo "Dev version: $DEV_VERSION"
+          echo "dev_version=$DEV_VERSION" >> $GITHUB_OUTPUT
+          echo "short_sha=$SHORT_SHA" >> $GITHUB_OUTPUT
+
+          # Temporarily update VERSION file for build
+          echo "$DEV_VERSION" > VERSION
+
       - name: Setup OCM
         uses: open-component-model/ocm-setup-action@main
 

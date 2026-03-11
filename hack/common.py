@@ -130,8 +130,9 @@ def read_version_file(repo_root: Path) -> str:
 
     version = version_file.read_text().strip()
 
-    # Append git commit SHA if it's a development version
-    if "-dev" in version:
+    # Append git commit SHA if it's a development version without a SHA already
+    # Check if version ends with a git SHA pattern (7 hex characters after -dev-)
+    if "-dev" in version and not re.search(r'-dev-[0-9a-f]{7}$', version):
         try:
             git_commit = subprocess.check_output(
                 ["git", "-C", str(repo_root), "rev-parse", "--short", "HEAD"],
