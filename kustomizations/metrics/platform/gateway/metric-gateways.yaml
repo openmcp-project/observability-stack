@@ -1,0 +1,33 @@
+apiVersion: metrics.openmcp.cloud/v1alpha1
+kind: Metric
+metadata:
+  name: gateway
+spec:
+  name: co_gateway
+  description: Gateways
+  target:
+    kind: Gateway
+    group: gateway.networking.k8s.io
+    version: v1
+  interval: "1m"
+  dataSinkRef:
+    name: default
+  projections:
+    - name: gw_name
+      fieldPath: "metadata.name"
+      type: primitive
+
+    - name: gw_namespace
+      fieldPath: "metadata.namespace"
+      type: primitive
+
+    - name: gw_programmed_status
+      fieldPath: "status.conditions[?(@.type=='Programmed')].status"
+      type: primitive
+      default: Unknown
+
+    - name: gw_accepted_status
+      fieldPath: "status.conditions[?(@.type=='Accepted')].status"
+      type: primitive
+      default: Unknown
+

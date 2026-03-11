@@ -1,27 +1,27 @@
 apiVersion: metrics.openmcp.cloud/v1alpha1
 kind: FederatedMetric
 metadata:
-  name: managedcontrolplanev2
+  name: landscaper
 spec:
-  name: co_managedcontrolplanev2
-  description: Managed Control Plane V2 Metrics
+  name: co_landscaper
+  description: Landscaper Service Provider Metrics
   target:
-    kind: ManagedControlPlaneV2
-    group: core.openmcp.cloud
-    version: v2alpha1
+    kind: Landscaper
+    group: landscaper.services.openmcp.cloud
+    version: v1alpha2
   interval: "1m"
   dataSinkRef:
     name: default
   projections:
-    - name: mcp_namespace
+    - name: ls_namespace
       fieldPath: "metadata.namespace"
       type: primitive
 
-    - name: mcp_name
+    - name: ls_name
       fieldPath: "metadata.name"
       type: primitive
 
-    - name: mcp_phase
+    - name: ls_phase
       fieldPath: "status.phase"
       type: primitive
       default: Unknown

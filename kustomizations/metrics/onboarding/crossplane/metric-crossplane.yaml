@@ -1,27 +1,27 @@
 apiVersion: metrics.openmcp.cloud/v1alpha1
 kind: FederatedMetric
 metadata:
-  name: managedcontrolplanev2
+  name: crossplane
 spec:
-  name: co_managedcontrolplanev2
-  description: Managed Control Plane V2 Metrics
+  name: co_crossplane
+  description: Crossplane Service Provider Metrics
   target:
-    kind: ManagedControlPlaneV2
-    group: core.openmcp.cloud
-    version: v2alpha1
+    kind: Crossplane
+    group: crossplane.services.openmcp.cloud
+    version: v1alpha1
   interval: "1m"
   dataSinkRef:
     name: default
   projections:
-    - name: mcp_namespace
+    - name: xp_namespace
       fieldPath: "metadata.namespace"
       type: primitive
 
-    - name: mcp_name
+    - name: xp_name
       fieldPath: "metadata.name"
       type: primitive
 
-    - name: mcp_phase
+    - name: xp_phase
       fieldPath: "status.phase"
       type: primitive
       default: Unknown

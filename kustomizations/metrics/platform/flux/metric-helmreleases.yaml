@@ -1,32 +1,27 @@
 apiVersion: metrics.openmcp.cloud/v1alpha1
 kind: Metric
 metadata:
-  name: kustomization
+  name: helmrelease
 spec:
-  name: co_kustomization
-  description: FluxCD Kustomizations
+  name: co_helmrelease
+  description: FluxCD HelmReleases
   target:
-    kind: Kustomization
-    group: kustomize.toolkit.fluxcd.io
+    kind: HelmRelease
+    group: helm.toolkit.fluxcd.io/v2
     version: v1
   interval: "1m"
   dataSinkRef:
     name: default
   projections:
-    - name: kust_namespace
+    - name: hr_namespace
       fieldPath: "metadata.namespace"
       type: primitive
 
-    - name: kust_name
+    - name: hr_name
       fieldPath: "metadata.name"
       type: primitive
 
-    - name: kust_ready_status
+    - name: hr_ready_status
       fieldPath: "status.conditions[?(@.type=='Ready')].status"
-      type: primitive
-      default: Unknown
-
-    - name: kust_healthy_status
-      fieldPath: "status.conditions[?(@.type=='Healthy')].status"
       type: primitive
       default: Unknown

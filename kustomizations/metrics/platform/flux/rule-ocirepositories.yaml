@@ -1,0 +1,22 @@
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: flux-ocirepositories-alerts
+  labels:
+    prometheus: prometheus
+    app: prometheus
+spec:
+  groups:
+    - name: flux.ocirepository
+      interval: 30s
+      rules:
+        - alert: OciRepositoryNotReady
+          expr: |
+            co_ocirepository{or_ready_status=~"False|Unknown"}
+          for: 5m
+          labels:
+            severity: warning
+            component: flux
+          annotations:
+            summary: "OciRepository {{ $labels.or_name }} is not ready"
+            description: "OciRepository {{ $labels.or_name }} in namespace {{ $labels.or_namespace }} on cluster {{ $labels.cluster }} has not been ready for 5 minutes."

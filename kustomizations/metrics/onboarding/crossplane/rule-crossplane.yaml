@@ -1,0 +1,22 @@
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: openmcp-crossplane-alerts
+  labels:
+    prometheus: prometheus
+    app: prometheus
+spec:
+  groups:
+    - name: openmcp.crossplane
+      interval: 30s
+      rules:
+        - alert: CrossplanePhaseNotReady
+          expr: |
+            co_crossplane{xp_phase!="Ready"}
+          for: 30m
+          labels:
+            severity: warning
+            component: crossplane
+          annotations:
+            summary: "Crossplane {{ $labels.xp_name }} in namespace {{ $labels.xp_namespace }} is not in phase Ready"
+            description: "Crossplane {{ $labels.xp_name }} in namespace {{ $labels.xp_namespace }} on cluster {{ $labels.cluster }} is not in phase Ready."

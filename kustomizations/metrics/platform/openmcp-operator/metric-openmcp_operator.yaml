@@ -1,0 +1,24 @@
+apiVersion: metrics.openmcp.cloud/v1alpha1
+kind: Metric
+metadata:
+  name: openmcp-operator
+spec:
+  name: co_openmcpoperator
+  description: openMCP Operator
+  target:
+    kind: Deployment
+    group: apps
+    version: v1
+  fieldSelector: "metadata.name=openmcp-operator,metadata.namespace=openmcp-system"
+  interval: "1m"
+  dataSinkRef:
+    name: default
+  projections:
+    - name: op_readyReplicas
+      fieldPath: "status.readyReplicas"
+      type: primitive
+      default: "0"
+    - name: op_replicas
+      fieldPath: "status.replicas"
+      type: primitive
+      default: "0"

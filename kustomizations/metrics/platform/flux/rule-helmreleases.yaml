@@ -1,0 +1,22 @@
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: flux-helmreleases-alerts
+  labels:
+    prometheus: prometheus
+    app: prometheus
+spec:
+  groups:
+    - name: flux.helmrelease
+      interval: 30s
+      rules:
+        - alert: HelmReleaseNotReady
+          expr: |
+            co_helmrelease{hr_ready_status=~"False|Unknown"}
+          for: 5m
+          labels:
+            severity: warning
+            component: flux
+          annotations:
+            summary: "HelmRelease {{ $labels.hr_name }} is not ready"
+            description: "HelmRelease {{ $labels.hr_name }} in namespace {{ $labels.hr_namespace }} on cluster {{ $labels.cluster }} has not been ready for 5 minutes."

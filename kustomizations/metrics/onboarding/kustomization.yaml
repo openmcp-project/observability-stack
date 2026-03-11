@@ -3,3 +3,5 @@ kind: Kustomization
 resources:
   - onboarding-cluster-access.yaml
   - managedcontrolplanev2/
+  - landscaper/
+  - crossplane/
