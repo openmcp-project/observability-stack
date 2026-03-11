@@ -138,7 +138,8 @@
       "datasourceTemplate": "github-releases",
       "depNameTemplate": "open-telemetry/opentelemetry-helm-charts",
       "versioningTemplate": "semver",
-      "extractVersionTemplate": "^opentelemetry-operator-(?<version>.*)$"
+      "extractVersionTemplate": "^opentelemetry-operator-(?<version>.*)$",
+      "autoReplaceStringTemplate": "OPEN_TELEMETRY_OPERATOR_CHART_VERSION: \"{{{newValue}}}\""
     },
     {
       "description": "Update OpenTelemetry Operator image version in component-settings.yaml",
@@ -149,7 +150,8 @@
       ],
       "datasourceTemplate": "docker",
       "depNameTemplate": "ghcr.io/open-telemetry/opentelemetry-operator/opentelemetry-operator",
-      "versioningTemplate": "semver"
+      "versioningTemplate": "semver",
+      "autoReplaceStringTemplate": "OPEN_TELEMETRY_OPERATOR_IMAGE_VERSION: \"v{{{newValue}}}\""
     },
     {
       "description": "Update OpenTelemetry Collector image version in component-settings.yaml",
@@ -160,7 +162,8 @@
       ],
       "datasourceTemplate": "docker",
       "depNameTemplate": "docker.io/otel/opentelemetry-collector-contrib",
-      "versioningTemplate": "semver"
+      "versioningTemplate": "semver",
+      "autoReplaceStringTemplate": "OPEN_TELEMETRY_COLLECTOR_IMAGE_VERSION: \"v{{{newValue}}}\""
     },
     {
       "description": "Update Prometheus Operator image version in component-settings.yaml",
