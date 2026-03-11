@@ -26,6 +26,7 @@ PROMETHEUS_IMAGE_VERSION: "v3.10.0"
 
 # E2E Test dependencies
 # Not used for deployment
+# These versions are automatically managed by Renovate
 OPENMCP_OPERATOR_VERSION: "v0.17.1"
 CLUSTER_PROVIDER_KIND_VERSION: "v0.0.15"
 PLATFORM_SERVICE_GATEWAY_VERSION: "v0.0.9"

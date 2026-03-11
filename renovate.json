@@ -93,6 +93,17 @@
         "custom.regex"
       ],
       "pinDigests": false
+    },
+    {
+      "description": "Group all E2E test dependency updates together",
+      "matchFileNames": ["component-settings.yaml"],
+      "matchPackagePatterns": [
+        "openmcp-project/openmcp",
+        "kubernetes-sigs/kro",
+        "open-component-model/open-component-model"
+      ],
+      "groupName": "e2e-test-dependencies",
+      "automerge": false
     }
   ],
   "customManagers": [
