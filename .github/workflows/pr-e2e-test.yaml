@@ -75,7 +75,7 @@ jobs:
         uses: actions/cache@v4
         with:
           path: ctf
-          key: ${{ runner.os }}-ocm-ctf-${{ hashFiles('component-constructor.yaml', 'component-settings.yaml', 'VERSION', 'kustomizations/**', 'resourcegraphdefinitions/**') }}
+          key: ${{ runner.os }}-ocm-ctf-${{ hashFiles('component-constructor.yaml', 'component-settings.yaml', 'kustomizations/**', 'resourcegraphdefinitions/**') }}
           restore-keys: |
             ${{ runner.os }}-ocm-ctf-
 
@@ -87,11 +87,11 @@ jobs:
           password: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Build OCM component
+        if: steps.cache-ctf.outputs.cache-hit != 'true'
         run: |
           python3 -u ./hack/build-component.py
         env:
           PYTHONUNBUFFERED: "1"
-          USE_CTF_CACHE: ${{ steps.cache-ctf.outputs.cache-hit }}
 
       - name: Push OCM component to registry
         run: |
