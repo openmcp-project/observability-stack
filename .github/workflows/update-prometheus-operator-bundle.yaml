@@ -1,15 +1,17 @@
 name: Update Prometheus Operator Bundle
 
 on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'component-settings.yaml'
   workflow_dispatch:
     inputs:
       version:
         description: 'Prometheus Operator version (e.g., v0.89.0)'
         required: true
         type: string
-  schedule:
-    # Run daily at 7am UTC (after Renovate runs at 6am)
-    - cron: '0 7 * * 1-5'
 
 permissions:
   contents: write
