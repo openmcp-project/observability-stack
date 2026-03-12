@@ -106,10 +106,17 @@ jobs:
     runs-on: ubuntu-latest-8core
     needs: e2e_test
     steps:
+      - name: Create GitHub App token
+        uses: actions/create-github-app-token@29824e69f54612133e76f7eaac726eef6c875baf # v2
+        id: app-token
+        with:
+          app-id: 1312871
+          private-key: ${{ secrets.OPENMCP_CI_APP_PRIVATE_KEY }}
+
       - name: Checkout code
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
         with:
-          ssh-key: ${{ secrets.PUSH_KEY }}
+          token: ${{ steps.app-token.outputs.token }}
           fetch-tags: true
           fetch-depth: 0
           submodules: recursive
@@ -296,3 +303,22 @@ jobs:
           prerelease: false
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Bump VERSION to dev
+        if: ${{ env.SKIP != 'true' }}
+        run: |
+          # Add -dev suffix to the VERSION file to indicate development has started
+          echo "${{ env.version }}-dev" > VERSION
+
+          echo "Updated VERSION file to ${{ env.version }}-dev"
+          cat VERSION
+
+      - name: Commit VERSION change
+        if: ${{ env.SKIP != 'true' }}
+        run: |
+          git config user.name "${{ env.AUTHOR_NAME }}"
+          git config user.email "${{ env.AUTHOR_EMAIL }}"
+
+          git add VERSION
+          git commit -m "chore: bump VERSION to ${{ env.version }}-dev after release [skip ci]"
+          git push origin main
