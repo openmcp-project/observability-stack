@@ -96,21 +96,25 @@
     },
     {
       "description": "Group all E2E test dependency updates together",
-      "matchFileNames": ["component-settings.yaml"],
-      "matchPackagePatterns": [
-        "openmcp-project/images",
-        "kro/charts/kro",
-        "open-component-model/kubernetes"
+      "matchFileNames": [
+        "component-settings.yaml"
       ],
       "groupName": "e2e-test-dependencies",
-      "automerge": false
+      "automerge": false,
+      "matchPackageNames": [
+        "/openmcp-project/images/",
+        "/kro/charts/kro/",
+        "/open-component-model/kubernetes/"
+      ]
     }
   ],
   "customManagers": [
     {
       "description": "Update cert-manager version in component-settings.yaml",
       "customType": "regex",
-      "fileMatch": ["^component-settings\\.yaml$"],
+      "managerFilePatterns": [
+        "/^component-settings\\.yaml$/"
+      ],
       "matchStrings": [
         "CERT_MANAGER_VERSION:\\s*\"(?<currentValue>v[0-9.]+)\""
       ],
@@ -121,7 +125,9 @@
     {
       "description": "Update metrics-operator version in component-settings.yaml",
       "customType": "regex",
-      "fileMatch": ["^component-settings\\.yaml$"],
+      "managerFilePatterns": [
+        "/^component-settings\\.yaml$/"
+      ],
       "matchStrings": [
         "METRICS_OPERATOR_VERSION:\\s*\"(?<currentValue>v[0-9.]+)\""
       ],
@@ -132,7 +138,9 @@
     {
       "description": "Update kube-rbac-proxy version in component-settings.yaml",
       "customType": "regex",
-      "fileMatch": ["^component-settings\\.yaml$"],
+      "managerFilePatterns": [
+        "/^component-settings\\.yaml$/"
+      ],
       "matchStrings": [
         "KUBE_RBAC_PROXY_VERSION:\\s*\"(?<currentValue>v[0-9.]+)\""
       ],
@@ -143,7 +151,9 @@
     {
       "description": "Update OpenTelemetry Operator chart version in component-settings.yaml",
       "customType": "regex",
-      "fileMatch": ["^component-settings\\.yaml$"],
+      "managerFilePatterns": [
+        "/^component-settings\\.yaml$/"
+      ],
       "matchStrings": [
         "OPEN_TELEMETRY_OPERATOR_CHART_VERSION:\\s*\"(?<currentValue>[0-9.]+)\""
       ],
@@ -156,7 +166,9 @@
     {
       "description": "Update OpenTelemetry Operator image version in component-settings.yaml",
       "customType": "regex",
-      "fileMatch": ["^component-settings\\.yaml$"],
+      "managerFilePatterns": [
+        "/^component-settings\\.yaml$/"
+      ],
       "matchStrings": [
         "OPEN_TELEMETRY_OPERATOR_IMAGE_VERSION:\\s*\"v(?<currentValue>[0-9.]+)\""
       ],
@@ -169,7 +181,9 @@
     {
       "description": "Update OpenTelemetry Collector image version in component-settings.yaml",
       "customType": "regex",
-      "fileMatch": ["^component-settings\\.yaml$"],
+      "managerFilePatterns": [
+        "/^component-settings\\.yaml$/"
+      ],
       "matchStrings": [
         "OPEN_TELEMETRY_COLLECTOR_IMAGE_VERSION:\\s*\"v(?<currentValue>[0-9.]+)\""
       ],
@@ -181,7 +195,9 @@
     {
       "description": "Update Prometheus Operator image version in component-settings.yaml",
       "customType": "regex",
-      "fileMatch": ["^component-settings\\.yaml$"],
+      "managerFilePatterns": [
+        "/^component-settings\\.yaml$/"
+      ],
       "matchStrings": [
         "PROMETHEUS_OPERATOR_IMAGE_VERSION:\\s*\"(?<currentValue>v[0-9.]+)\""
       ],
@@ -192,7 +208,9 @@
     {
       "description": "Update Prometheus Operator config reloader version in component-settings.yaml",
       "customType": "regex",
-      "fileMatch": ["^component-settings\\.yaml$"],
+      "managerFilePatterns": [
+        "/^component-settings\\.yaml$/"
+      ],
       "matchStrings": [
         "PROMETHEUS_OPERATOR_CONFIG_RELOADER_IMAGE_VERSION:\\s*\"(?<currentValue>v[0-9.]+)\""
       ],
@@ -203,7 +221,9 @@
     {
       "description": "Update Prometheus image version in component-settings.yaml",
       "customType": "regex",
-      "fileMatch": ["^component-settings\\.yaml$"],
+      "managerFilePatterns": [
+        "/^component-settings\\.yaml$/"
+      ],
       "matchStrings": [
         "PROMETHEUS_IMAGE_VERSION:\\s*\"(?<currentValue>v[0-9.]+)\""
       ],
@@ -214,7 +234,9 @@
     {
       "description": "Track Prometheus Operator bundle.yaml version via operator.yaml annotation",
       "customType": "regex",
-      "fileMatch": ["^kustomizations/prometheus-operator/operator\\.yaml$"],
+      "managerFilePatterns": [
+        "/^kustomizations/prometheus-operator/operator\\.yaml$/"
+      ],
       "matchStrings": [
         "operator\\.prometheus\\.io/version:\\s*(?<currentValue>[0-9.]+)"
       ],
@@ -226,7 +248,9 @@
     {
       "description": "Update OpenMCP Operator version in component-settings.yaml (E2E test dependency)",
       "customType": "regex",
-      "fileMatch": ["^component-settings\\.yaml$"],
+      "managerFilePatterns": [
+        "/^component-settings\\.yaml$/"
+      ],
       "matchStrings": [
         "OPENMCP_OPERATOR_VERSION:\\s*\"v(?<currentValue>[0-9.]+)\""
       ],
@@ -239,7 +263,9 @@
     {
       "description": "Update Cluster Provider Kind version in component-settings.yaml (E2E test dependency)",
       "customType": "regex",
-      "fileMatch": ["^component-settings\\.yaml$"],
+      "managerFilePatterns": [
+        "/^component-settings\\.yaml$/"
+      ],
       "matchStrings": [
         "CLUSTER_PROVIDER_KIND_VERSION:\\s*\"v(?<currentValue>[0-9.]+)\""
       ],
@@ -252,7 +278,9 @@
     {
       "description": "Update Platform Service Gateway version in component-settings.yaml (E2E test dependency)",
       "customType": "regex",
-      "fileMatch": ["^component-settings\\.yaml$"],
+      "managerFilePatterns": [
+        "/^component-settings\\.yaml$/"
+      ],
       "matchStrings": [
         "PLATFORM_SERVICE_GATEWAY_VERSION:\\s*\"v(?<currentValue>[0-9.]+)\""
       ],
@@ -265,7 +293,9 @@
     {
       "description": "Update KRO version in component-settings.yaml (E2E test dependency)",
       "customType": "regex",
-      "fileMatch": ["^component-settings\\.yaml$"],
+      "managerFilePatterns": [
+        "/^component-settings\\.yaml$/"
+      ],
       "matchStrings": [
         "KRO_VERSION:\\s*\"(?<currentValue>[0-9.]+)\""
       ],
@@ -277,7 +307,9 @@
     {
       "description": "Update OCM K8s Toolkit version in component-settings.yaml (E2E test dependency)",
       "customType": "regex",
-      "fileMatch": ["^component-settings\\.yaml$"],
+      "managerFilePatterns": [
+        "/^component-settings\\.yaml$/"
+      ],
       "matchStrings": [
         "OCM_K8S_TOOLKIT_VERSION:\\s*\"(?<currentValue>[0-9.]+-[a-zA-Z0-9.]+)\""
       ],
