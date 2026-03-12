@@ -58,7 +58,8 @@
       "groupName": "prometheus",
       "matchPackageNames": [
         "/prometheus-operator/",
-        "/^quay\\.io/prometheus/prometheus/"
+        "/^quay\\.io/prometheus/prometheus/",
+        "/^quay\\.io/prometheus/alertmanager/"
       ]
     },
     {
@@ -229,6 +230,19 @@
       ],
       "datasourceTemplate": "docker",
       "depNameTemplate": "quay.io/prometheus/prometheus",
+      "versioningTemplate": "semver"
+    },
+    {
+      "description": "Update Alertmanager image version in component-settings.yaml",
+      "customType": "regex",
+      "managerFilePatterns": [
+        "/^component-settings\\.yaml$/"
+      ],
+      "matchStrings": [
+        "ALERTMANAGER_IMAGE_VERSION:\\s*\"(?<currentValue>v[0-9.]+)\""
+      ],
+      "datasourceTemplate": "docker",
+      "depNameTemplate": "quay.io/prometheus/alertmanager",
       "versioningTemplate": "semver"
     },
     {
