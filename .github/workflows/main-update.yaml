@@ -149,6 +149,42 @@ jobs:
           echo "SKIP=true" >> $GITHUB_ENV
           exit 0
 
+      - name: Setup OCM
+        uses: open-component-model/ocm-setup-action@main
+
+      - name: Setup Flux CLI
+        uses: fluxcd/flux2/action@main
+
+      - name: Setup Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+          cache: 'pip'
+          cache-dependency-path: 'hack/requirements.txt'
+
+      - name: Install Python dependencies
+        run: |
+          pip install -r hack/requirements.txt
+
+      - name: Login to GitHub Container Registry
+        uses: docker/login-action@b45d80f862d83dbcd57f89517bcf500b2ab88fb2 # v4
+        with:
+          registry: ghcr.io
+          username: ${{ github.repository_owner }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build OCM component
+        run: |
+          python3 -u ./hack/build-component.py
+        env:
+          PYTHONUNBUFFERED: "1"
+
+      - name: Push OCM component to registry
+        run: |
+          python3 -u ./hack/push-component.py
+        env:
+          PYTHONUNBUFFERED: "1"
+
       - name: Create Git tag
         if: ${{ env.SKIP != 'true' }}
         run: |
