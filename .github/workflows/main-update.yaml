@@ -179,8 +179,10 @@ jobs:
 
           echo "Generating changelog from $PREVIOUS_TAG to ${{ env.version }}"
 
-          # Get all merged PRs since last tag
-          PR_LIST=$(git log ${PREVIOUS_TAG}..HEAD --merges --pretty=format:"%s" | grep -oE "#[0-9]+" | sort -u)
+          # Get all PRs since last tag (both merge commits and squash merges)
+          # For merge commits: look for merge commits
+          # For squash merges: look for PR references in commit messages
+          PR_LIST=$(git log ${PREVIOUS_TAG}..HEAD --pretty=format:"%s" | grep -oE "#[0-9]+" | sort -u)
 
           # Initialize changelog sections
           BREAKING_CHANGES=""
