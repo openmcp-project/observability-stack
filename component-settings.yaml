@@ -23,6 +23,9 @@ PROMETHEUS_OPERATOR_CONFIG_RELOADER_IMAGE_VERSION: "v0.89.0"
 # prometheus
 PROMETHEUS_IMAGE_VERSION: "v3.10.0"
 
+# prometheus alertmanager
+ALERTMANAGER_IMAGE_VERSION: "v0.31.1"
+
 
 # E2E Test dependencies
 # Not used for deployment

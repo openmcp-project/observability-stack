@@ -148,6 +148,14 @@ components:
           path: "quay.io/prometheus/prometheus:${PROMETHEUS_IMAGE_VERSION}"
           repository: images/prometheus
 
+      - name: alertmanager-image
+        version: ${ALERTMANAGER_IMAGE_VERSION}
+        type: ociImage
+        input:
+          type: ociImage
+          path: "quay.io/prometheus/alertmanager:${ALERTMANAGER_IMAGE_VERSION}"
+          repository: images/alertmanager
+
       # metrics
       - name: metrics-kustomization
         version: ${OBSERVABILITY_STACK_VERSION}
