@@ -272,6 +272,81 @@ curl --cert client.crt --key client.key --insecure "https://${HOSTNAME}:8443/api
 
 5. Navigate to the Prometheus dashboard URL and select the client certificate when prompted
 
+#### 7. Configure Alerting (per landscape)
+
+The observability stack deploys an Alertmanager instance as part of the base infrastructure, but the routing configuration — which notification channels receive alerts — must be provided separately for each landscape. This keeps credentials and routing decisions out of the shared stack.
+
+The Prometheus Operator automatically loads a `Secret` named `alertmanager-alertmanager` from the Prometheus namespace. Create this Secret with your credentials and apply it:
+
+```bash
+kubectl apply -f alertmanager-config.yaml -n prometheus-system
+```
+
+Example `alertmanager-config.yaml` configuring a single receiver that sends every alert to both **Slack** and **VictorOps** simultaneously:
+
+```yaml
+apiVersion: v1
+kind: Secret
+metadata:
+  name: alertmanager-alertmanager
+  namespace: prometheus-system  # adjust if your Prometheus namespace differs
+type: Opaque
+stringData:
+  alertmanager.yaml: |
+    global:
+      resolve_timeout: 5m
+    route:
+      group_by: ['alertname', 'severity', 'namespace']
+      group_wait: 30s
+      group_interval: 5m
+      repeat_interval: 12h
+      receiver: 'all'
+    receivers:
+      - name: 'all'
+        slack_configs:
+          - api_url: 'https://hooks.slack.com/services/YOUR/SLACK/WEBHOOK'
+            channel: '#your-alerts-channel'
+            send_resolved: true
+            title: |-
+              [{{ .Status | toUpper }}{{ if eq .Status "firing" }}:{{ .Alerts.Firing | len }}{{ end }}] {{ .CommonLabels.alertname }}
+            text: >-
+              {{ range .Alerts }}
+              {{ .Annotations.description }}
+              *Severity:* `{{ .Labels.severity }}`
+              {{ end }}
+        victorops_configs:
+          - api_key: 'YOUR_VICTOROPS_API_KEY'
+            routing_key: 'YOUR_VICTOROPS_ROUTING_KEY'
+            send_resolved: true
+    inhibit_rules:
+      - source_match:
+          severity: 'critical'
+        target_match:
+          severity: 'warning'
+        equal: ['alertname', 'namespace']
+```
+
+| Field | Description |
+| --- | --- |
+| `slack_configs[].api_url` | Slack Incoming Webhook URL |
+| `slack_configs[].channel` | Target Slack channel (e.g. `#alerts`) |
+| `victorops_configs[].api_key` | VictorOps API key |
+| `victorops_configs[].routing_key` | VictorOps routing key (maps to an escalation policy) |
+
+If you only need one notification channel, remove the unused `_configs` block.
+
+**Verify Alertmanager is connected:**
+
+```bash
+# Check Alertmanager pod is running
+kubectl get pods -n prometheus-system -l app.kubernetes.io/name=alertmanager
+
+# Check Prometheus has discovered the Alertmanager (look for "1 active" under Alertmanagers)
+kubectl get prometheus.monitoring.coreos.com prometheus -n prometheus-system -o jsonpath='{.status}'
+```
+
+The Prometheus dashboard also shows the connected Alertmanager count under **Status → Runtime & Build Info**.
+
 ### Configuration Options
 
 The `ObservabilityStack` custom resource supports various configuration options:
