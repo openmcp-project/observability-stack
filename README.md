@@ -334,6 +334,7 @@ stringData:
 | `victorops_configs[].routing_key` | VictorOps routing key (maps to an escalation policy) |
 
 If you only need one notification channel, remove the unused `_configs` block.
+See <https://prometheus.io/docs/alerting/latest/configuration/> for prometheus alerting configuration.
 
 **Verify Alertmanager is connected:**
 
