@@ -24,7 +24,7 @@ jobs:
         uses: actions/github-script@v7
         with:
           script: |
-            const packageName = 'components/github.com/openmcp-project/observability-stack';
+            const packageName = 'component-descriptors/github.com/openmcp-project/observability-stack';
             const daysToKeep = 30;
             const cutoffDate = new Date();
             cutoffDate.setDate(cutoffDate.getDate() - daysToKeep);
@@ -32,13 +32,23 @@ jobs:
             console.log(`Cleaning up dev versions older than ${cutoffDate.toISOString()}`);
 
             // Get package versions
-            const { data: versions } = await github.rest.packages.getAllPackageVersionsForPackageOwnedByOrg({
-              package_type: 'container',
-              package_name: packageName,
-              org: context.repo.owner,
-              per_page: 100,
-              state: 'active'
-            });
+            let versions;
+            try {
+              const response = await github.rest.packages.getAllPackageVersionsForPackageOwnedByOrg({
+                package_type: 'container',
+                package_name: packageName,
+                org: context.repo.owner,
+                per_page: 100,
+                state: 'active'
+              });
+              versions = response.data;
+            } catch (error) {
+              if (error.status === 404) {
+                console.log('Package not found. This is expected if no versions have been published yet.');
+                return;
+              }
+              throw error;
+            }
 
             console.log(`Found ${versions.length} total versions`);
 
