@@ -89,6 +89,13 @@
       "automergeType": "pr"
     },
     {
+      "description": "Group all E2E Go module dependency updates together (direct only)",
+      "matchManagers": ["gomod"],
+      "matchDepTypes": ["require"],
+      "groupName": "e2e-go-dependencies",
+      "automerge": false
+    },
+    {
       "description": "Disable digest pinning for custom regex managers",
       "matchManagers": [
         "custom.regex"
@@ -352,6 +359,7 @@
     "dockerfile",
     "docker-compose",
     "github-actions",
+    "gomod",
     "kubernetes",
     "kustomize",
     "custom.regex"
