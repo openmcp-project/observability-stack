@@ -136,6 +136,24 @@ func TestObsStack(t *testing.T) {
 
 			return ctx
 		}).
+		Assess("can read metrics from prometheus", func(ctx context.Context, t *testing.T, config *envconf.Config) context.Context {
+			localPort, stop, err := portForwardToPod(t, "prometheus-system", "prometheus-prometheus-0", 9090)
+			if err != nil {
+				t.Fatalf("failed to port-forward to Prometheus: %v", err)
+			}
+			defer stop()
+
+			promAPI, err := newPrometheusAPI(localPort)
+			if err != nil {
+				t.Fatalf("failed to create Prometheus API client: %v", err)
+			}
+
+			assertMetricsAvailable(ctx, t, promAPI, []string{
+				"co_kustomization",
+			})
+
+			return ctx
+		}).
 		Teardown(func(ctx context.Context, t *testing.T, config *envconf.Config) context.Context {
 			// Delete objects in reverse order to handle dependencies
 			for i := len(objectList) - 1; i >= 0; i-- {
