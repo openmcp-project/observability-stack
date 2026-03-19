@@ -258,11 +258,13 @@
         "/^component-settings\\.yaml$/"
       ],
       "matchStrings": [
-        "ALERTMANAGER_IMAGE_VERSION:\\s*\"(?<currentValue>v[0-9.]+)\""
+        "ALERTMANAGER_IMAGE_VERSION:\\s*\"v(?<currentValue>[0-9.]+)\""
       ],
       "datasourceTemplate": "docker",
       "depNameTemplate": "quay.io/prometheus/alertmanager",
-      "versioningTemplate": "semver"
+      "versioningTemplate": "semver",
+      "extractVersionTemplate": "^v?(?<version>.*)$",
+      "autoReplaceStringTemplate": "ALERTMANAGER_IMAGE_VERSION: \"v{{{newValue}}}\""
     },
     {
       "description": "Track Prometheus Operator bundle.yaml version via operator.yaml annotation",
@@ -354,7 +356,14 @@
       "autoReplaceStringTemplate": "OCM_K8S_TOOLKIT_VERSION: \"{{{newValue}}}\""
     }
   ],
-  "ignoreDeps": [],
+  "ignorePaths": [
+    "**/node_modules/**",
+    "**/bower_components/**",
+    "**/vendor/**",
+    "**/examples/**",
+    "**/__tests__/**",
+    "**/__fixtures__/**"
+  ],
   "enabledManagers": [
     "dockerfile",
     "docker-compose",
