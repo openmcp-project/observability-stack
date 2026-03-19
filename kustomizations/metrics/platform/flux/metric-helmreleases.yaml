@@ -7,8 +7,8 @@ spec:
   description: FluxCD HelmReleases
   target:
     kind: HelmRelease
-    group: helm.toolkit.fluxcd.io/v2
-    version: v1
+    group: helm.toolkit.fluxcd.io
+    version: v2
   interval: "1m"
   dataSinkRef:
     name: default
