@@ -116,11 +116,13 @@
         "/^component-settings\\.yaml$/"
       ],
       "matchStrings": [
-        "CERT_MANAGER_VERSION:\\s*\"(?<currentValue>v[0-9.]+)\""
+        "CERT_MANAGER_VERSION:\\s*\"v(?<currentValue>[0-9.]+)\""
       ],
       "datasourceTemplate": "github-releases",
       "depNameTemplate": "cert-manager/cert-manager",
-      "versioningTemplate": "semver"
+      "versioningTemplate": "semver",
+      "extractVersionTemplate": "^v?(?<version>.*)$",
+      "autoReplaceStringTemplate": "CERT_MANAGER_VERSION: \"v{{{newValue}}}\""
     },
     {
       "description": "Update metrics-operator version in component-settings.yaml",
@@ -129,11 +131,13 @@
         "/^component-settings\\.yaml$/"
       ],
       "matchStrings": [
-        "METRICS_OPERATOR_VERSION:\\s*\"(?<currentValue>v[0-9.]+)\""
+        "METRICS_OPERATOR_VERSION:\\s*\"v(?<currentValue>[0-9.]+)\""
       ],
       "datasourceTemplate": "github-releases",
       "depNameTemplate": "openmcp-project/metrics-operator",
-      "versioningTemplate": "semver"
+      "versioningTemplate": "semver",
+      "extractVersionTemplate": "^v?(?<version>.*)$",
+      "autoReplaceStringTemplate": "METRICS_OPERATOR_VERSION: \"v{{{newValue}}}\""
     },
     {
       "description": "Update kube-rbac-proxy version in component-settings.yaml",
@@ -142,11 +146,13 @@
         "/^component-settings\\.yaml$/"
       ],
       "matchStrings": [
-        "KUBE_RBAC_PROXY_VERSION:\\s*\"(?<currentValue>v[0-9.]+)\""
+        "KUBE_RBAC_PROXY_VERSION:\\s*\"v(?<currentValue>[0-9.]+)\""
       ],
       "datasourceTemplate": "github-releases",
       "depNameTemplate": "brancz/kube-rbac-proxy",
-      "versioningTemplate": "semver"
+      "versioningTemplate": "semver",
+      "extractVersionTemplate": "^v?(?<version>.*)$",
+      "autoReplaceStringTemplate": "KUBE_RBAC_PROXY_VERSION: \"v{{{newValue}}}\""
     },
     {
       "description": "Update OpenTelemetry Operator chart version in component-settings.yaml",
@@ -199,11 +205,13 @@
         "/^component-settings\\.yaml$/"
       ],
       "matchStrings": [
-        "PROMETHEUS_OPERATOR_IMAGE_VERSION:\\s*\"(?<currentValue>v[0-9.]+)\""
+        "PROMETHEUS_OPERATOR_IMAGE_VERSION:\\s*\"v(?<currentValue>[0-9.]+)\""
       ],
       "datasourceTemplate": "docker",
       "depNameTemplate": "quay.io/prometheus-operator/prometheus-operator",
-      "versioningTemplate": "semver"
+      "versioningTemplate": "semver",
+      "extractVersionTemplate": "^v?(?<version>.*)$",
+      "autoReplaceStringTemplate": "PROMETHEUS_OPERATOR_IMAGE_VERSION: \"v{{{newValue}}}\""
     },
     {
       "description": "Update Prometheus Operator config reloader version in component-settings.yaml",
@@ -212,11 +220,13 @@
         "/^component-settings\\.yaml$/"
       ],
       "matchStrings": [
-        "PROMETHEUS_OPERATOR_CONFIG_RELOADER_IMAGE_VERSION:\\s*\"(?<currentValue>v[0-9.]+)\""
+        "PROMETHEUS_OPERATOR_CONFIG_RELOADER_IMAGE_VERSION:\\s*\"v(?<currentValue>[0-9.]+)\""
       ],
       "datasourceTemplate": "docker",
       "depNameTemplate": "quay.io/prometheus-operator/prometheus-config-reloader",
-      "versioningTemplate": "semver"
+      "versioningTemplate": "semver",
+      "extractVersionTemplate": "^v?(?<version>.*)$",
+      "autoReplaceStringTemplate": "PROMETHEUS_OPERATOR_CONFIG_RELOADER_IMAGE_VERSION: \"v{{{newValue}}}\""
     },
     {
       "description": "Update Prometheus image version in component-settings.yaml",
@@ -225,11 +235,13 @@
         "/^component-settings\\.yaml$/"
       ],
       "matchStrings": [
-        "PROMETHEUS_IMAGE_VERSION:\\s*\"(?<currentValue>v[0-9.]+)\""
+        "PROMETHEUS_IMAGE_VERSION:\\s*\"v(?<currentValue>[0-9.]+)\""
       ],
       "datasourceTemplate": "docker",
       "depNameTemplate": "quay.io/prometheus/prometheus",
-      "versioningTemplate": "semver"
+      "versioningTemplate": "semver",
+      "extractVersionTemplate": "^v?(?<version>.*)$",
+      "autoReplaceStringTemplate": "PROMETHEUS_IMAGE_VERSION: \"v{{{newValue}}}\""
     },
     {
       "description": "Track Prometheus Operator bundle.yaml version via operator.yaml annotation",
@@ -243,7 +255,8 @@
       "datasourceTemplate": "github-releases",
       "depNameTemplate": "prometheus-operator/prometheus-operator",
       "versioningTemplate": "semver",
-      "extractVersionTemplate": "^v(?<version>.*)$"
+      "extractVersionTemplate": "^v(?<version>.*)$",
+      "autoReplaceStringTemplate": "operator.prometheus.io/version: {{{newValue}}}"
     },
     {
       "description": "Update OpenMCP Operator version in component-settings.yaml (E2E test dependency)",
