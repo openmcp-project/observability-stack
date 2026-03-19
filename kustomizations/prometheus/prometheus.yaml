@@ -76,6 +76,11 @@ spec:
         resources:
           requests:
             storage: 10Gi
+  alerting:
+    alertmanagers:
+      - namespace: prometheus-system
+        name: alertmanager-operated
+        port: web
   securityContext:
     fsGroup: 2000
     runAsNonRoot: true

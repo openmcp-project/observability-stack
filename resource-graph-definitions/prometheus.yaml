@@ -80,6 +80,25 @@ spec:
             tag: resource.access.imageReference.toOCI().tag
           interval: 1m
 
+    - id: alertmanagerImage
+      template:
+        apiVersion: delivery.ocm.software/v1alpha1
+        kind: Resource
+        metadata:
+          name: alertmanager-image
+          namespace: ${schema.metadata.namespace}
+        spec:
+          componentRef: ${schema.spec.componentRef}
+          resource:
+            byReference:
+              resource:
+                name: alertmanager-image
+          additionalStatusFields:
+            registry: resource.access.imageReference.toOCI().registry
+            repository: resource.access.imageReference.toOCI().repository
+            tag: resource.access.imageReference.toOCI().tag
+          interval: 1m
+
     - id: prometheusOCIRepository
       template:
         apiVersion: source.toolkit.fluxcd.io/v1
@@ -173,6 +192,17 @@ spec:
               - op: add
                 path: /spec/image
                 value: ${prometheusImage.status.resource.access.imageReference}
+              - op: add
+                path: /spec/imagePullSecrets
+                value:
+                - name: ${prometheusImagePullSecret.metadata.name}
+          - target:
+              kind: Alertmanager
+              name: alertmanager
+            patch: |-
+              - op: add
+                path: /spec/image
+                value: ${alertmanagerImage.status.resource.access.imageReference}
               - op: add
                 path: /spec/imagePullSecrets
                 value:

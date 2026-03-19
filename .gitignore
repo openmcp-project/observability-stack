@@ -3,6 +3,7 @@
 
 ctf
 tmp
+prometheus-certs
 
 # Python
 __pycache__/
