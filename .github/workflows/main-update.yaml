@@ -174,12 +174,14 @@ jobs:
           password: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Build OCM component
+        if: ${{ env.SKIP != 'true' }}
         run: |
           python3 -u ./hack/build-component.py
         env:
           PYTHONUNBUFFERED: "1"
 
       - name: Push OCM component to registry
+        if: ${{ env.SKIP != 'true' }}
         run: |
           python3 -u ./hack/push-component.py
         env:
