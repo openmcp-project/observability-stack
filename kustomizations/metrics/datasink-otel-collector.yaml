@@ -4,4 +4,4 @@ metadata:
   name: default
 spec:
   connection:
-    endpoint: "http://default-collector.opentelemetry-collector-system.svc.cluster.local:4318/v1/metrics"
+    endpoint: "grpc://default-collector.opentelemetry-collector-system.svc.cluster.local:4317"
