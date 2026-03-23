@@ -8,12 +8,11 @@ require (
 	github.com/prometheus/client_golang v1.23.2
 	github.com/prometheus/common v0.67.5
 	helm.sh/helm/v3 v3.20.1
-	helm.sh/helm/v4 v4.1.3
 	k8s.io/api v0.35.3
 	k8s.io/apimachinery v0.35.3
 	k8s.io/client-go v0.35.3
 	k8s.io/klog/v2 v2.140.0
-	ocm.software/open-component-model/kubernetes/controller v0.0.0-20260309125853-5b3f0348ad58
+	ocm.software/open-component-model/kubernetes/controller v0.2.0
 	sigs.k8s.io/e2e-framework v0.6.0
 	sigs.k8s.io/yaml v1.6.0
 )
@@ -164,5 +163,3 @@ require (
 	sigs.k8s.io/randfill v1.0.0 // indirect
 	sigs.k8s.io/structured-merge-diff/v6 v6.3.2 // indirect
 )
-
-replace ocm.software/open-component-model/kubernetes/controller => github.com/open-component-model/open-component-model/kubernetes/controller v0.0.0-20260309125853-5b3f0348ad58
