@@ -76,6 +76,15 @@ spec:
         check_interval: 1s
         limit_percentage: 75
         spike_limit_percentage: 15
+      # Flatten nested attribute maps produced by json_parser so that nested
+      # objects (e.g. Cluster: {name, namespace}) become dot-separated scalar
+      # attributes (Cluster.name, Cluster.namespace) instead of KeyValueList
+      # values, which Victoria Logs serialises in an ugly AnyValue representation.
+      transform:
+        log_statements:
+          - context: log
+            statements:
+              - flatten(attributes, "", 10)
       batch: {}
 
     exporters:
@@ -88,7 +97,7 @@ spec:
       pipelines:
         logs:
           receivers: [filelog]
-          processors: [memory_limiter, batch]
+          processors: [memory_limiter, transform, batch]
           exporters: [otlphttp]
 
   volumeMounts:
