@@ -32,7 +32,7 @@ spec:
           # Docker JSON format (e.g. Docker Desktop, older clusters)
           - type: json_parser
             id: parser-docker
-            output: extract-pod-metadata
+            output: move-log-to-body
             timestamp:
               parse_from: attributes.time
               layout: '%Y-%m-%dT%H:%M:%S.%LZ'
@@ -46,7 +46,7 @@ spec:
               parse_from: attributes.time
               layout: '%Y-%m-%dT%H:%M:%S.%LZ'
 
-          # Move the parsed log field to body (containerd / CRI-O only)
+          # Move the parsed log field to body (both Docker and containerd / CRI-O)
           - type: move
             id: move-log-to-body
             from: attributes.log
@@ -60,6 +60,16 @@ spec:
             regex: '^/var/log/pods/(?P<k8s_namespace>[^_]+)_(?P<k8s_pod>[^_]+)_(?P<k8s_uid>[^/]+)/(?P<k8s_container>[^/]+)/\d+\.log$'
             cache:
               size: 128
+
+          # If the log body is JSON, promote its fields to attributes so Victoria Logs
+          # indexes them as individual fields. parse_to: attributes leaves body (= _msg)
+          # unchanged, so the original JSON string is always retained.
+          - type: json_parser
+            id: parse-json-body
+            parse_from: body
+            parse_to: attributes
+            if: 'body matches "^\\s*\\{"'
+            on_error: send
 
     processors:
       memory_limiter:
