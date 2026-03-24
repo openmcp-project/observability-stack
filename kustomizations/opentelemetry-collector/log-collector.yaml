@@ -1,0 +1,92 @@
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: open-telemetry-log-collector
+---
+apiVersion: opentelemetry.io/v1beta1
+kind: OpenTelemetryCollector
+metadata:
+  name: logs
+spec:
+  mode: daemonset
+  serviceAccount: open-telemetry-log-collector
+  securityContext:
+    runAsUser: 0
+  config:
+    receivers:
+      filelog:
+        include:
+          - /var/log/pods/*/*/*.log
+        start_at: beginning
+        include_file_path: true
+        include_file_name: false
+        operators:
+          # Route to the correct parser based on container runtime format
+          - type: router
+            id: get-format
+            routes:
+              - output: parser-docker
+                expr: 'body matches "^\\{"'
+            default: parser-containerd
+
+          # Docker JSON format (e.g. Docker Desktop, older clusters)
+          - type: json_parser
+            id: parser-docker
+            output: extract-pod-metadata
+            timestamp:
+              parse_from: attributes.time
+              layout: '%Y-%m-%dT%H:%M:%S.%LZ'
+
+          # Containerd / CRI-O space-delimited format (most modern clusters)
+          - type: regex_parser
+            id: parser-containerd
+            regex: '^(?P<time>[^ Z]+Z) (?P<stream>stdout|stderr) (?P<logtag>[^ ]*) ?(?P<log>.*)$'
+            output: move-log-to-body
+            timestamp:
+              parse_from: attributes.time
+              layout: '%Y-%m-%dT%H:%M:%S.%LZ'
+
+          # Move the parsed log field to body (containerd / CRI-O only)
+          - type: move
+            id: move-log-to-body
+            from: attributes.log
+            to: body
+            output: extract-pod-metadata
+
+          # Extract pod metadata (namespace, pod name, uid, container) from the file path
+          - type: regex_parser
+            id: extract-pod-metadata
+            parse_from: attributes["log.file.path"]
+            regex: '^/var/log/pods/(?P<k8s_namespace>[^_]+)_(?P<k8s_pod>[^_]+)_(?P<k8s_uid>[^/]+)/(?P<k8s_container>[^/]+)/\d+\.log$'
+            cache:
+              size: 128
+
+    processors:
+      memory_limiter:
+        check_interval: 1s
+        limit_percentage: 75
+        spike_limit_percentage: 15
+      batch: {}
+
+    exporters:
+      otlphttp:
+        endpoint: "http://victoria-logs.victoria-logs-system.svc.cluster.local:9428/insert/opentelemetry"
+        tls:
+          insecure: true
+
+    service:
+      pipelines:
+        logs:
+          receivers: [filelog]
+          processors: [memory_limiter, batch]
+          exporters: [otlphttp]
+
+  volumeMounts:
+    - name: varlogpods
+      mountPath: /var/log/pods
+      readOnly: true
+
+  volumes:
+    - name: varlogpods
+      hostPath:
+        path: /var/log/pods

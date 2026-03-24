@@ -154,6 +154,17 @@ func TestObsStack(t *testing.T) {
 
 			return ctx
 		}).
+		Assess("can read logs from victoria logs", func(ctx context.Context, t *testing.T, config *envconf.Config) context.Context {
+			localPort, stop, err := portForwardToPod(t, "victoria-logs-system", "victoria-logs-0", 9428)
+			if err != nil {
+				t.Fatalf("failed to port-forward to Victoria Logs: %v", err)
+			}
+			defer stop()
+
+			assertLogsAvailable(ctx, t, localPort)
+
+			return ctx
+		}).
 		Teardown(func(ctx context.Context, t *testing.T, config *envconf.Config) context.Context {
 			// Delete objects in reverse order to handle dependencies
 			for i := len(objectList) - 1; i >= 0; i-- {

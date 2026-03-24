@@ -31,6 +31,10 @@ spec:
         namespace: string | default="prometheus-system"
         dashboard:
           port: integer | default=8443 minimum=1024 maximum=49151
+      victoriaLogs:
+        namespace: string | default="victoria-logs-system"
+        dashboard:
+          port: integer | default=8443 minimum=1024 maximum=49151
     status:
       certManager:
         ready: ${certManager.status.ready}
@@ -46,8 +50,10 @@ spec:
         ready: ${prometheusOperator.status.ready}
       prometheus:
         ready: ${prometheus.status.ready}
+      victoriaLogs:
+        ready: ${victoriaLogs.status.ready}
       ready:
-        ${(certManager.status.ready == true) && (metricsOperator.status.ready) && (openTelemetryOperator.status.ready == true) && (prometheusOperator.status.ready == true) && (prometheus.status.ready == true) && (openTelemetryCollector.status.ready == true) && metrics.status.ready == true}
+        ${(certManager.status.ready == true) && (metricsOperator.status.ready) && (openTelemetryOperator.status.ready == true) && (prometheusOperator.status.ready == true) && (prometheus.status.ready == true) && (openTelemetryCollector.status.ready == true) && metrics.status.ready == true && victoriaLogs.status.ready == true}
 
   resources:
     - id: certManager
@@ -151,3 +157,19 @@ spec:
           forProvider: ${schema.spec.prometheus}
       readyWhen:
         - ${prometheus.status.ready == true}
+
+    - id: victoriaLogs
+      template:
+        apiVersion: kro.run/v1alpha1
+        kind: VictoriaLogs
+        metadata:
+          name: victoria-logs
+          annotations:
+            dependency/cert-manager: ${certManager.status.lastAttemptedRevisionDigest}
+        spec:
+          componentRef: ${schema.spec.componentRef}
+          imagePullSecretRef: ${schema.spec.imagePullSecretRef}
+          openMCPGatewayRef: ${schema.spec.openMCPGatewayRef}
+          forProvider: ${schema.spec.victoriaLogs}
+      readyWhen:
+        - ${victoriaLogs.status.ready == true}

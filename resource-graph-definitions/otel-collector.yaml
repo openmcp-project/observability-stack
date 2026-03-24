@@ -108,6 +108,14 @@ spec:
                 value:
                 - name: ${openTelemetryCollectorImagePullSecret.metadata.name}
           - target:
+              kind: ServiceAccount
+              name: open-telemetry-log-collector
+            patch: |-
+              - op: add
+                path: /imagePullSecrets
+                value:
+                - name: ${openTelemetryCollectorImagePullSecret.metadata.name}
+          - target:
               kind: ServiceMonitor
               name: otel-collector
             patch: |-
