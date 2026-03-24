@@ -37,26 +37,18 @@ Create an OCM configuration file for accessing the component registry:
 # Create the OCM config with your GitHub credentials
 cat <<EOF > .ocmconfig
 type: generic.config.ocm.software/v1
-configurations:
-  - type: credentials.config.ocm.software
-    consumers:
-      - identity:
-          type: OCIRepository
-          scheme: https
-          hostname: ghcr.io
-        credentials:
-          - type: Credentials
-            properties:
-              username: <your-github-username>
-              password: <your-github-token>
-      - identity:
-          type: OCIRepository
-          hostname: ghcr.io
-        credentials:
-          - type: Credentials
-            properties:
-              username: <your-github-username>
-              password: <your-github-token>
+    configurations:
+      - type: credentials.config.ocm.software
+        consumers:
+          - identities:
+              - type: OCIRegistry
+                hostname: ghcr.io
+                path: openmcp-project/*
+            credentials:
+              - type: Credentials
+                properties:
+                  username: <your-github-username>
+                  password: <your-github-token>
 EOF
 ```
 

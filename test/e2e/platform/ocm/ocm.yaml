@@ -9,24 +9,15 @@ stringData:
     configurations:
       - type: credentials.config.ocm.software
         consumers:
-          - identity:
-              type: OCIRepository
-              scheme: https
-              hostname: ghcr.io
+          - identities:
+              - type: OCIRegistry
+                hostname: ghcr.io
+                path: openmcp-project/*
             credentials:
               - type: Credentials
                 properties:
                   username: {{.GITHUB_USERNAME}}
                   password: {{.GITHUB_TOKEN}}
-          - identity:
-              type: OCIRepository
-              hostname: ghcr.io
-            credentials:
-              - type: Credentials
-                properties:
-                  username: {{.GITHUB_USERNAME}}
-                  password: {{.GITHUB_TOKEN}}
-
 ---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRole
