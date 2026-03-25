@@ -18,7 +18,7 @@ permissions:
 jobs:
   cleanup:
     name: Cleanup Old Dev Versions
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-latest
     steps:
       - name: Delete old PR and dev versions
         uses: actions/github-script@v8
