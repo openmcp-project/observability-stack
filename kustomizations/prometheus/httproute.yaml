@@ -4,8 +4,9 @@ metadata:
   name: prometheus
 spec:
   parentRefs:
-  - name: prometheus
-    namespace: prometheus-system
+  - name: observability-gateway
+    namespace: observability-gateway-system
+    sectionName: prometheus
   hostnames: []
   rules:
   - matches:

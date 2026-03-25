@@ -1,0 +1,153 @@
+apiVersion: kro.run/v1alpha1
+kind: ResourceGraphDefinition
+metadata:
+  name: observability-gateway
+spec:
+  schema:
+    apiVersion: v1alpha1
+    kind: ObservabilityGateway
+    spec:
+      componentRef:
+        name: string | default="obs-stack-component"
+      imagePullSecretRef:
+        name: string | default="imgpull"
+        namespace: string | default="obs-stack"
+      openMCPGatewayRef:
+        name: string | default="default"
+        namespace: string | default="openmcp-system"
+      forProvider:
+        namespace: string | default="observability-gateway-system"
+        port: integer | default=8443 minimum=1024 maximum=49151
+        prometheus:
+          namespace: string | default="prometheus-system"
+        victoriaLogs:
+          namespace: string | default="victoria-logs-system"
+    status:
+      ready: ${observabilityGatewayKustomization.status.conditions.exists(c, c.type == "Ready" && c.status == "True")}
+      lastAttemptedRevisionDigest: ${observabilityGatewayKustomization.status.lastAttemptedRevision}
+
+  resources:
+    # shared image pull secret copied into the gateway namespace
+    - id: sharedImagePullSecret
+      externalRef:
+        apiVersion: v1
+        kind: Secret
+        metadata:
+          name: ${schema.spec.imagePullSecretRef.name}
+          namespace: ${schema.spec.imagePullSecretRef.namespace}
+
+    # openMCP default gateway used to acquire the DNS base domain
+    - id: sharedGateway
+      externalRef:
+        apiVersion: gateway.networking.k8s.io/v1
+        kind: Gateway
+        metadata:
+          name: ${schema.spec.openMCPGatewayRef.name}
+          namespace: ${schema.spec.openMCPGatewayRef.namespace}
+
+    - id: observabilityGatewayKustomizationResource
+      template:
+        apiVersion: delivery.ocm.software/v1alpha1
+        kind: Resource
+        metadata:
+          name: observability-gateway-kustomization
+          namespace: ${schema.metadata.namespace}
+        spec:
+          componentRef: ${schema.spec.componentRef}
+          resource:
+            byReference:
+              resource:
+                name: observability-gateway-kustomization
+          additionalStatusFields:
+            registry: resource.access.imageReference.toOCI().registry
+            repository: resource.access.imageReference.toOCI().repository
+            tag: resource.access.imageReference.toOCI().tag
+          interval: 1m
+
+    - id: observabilityGatewayOCIRepository
+      template:
+        apiVersion: source.toolkit.fluxcd.io/v1
+        kind: OCIRepository
+        metadata:
+          name: observability-gateway-ocirepository
+          namespace: ${schema.metadata.namespace}
+        spec:
+          interval: 1m0s
+          insecure: true
+          layerSelector:
+            mediaType: "application/vnd.cncf.flux.content.v1.tar+gzip"
+            operation: copy
+          url: oci://${observabilityGatewayKustomizationResource.status.additional.registry}/${observabilityGatewayKustomizationResource.status.additional.repository}
+          ref:
+            tag: ${observabilityGatewayKustomizationResource.status.additional.tag}
+          secretRef:
+            name: ${schema.spec.imagePullSecretRef.name}
+
+    - id: observabilityGatewayNamespace
+      template:
+        apiVersion: v1
+        kind: Namespace
+        metadata:
+          name: ${schema.spec.forProvider.namespace}
+
+    - id: observabilityGatewayImagePullSecret
+      template:
+        apiVersion: v1
+        kind: Secret
+        metadata:
+          name: observability-gateway-imgpull
+          namespace: ${observabilityGatewayNamespace.metadata.name}
+        type: ${sharedImagePullSecret.type}
+        data: ${sharedImagePullSecret.data}
+
+    - id: observabilityGatewayKustomization
+      template:
+        apiVersion: kustomize.toolkit.fluxcd.io/v1
+        kind: Kustomization
+        metadata:
+          name: observability-gateway-kustomization
+          namespace: ${schema.metadata.namespace}
+        spec:
+          interval: 1m
+          targetNamespace: ${observabilityGatewayNamespace.metadata.name}
+          sourceRef:
+            kind: OCIRepository
+            name: ${observabilityGatewayOCIRepository.metadata.name}
+          path: ""
+          prune: true
+          timeout: 1m
+          patches:
+          - target:
+              kind: Gateway
+              name: observability-gateway
+            patch: |-
+              - op: replace
+                path: /spec/listeners/0/hostname
+                value: prometheus.${schema.spec.forProvider.prometheus.namespace}.${sharedGateway.metadata.annotations["dns.openmcp.cloud/base-domain"]}
+              - op: replace
+                path: /spec/listeners/1/hostname
+                value: victoria-logs.${schema.spec.forProvider.victoriaLogs.namespace}.${sharedGateway.metadata.annotations["dns.openmcp.cloud/base-domain"]}
+              - op: replace
+                path: /spec/listeners/0/port
+                value: ${"%d".format([schema.spec.forProvider.port])}
+              - op: replace
+                path: /spec/listeners/1/port
+                value: ${"%d".format([schema.spec.forProvider.port])}
+          - target:
+              kind: Certificate
+              name: prometheus-gateway-cert
+            patch: |-
+              - op: add
+                path: /spec/dnsNames
+                value:
+                - prometheus.${schema.spec.forProvider.prometheus.namespace}.${sharedGateway.metadata.annotations["dns.openmcp.cloud/base-domain"]}
+          - target:
+              kind: Certificate
+              name: victoria-logs-gateway-cert
+            patch: |-
+              - op: add
+                path: /spec/dnsNames
+                value:
+                - victoria-logs.${schema.spec.forProvider.victoriaLogs.namespace}.${sharedGateway.metadata.annotations["dns.openmcp.cloud/base-domain"]}
+      readyWhen:
+        - ${observabilityGatewayKustomization.status.conditions.exists(c, c.type == "Ready" && c.status == "True")}

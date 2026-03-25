@@ -15,10 +15,10 @@ spec:
       openMCPGatewayRef:
         name: string | default="default"
         namespace: string | default="openmcp-system"
+      observabilityGatewayRef:
+        namespace: string | default="observability-gateway-system"
       forProvider:
         namespace: string | default="victoria-logs-system"
-        dashboard:
-          port: integer | default=8443 minimum=1024 maximum=49151
     status:
       ready: ${victoriaLogsKustomization.status.conditions.exists(c, c.type == "Ready" && c.status == "True")}
       lastAttemptedRevisionDigest: ${victoriaLogsKustomization.status.lastAttemptedRevision}
@@ -141,31 +141,9 @@ spec:
                 path: /spec/hostnames
                 value:
                 - victoria-logs.${victoriaLogsNamespace.metadata.name}.${sharedGateway.metadata.annotations["dns.openmcp.cloud/base-domain"]}
-          - target:
-              kind: Certificate
-              name: victoria-logs-gateway-cert
-            patch: |-
-              - op: add
-                path: /spec/dnsNames
-                value:
-                - victoria-logs.${victoriaLogsNamespace.metadata.name}.${sharedGateway.metadata.annotations["dns.openmcp.cloud/base-domain"]}
-          - target:
-              kind: Gateway
-              name: victoria-logs
-            patch: |-
-              - op: replace
-                path: /spec/listeners/0/port
-                value: ${"%d".format([schema.spec.forProvider.dashboard.port])}
-              - op: replace
-                path: /spec/listeners/0/tls/certificateRefs/0/namespace
-                value: ${victoriaLogsNamespace.metadata.name}
-          - target:
-              kind: HTTPRoute
-              name: victoria-logs
-            patch: |-
               - op: replace
                 path: /spec/parentRefs/0/namespace
-                value: ${victoriaLogsNamespace.metadata.name}
+                value: ${schema.spec.observabilityGatewayRef.namespace}
           - target:
               kind: StatefulSet
               name: victoria-logs

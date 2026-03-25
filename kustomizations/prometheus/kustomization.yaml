@@ -3,8 +3,4 @@ kind: Kustomization
 resources:
   - prometheus.yaml
   - alertmanager.yaml
-  - gateway.yaml
-  - gateway-issuer.yaml
-  - gateway-certificate.yaml
-  - client-certificates.yaml
   - httproute.yaml

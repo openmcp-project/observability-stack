@@ -1,0 +1,65 @@
+apiVersion: gateway.networking.k8s.io/v1
+kind: Gateway
+metadata:
+  name: observability-gateway
+spec:
+  gatewayClassName: envoy-gateway
+  listeners:
+  - name: prometheus
+    port: 8443
+    protocol: HTTPS
+    hostname: "<prometheus-dnsname>"
+    allowedRoutes:
+      namespaces:
+        from: All
+    tls:
+      mode: Terminate
+      certificateRefs:
+      - kind: Secret
+        name: prometheus-cert
+  - name: victoria-logs
+    port: 8443
+    protocol: HTTPS
+    hostname: "<victoria-logs-dnsname>"
+    allowedRoutes:
+      namespaces:
+        from: All
+    tls:
+      mode: Terminate
+      certificateRefs:
+      - kind: Secret
+        name: victoria-logs-cert
+---
+apiVersion: gateway.envoyproxy.io/v1alpha1
+kind: ClientTrafficPolicy
+metadata:
+  name: prometheus-mtls
+spec:
+  targetRefs:
+  - group: gateway.networking.k8s.io
+    kind: Gateway
+    name: observability-gateway
+    sectionName: prometheus
+  tls:
+    clientValidation:
+      caCertificateRefs:
+      - kind: "Secret"
+        group: ""
+        name: "prometheus-client-ca-cert"
+---
+apiVersion: gateway.envoyproxy.io/v1alpha1
+kind: ClientTrafficPolicy
+metadata:
+  name: victoria-logs-mtls
+spec:
+  targetRefs:
+  - group: gateway.networking.k8s.io
+    kind: Gateway
+    name: observability-gateway
+    sectionName: victoria-logs
+  tls:
+    clientValidation:
+      caCertificateRefs:
+      - kind: "Secret"
+        group: ""
+        name: "victoria-logs-client-ca-cert"

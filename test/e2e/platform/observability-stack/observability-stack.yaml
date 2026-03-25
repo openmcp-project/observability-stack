@@ -23,9 +23,8 @@ spec:
     namespace: prometheus-operator-system
   prometheus:
     namespace: prometheus-system
-    dashboard:
-      port: 8443
   victoriaLogs:
     namespace: victoria-logs-system
-    dashboard:
-      port: 8443
+  observabilityGateway:
+    namespace: observability-gateway-system
+    port: 8443

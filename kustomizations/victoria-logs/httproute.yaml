@@ -4,8 +4,9 @@ metadata:
   name: victoria-logs
 spec:
   parentRefs:
-  - name: victoria-logs
-    namespace: victoria-logs-system
+  - name: observability-gateway
+    namespace: observability-gateway-system
+    sectionName: victoria-logs
   hostnames: []
   rules:
   - matches:
