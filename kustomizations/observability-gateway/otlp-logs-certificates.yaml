@@ -1,0 +1,11 @@
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: otlp-logs-gateway-cert
+spec:
+  secretName: otlp-logs-cert
+  issuerRef:
+    name: gateway-selfsigned-issuer
+    kind: Issuer
+  dnsNames:
+  - "<dnsname>"

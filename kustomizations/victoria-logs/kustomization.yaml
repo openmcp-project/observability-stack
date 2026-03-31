@@ -3,3 +3,4 @@ kind: Kustomization
 resources:
   - victoria-logs.yaml
   - httproute.yaml
+  - otlp-httproute.yaml

@@ -124,10 +124,16 @@ spec:
                 path: /spec/listeners/1/hostname
                 value: logs.${schema.spec.forProvider.namespace}.${sharedGateway.metadata.annotations["dns.openmcp.cloud/base-domain"]}
               - op: replace
+                path: /spec/listeners/2/hostname
+                value: otlp-logs.${schema.spec.forProvider.namespace}.${sharedGateway.metadata.annotations["dns.openmcp.cloud/base-domain"]}
+              - op: replace
                 path: /spec/listeners/0/port
                 value: ${"%d".format([schema.spec.forProvider.port])}
               - op: replace
                 path: /spec/listeners/1/port
+                value: ${"%d".format([schema.spec.forProvider.port])}
+              - op: replace
+                path: /spec/listeners/2/port
                 value: ${"%d".format([schema.spec.forProvider.port])}
           - target:
               kind: Certificate
@@ -145,5 +151,13 @@ spec:
                 path: /spec/dnsNames
                 value:
                 - logs.${schema.spec.forProvider.namespace}.${sharedGateway.metadata.annotations["dns.openmcp.cloud/base-domain"]}
+          - target:
+              kind: Certificate
+              name: otlp-logs-gateway-cert
+            patch: |-
+              - op: add
+                path: /spec/dnsNames
+                value:
+                - otlp-logs.${schema.spec.forProvider.namespace}.${sharedGateway.metadata.annotations["dns.openmcp.cloud/base-domain"]}
       readyWhen:
         - ${observabilityGatewayKustomization.status.conditions.exists(c, c.type == "Ready" && c.status == "True")}

@@ -29,6 +29,18 @@ spec:
       certificateRefs:
       - kind: Secret
         name: victoria-logs-cert
+  - name: otlp-logs
+    port: 8443
+    protocol: HTTPS
+    hostname: "<otlp-logs-dnsname>"
+    allowedRoutes:
+      namespaces:
+        from: All
+    tls:
+      mode: Terminate
+      certificateRefs:
+      - kind: Secret
+        name: otlp-logs-cert
 ---
 apiVersion: gateway.envoyproxy.io/v1alpha1
 kind: ClientTrafficPolicy
@@ -57,6 +69,23 @@ spec:
     kind: Gateway
     name: observability-gateway
     sectionName: logs
+  tls:
+    clientValidation:
+      caCertificateRefs:
+      - kind: "Secret"
+        group: ""
+        name: "observability-client-ca-cert"
+---
+apiVersion: gateway.envoyproxy.io/v1alpha1
+kind: ClientTrafficPolicy
+metadata:
+  name: otlp-logs-mtls
+spec:
+  targetRefs:
+  - group: gateway.networking.k8s.io
+    kind: Gateway
+    name: observability-gateway
+    sectionName: otlp-logs
   tls:
     clientValidation:
       caCertificateRefs:

@@ -18,7 +18,7 @@ The stack deploys the following components:
 | **Prometheus Operator** | Manages Prometheus instances |
 | **Prometheus** | Metrics storage and query engine |
 | **Victoria Logs** | Log storage and query engine |
-| **Observability Gateway** | Shared Envoy Gateway providing HTTPS + mTLS access to Prometheus and Victoria Logs |
+| **Observability Gateway** | Shared Envoy Gateway providing HTTPS + mTLS access to Prometheus UI, Victoria Logs UI, and OTLP log ingestion |
 
 ## Requirements and Setup
 
@@ -211,15 +211,17 @@ Both Prometheus and Victoria Logs are exposed through a single shared Envoy Gate
 
 **Hostname Pattern:**
 
-| Dashboard | URL |
-| --- | --- |
-| Prometheus | `https://metrics.<gateway-namespace>.<base-domain>:<port>` |
-| Victoria Logs | `https://logs.<gateway-namespace>.<base-domain>:<port>` |
+| Endpoint | URL | Purpose |
+| --- | --- | --- |
+| Prometheus UI | `https://metrics.<gateway-namespace>.<base-domain>:<port>` | Metrics query and dashboards |
+| Victoria Logs UI | `https://logs.<gateway-namespace>.<base-domain>:<port>` | Log query and UI |
+| OTLP log ingestion | `https://otlp-logs.<gateway-namespace>.<base-domain>:<port>` | Remote log ingestion (external clusters) |
 
 The `<base-domain>` is derived from the openMCP Gateway's `dns.openmcp.cloud/base-domain` annotation. With the default configuration (`observabilityGateway.namespace: observability-gateway-system`), the hostnames look like:
 
 - `metrics.observability-gateway-system.<base-domain>:8443`
 - `logs.observability-gateway-system.<base-domain>:8443`
+- `otlp-logs.observability-gateway-system.<base-domain>:8443`
 
 **Get the Dashboard URLs:**
 
@@ -229,6 +231,9 @@ kubectl get httproute prometheus -n prometheus-system -o jsonpath='{.spec.hostna
 
 # Get the Victoria Logs hostname
 kubectl get httproute victoria-logs -n victoria-logs-system -o jsonpath='{.spec.hostnames[0]}'
+
+# Get the OTLP ingestion hostname
+kubectl get httproute victoria-logs-otlp -n victoria-logs-system -o jsonpath='{.spec.hostnames[0]}'
 ```
 
 **Extract mTLS Client Certificates:**
@@ -378,7 +383,7 @@ kubectl get prometheus.monitoring.coreos.com prometheus -n prometheus-system -o 
 
 The Prometheus dashboard also shows the connected Alertmanager count under **Status → Runtime & Build Info**.
 
-#### 8. Log Collection
+#### 8. Log Collection and Cross-Cluster Ingestion
 
 Pod logs (stdout/stderr from all containers on every node) are automatically collected by an OpenTelemetry Collector DaemonSet running in `open-telemetry-collector-system`. It reads from `/var/log/pods` on each node and ships logs to Victoria Logs via OTLP HTTP.
 
@@ -405,6 +410,58 @@ https://logs.<gateway-namespace>.<base-domain>:8443/select/vmui/
 
 The UI provides a log query interface using [LogsQL](https://docs.victoriametrics.com/victorialogs/logsql/).
 
+**Ingest logs from external Kubernetes clusters:**
+
+The OTLP log ingestion endpoint (`otlp-logs.<gateway-ns>.<base-domain>:8443/insert/opentelemetry`) accepts logs from any OpenTelemetry Collector instance that presents a valid mTLS client certificate. To ship logs from another cluster:
+
+1. Extract the client certificate and OTLP server CA from the central cluster:
+
+   ```bash
+   # On the central cluster
+   kubectl get secret observability-client-cert -n observability-gateway-system \
+     -o jsonpath='{.data.tls\.crt}' | base64 -d > client.crt
+   kubectl get secret observability-client-cert -n observability-gateway-system \
+     -o jsonpath='{.data.tls\.key}' | base64 -d > client.key
+   kubectl get secret otlp-logs-cert -n observability-gateway-system \
+     -o jsonpath='{.data.tls\.crt}' | base64 -d > otlp-logs-server.crt
+   ```
+
+2. Create a secret in the remote cluster's OTel Collector namespace:
+
+   ```bash
+   # On the remote cluster
+   kubectl create secret generic observability-client-cert \
+     --from-file=tls.crt=client.crt \
+     --from-file=tls.key=client.key \
+     --from-file=ca.crt=otlp-logs-server.crt \
+     -n open-telemetry-collector-system
+   ```
+
+3. Configure the OTel Collector on the remote cluster to export logs via OTLP HTTP with mTLS:
+
+   ```yaml
+   config: |
+     exporters:
+       otlphttp/logs:
+         endpoint: "https://otlp-logs.<gateway-namespace>.<base-domain>:8443/insert/opentelemetry"
+         tls:
+           cert_file: /etc/otel/certs/tls.crt
+           key_file: /etc/otel/certs/tls.key
+           ca_file: /etc/otel/certs/ca.crt
+     service:
+       pipelines:
+         logs:
+           exporters: [otlphttp/logs]
+   volumeMounts:
+   - name: client-certs
+     mountPath: /etc/otel/certs
+     readOnly: true
+   volumes:
+   - name: client-certs
+     secret:
+       secretName: observability-client-cert
+   ```
+
 ### Configuration Options
 
 The `ObservabilityStack` custom resource supports the following configuration options:
@@ -421,8 +478,8 @@ The `ObservabilityStack` custom resource supports the following configuration op
 - **victoriaLogs**: Configuration for the Victoria Logs instance (namespace)
 - **observabilityGateway**: Configuration for the shared Envoy Gateway (namespace, port)
 
-The `observabilityGateway.namespace` is used as the subdomain component for both dashboard hostnames:
-`metrics.<namespace>.<base-domain>` and `logs.<namespace>.<base-domain>`.
+The `observabilityGateway.namespace` is used as the subdomain component for all three external hostnames:
+`metrics.<namespace>.<base-domain>`, `logs.<namespace>.<base-domain>`, and `otlp-logs.<namespace>.<base-domain>`.
 
 Adjust the namespace and configuration values in the `ObservabilityStack` resource according to your requirements.
 

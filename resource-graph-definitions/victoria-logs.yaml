@@ -145,6 +145,17 @@ spec:
                 path: /spec/parentRefs/0/namespace
                 value: ${schema.spec.observabilityGatewayRef.namespace}
           - target:
+              kind: HTTPRoute
+              name: victoria-logs-otlp
+            patch: |-
+              - op: add
+                path: /spec/hostnames
+                value:
+                - otlp-logs.${schema.spec.observabilityGatewayRef.namespace}.${sharedGateway.metadata.annotations["dns.openmcp.cloud/base-domain"]}
+              - op: replace
+                path: /spec/parentRefs/0/namespace
+                value: ${schema.spec.observabilityGatewayRef.namespace}
+          - target:
               kind: StatefulSet
               name: victoria-logs
             patch: |-
