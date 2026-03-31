@@ -76,6 +76,11 @@ spec:
         check_interval: 1s
         limit_percentage: 75
         spike_limit_percentage: 15
+      resource:
+        attributes:
+          - key: k8s_cluster
+            value: "${env:K8S_CLUSTER_NAME}"
+            action: upsert
       # Flatten nested attribute maps produced by json_parser so that nested
       # objects (e.g. Cluster: {name, namespace}) become dot-separated scalar
       # attributes (Cluster.name, Cluster.namespace) instead of KeyValueList
@@ -97,8 +102,12 @@ spec:
       pipelines:
         logs:
           receivers: [filelog]
-          processors: [memory_limiter, transform, batch]
+          processors: [memory_limiter, resource, transform, batch]
           exporters: [otlphttp]
+
+  env:
+    - name: K8S_CLUSTER_NAME
+      value: ""
 
   volumeMounts:
     - name: varlogpods

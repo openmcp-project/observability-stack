@@ -14,6 +14,7 @@ spec:
         namespace: string | default="obs-stack"
       forProvider:
         namespace: string | default="open-telemetry-collector-system"
+        clusterName: string | default=""
     status:
       ready: ${openTelemetryCollectorKustomization.status.conditions.exists(c, c.type == "Ready" && c.status == "True")}
       lastAttemptedRevisionDigest: ${openTelemetryCollectorKustomization.status.lastAttemptedRevision}
@@ -122,5 +123,12 @@ spec:
               - op: add
                 path: /spec/selector/matchLabels/app.kubernetes.io~1instance
                 value: ${openTelemetryCollectorNamespace.metadata.name}.default
+          - target:
+              kind: OpenTelemetryCollector
+              name: logs
+            patch: |-
+              - op: replace
+                path: /spec/env/0/value
+                value: ${schema.spec.forProvider.clusterName}
       readyWhen:
         - ${openTelemetryCollectorKustomization.status.conditions.exists(c, c.type == "Ready" && c.status == "True")}

@@ -25,6 +25,7 @@ spec:
         namespace: string | default="open-telemetry-operator-system"
       openTelemetryCollector:
         namespace: string | default="open-telemetry-collector-system"
+        clusterName: string | default=""
       prometheusOperator:
         namespace: string | default="prometheus-operator-system"
       prometheus:
