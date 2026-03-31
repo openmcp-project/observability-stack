@@ -76,7 +76,7 @@ def push_kustomizations(repo_root: Path, version: str) -> None:
         ("prometheus", "prometheus"),
         ("metrics", "metrics"),
         ("victoria-logs", "victoria-logs"),
-        ("observabiltiy-gateway", "observabiltiy-gateway")
+        ("observability-gateway", "observability-gateway")
     ]
 
     # Get git information
