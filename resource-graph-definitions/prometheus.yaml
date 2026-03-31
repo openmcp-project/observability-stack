@@ -156,7 +156,7 @@ spec:
               - op: add
                 path: /spec/hostnames
                 value:
-                - prometheus.${prometheusNamespace.metadata.name}.${sharedGateway.metadata.annotations["dns.openmcp.cloud/base-domain"]}
+                - metrics.${schema.spec.observabilityGatewayRef.namespace}.${sharedGateway.metadata.annotations["dns.openmcp.cloud/base-domain"]}
               - op: replace
                 path: /spec/parentRefs/0/namespace
                 value: ${schema.spec.observabilityGatewayRef.namespace}

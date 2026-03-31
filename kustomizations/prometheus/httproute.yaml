@@ -6,7 +6,7 @@ spec:
   parentRefs:
   - name: observability-gateway
     namespace: observability-gateway-system
-    sectionName: prometheus
+    sectionName: metrics
   hostnames: []
   rules:
   - matches:

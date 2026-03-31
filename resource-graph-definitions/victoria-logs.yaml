@@ -140,7 +140,7 @@ spec:
               - op: add
                 path: /spec/hostnames
                 value:
-                - victoria-logs.${victoriaLogsNamespace.metadata.name}.${sharedGateway.metadata.annotations["dns.openmcp.cloud/base-domain"]}
+                - logs.${schema.spec.observabilityGatewayRef.namespace}.${sharedGateway.metadata.annotations["dns.openmcp.cloud/base-domain"]}
               - op: replace
                 path: /spec/parentRefs/0/namespace
                 value: ${schema.spec.observabilityGatewayRef.namespace}

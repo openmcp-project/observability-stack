@@ -158,10 +158,6 @@ spec:
           forProvider:
             namespace: ${schema.spec.observabilityGateway.namespace}
             port: ${schema.spec.observabilityGateway.port}
-            prometheus:
-              namespace: ${schema.spec.prometheus.namespace}
-            victoriaLogs:
-              namespace: ${schema.spec.victoriaLogs.namespace}
       readyWhen:
         - ${observabilityGateway.status.ready == true}
 

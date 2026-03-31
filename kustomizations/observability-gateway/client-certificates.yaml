@@ -1,0 +1,35 @@
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: observability-client-ca
+spec:
+  isCA: true
+  commonName: observability-client-ca
+  secretName: observability-client-ca-cert
+  privateKey:
+    algorithm: RSA
+    size: 2048
+  issuerRef:
+    name: gateway-selfsigned-issuer
+    kind: Issuer
+---
+apiVersion: cert-manager.io/v1
+kind: Issuer
+metadata:
+  name: observability-client-issuer
+spec:
+  ca:
+    secretName: observability-client-ca-cert
+---
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: observability-client-cert
+spec:
+  secretName: observability-client-cert
+  commonName: observability-client
+  usages:
+  - client auth
+  issuerRef:
+    name: observability-client-issuer
+    kind: Issuer

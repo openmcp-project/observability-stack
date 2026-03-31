@@ -6,7 +6,7 @@ spec:
   parentRefs:
   - name: observability-gateway
     namespace: observability-gateway-system
-    sectionName: victoria-logs
+    sectionName: logs
   hostnames: []
   rules:
   - matches:

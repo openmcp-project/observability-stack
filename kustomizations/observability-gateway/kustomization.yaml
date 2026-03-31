@@ -5,3 +5,4 @@ resources:
   - gateway-issuer.yaml
   - prometheus-certificates.yaml
   - victoria-logs-certificates.yaml
+  - client-certificates.yaml

@@ -18,10 +18,6 @@ spec:
       forProvider:
         namespace: string | default="observability-gateway-system"
         port: integer | default=8443 minimum=1024 maximum=49151
-        prometheus:
-          namespace: string | default="prometheus-system"
-        victoriaLogs:
-          namespace: string | default="victoria-logs-system"
     status:
       ready: ${observabilityGatewayKustomization.status.conditions.exists(c, c.type == "Ready" && c.status == "True")}
       lastAttemptedRevisionDigest: ${observabilityGatewayKustomization.status.lastAttemptedRevision}
@@ -123,10 +119,10 @@ spec:
             patch: |-
               - op: replace
                 path: /spec/listeners/0/hostname
-                value: prometheus.${schema.spec.forProvider.prometheus.namespace}.${sharedGateway.metadata.annotations["dns.openmcp.cloud/base-domain"]}
+                value: metrics.${schema.spec.forProvider.namespace}.${sharedGateway.metadata.annotations["dns.openmcp.cloud/base-domain"]}
               - op: replace
                 path: /spec/listeners/1/hostname
-                value: victoria-logs.${schema.spec.forProvider.victoriaLogs.namespace}.${sharedGateway.metadata.annotations["dns.openmcp.cloud/base-domain"]}
+                value: logs.${schema.spec.forProvider.namespace}.${sharedGateway.metadata.annotations["dns.openmcp.cloud/base-domain"]}
               - op: replace
                 path: /spec/listeners/0/port
                 value: ${"%d".format([schema.spec.forProvider.port])}
@@ -140,7 +136,7 @@ spec:
               - op: add
                 path: /spec/dnsNames
                 value:
-                - prometheus.${schema.spec.forProvider.prometheus.namespace}.${sharedGateway.metadata.annotations["dns.openmcp.cloud/base-domain"]}
+                - metrics.${schema.spec.forProvider.namespace}.${sharedGateway.metadata.annotations["dns.openmcp.cloud/base-domain"]}
           - target:
               kind: Certificate
               name: victoria-logs-gateway-cert
@@ -148,6 +144,6 @@ spec:
               - op: add
                 path: /spec/dnsNames
                 value:
-                - victoria-logs.${schema.spec.forProvider.victoriaLogs.namespace}.${sharedGateway.metadata.annotations["dns.openmcp.cloud/base-domain"]}
+                - logs.${schema.spec.forProvider.namespace}.${sharedGateway.metadata.annotations["dns.openmcp.cloud/base-domain"]}
       readyWhen:
         - ${observabilityGatewayKustomization.status.conditions.exists(c, c.type == "Ready" && c.status == "True")}
