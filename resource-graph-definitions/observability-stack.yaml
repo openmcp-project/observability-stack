@@ -32,6 +32,15 @@ spec:
         namespace: string | default="prometheus-system"
       victoriaLogs:
         namespace: string | default="victoria-logs-system"
+        retentionPeriod: string | default="7d"
+        storage: string | default="10Gi"
+        resources:
+          requests:
+            memory: string | default="256Mi"
+            cpu: string | default="100m"
+          limits:
+            memory: string | default="1Gi"
+            cpu: string | default="500m"
       observabilityGateway:
         namespace: string | default="observability-gateway-system"
         port: integer | default=8443 minimum=1024 maximum=49151

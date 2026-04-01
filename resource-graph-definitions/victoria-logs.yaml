@@ -19,6 +19,15 @@ spec:
         namespace: string | default="observability-gateway-system"
       forProvider:
         namespace: string | default="victoria-logs-system"
+        retentionPeriod: string | default="7d"
+        storage: string | default="10Gi"
+        resources:
+          requests:
+            memory: string | default="256Mi"
+            cpu: string | default="100m"
+          limits:
+            memory: string | default="1Gi"
+            cpu: string | default="500m"
     status:
       ready: ${victoriaLogsKustomization.status.conditions.exists(c, c.type == "Ready" && c.status == "True")}
       lastAttemptedRevisionDigest: ${victoriaLogsKustomization.status.lastAttemptedRevision}
@@ -166,5 +175,23 @@ spec:
                 path: /spec/template/spec/imagePullSecrets
                 value:
                 - name: ${victoriaLogsImagePullSecret.metadata.name}
+              - op: replace
+                path: /spec/template/spec/containers/0/args/1
+                value: "-retentionPeriod=${schema.spec.forProvider.retentionPeriod}"
+              - op: replace
+                path: /spec/volumeClaimTemplates/0/spec/resources/requests/storage
+                value: ${schema.spec.forProvider.storage}
+              - op: replace
+                path: /spec/template/spec/containers/0/resources/requests/memory
+                value: ${schema.spec.forProvider.resources.requests.memory}
+              - op: replace
+                path: /spec/template/spec/containers/0/resources/requests/cpu
+                value: ${schema.spec.forProvider.resources.requests.cpu}
+              - op: replace
+                path: /spec/template/spec/containers/0/resources/limits/memory
+                value: ${schema.spec.forProvider.resources.limits.memory}
+              - op: replace
+                path: /spec/template/spec/containers/0/resources/limits/cpu
+                value: ${schema.spec.forProvider.resources.limits.cpu}
       readyWhen:
         - ${victoriaLogsKustomization.status.conditions.exists(c, c.type == "Ready" && c.status == "True")}
