@@ -114,6 +114,24 @@
         "/kro/charts/kro/",
         "/open-component-model/kubernetes/"
       ]
+    },
+    {
+      "description": "Group KRO updates together across go.mod and component-settings.yaml",
+      "matchPackageNames": [
+        "github.com/kubernetes-sigs/kro",
+        "registry.k8s.io/kro/charts/kro"
+      ],
+      "groupName": "kro",
+      "automerge": false
+    },
+    {
+      "description": "Group OCM K8s Toolkit updates together across go.mod and component-settings.yaml",
+      "matchPackageNames": [
+        "ocm.software/open-component-model/kubernetes/controller",
+        "ghcr.io/open-component-model/kubernetes/controller/chart"
+      ],
+      "groupName": "ocm-k8s-toolkit",
+      "automerge": false
     }
   ],
   "customManagers": [
