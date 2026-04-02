@@ -47,26 +47,7 @@ jobs:
           echo "Target version: $VERSION"
           echo "Version number: $VERSION_NUMBER"
 
-      - name: Check current version in operator.yaml
-        id: current
-        run: |
-          CURRENT=$(grep 'operator.prometheus.io/version:' kustomizations/prometheus-operator/operator.yaml | head -1 | awk '{print $2}')
-          echo "current_version=$CURRENT" >> $GITHUB_OUTPUT
-          echo "Current version: $CURRENT"
-
-      - name: Check if update is needed
-        id: check
-        run: |
-          if [ "${{ steps.version.outputs.version_number }}" == "${{ steps.current.outputs.current_version }}" ]; then
-            echo "Version is already up to date: ${{ steps.current.outputs.current_version }}"
-            echo "needs_update=false" >> $GITHUB_OUTPUT
-          else
-            echo "Update needed from ${{ steps.current.outputs.current_version }} to ${{ steps.version.outputs.version_number }}"
-            echo "needs_update=true" >> $GITHUB_OUTPUT
-          fi
-
       - name: Download new bundle.yaml
-        if: steps.check.outputs.needs_update == 'true'
         run: |
           echo "Downloading bundle.yaml for version ${{ steps.version.outputs.target_version }}"
           curl -fsSL \
@@ -89,7 +70,6 @@ jobs:
           fi
 
       - name: Update operator.yaml with new bundle
-        if: steps.check.outputs.needs_update == 'true'
         run: |
           # Create a new file with the header
           cat > kustomizations/prometheus-operator/operator.yaml <<'EOF'
@@ -102,7 +82,6 @@ jobs:
           cat /tmp/bundle.yaml >> kustomizations/prometheus-operator/operator.yaml
 
       - name: Check for changes
-        if: steps.check.outputs.needs_update == 'true'
         id: changes
         run: |
           if git diff --quiet kustomizations/prometheus-operator/operator.yaml; then
@@ -114,7 +93,7 @@ jobs:
           fi
 
       - name: Create Pull Request
-        if: steps.check.outputs.needs_update == 'true' && steps.changes.outputs.has_changes == 'true'
+        if: steps.changes.outputs.has_changes == 'true'
         uses: peter-evans/create-pull-request@c0f553fe549906ede9cf27b5156039d195d2ece0 # v8
         with:
           token: ${{ secrets.GITHUB_TOKEN }}

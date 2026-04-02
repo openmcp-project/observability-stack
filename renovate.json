@@ -267,21 +267,6 @@
       "autoReplaceStringTemplate": "ALERTMANAGER_IMAGE_VERSION: \"v{{{newValue}}}\""
     },
     {
-      "description": "Track Prometheus Operator bundle.yaml version via operator.yaml annotation",
-      "customType": "regex",
-      "managerFilePatterns": [
-        "/^kustomizations/prometheus-operator/operator\\.yaml$/"
-      ],
-      "matchStrings": [
-        "operator\\.prometheus\\.io/version:\\s*(?<currentValue>[0-9.]+)"
-      ],
-      "datasourceTemplate": "github-releases",
-      "depNameTemplate": "prometheus-operator/prometheus-operator",
-      "versioningTemplate": "semver",
-      "extractVersionTemplate": "^v(?<version>.*)$",
-      "autoReplaceStringTemplate": "operator.prometheus.io/version: {{{newValue}}}"
-    },
-    {
       "description": "Update OpenMCP Operator version in component-settings.yaml (E2E test dependency)",
       "customType": "regex",
       "managerFilePatterns": [
