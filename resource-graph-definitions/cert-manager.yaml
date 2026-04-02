@@ -45,7 +45,6 @@ spec:
             registry: resource.access.imageReference.toOCI().registry
             repository: resource.access.imageReference.toOCI().repository
             tag: resource.access.imageReference.toOCI().tag
-          interval: 1m
 
     - id: certManagerControllerImage
       template:
@@ -64,7 +63,6 @@ spec:
             registry: resource.access.imageReference.toOCI().registry
             repository: resource.access.imageReference.toOCI().repository
             tag: resource.access.imageReference.toOCI().tag
-          interval: 1m
 
     - id: certManagerWebhookImage
       template:
@@ -83,7 +81,6 @@ spec:
             registry: resource.access.imageReference.toOCI().registry
             repository: resource.access.imageReference.toOCI().repository
             tag: resource.access.imageReference.toOCI().tag
-          interval: 1m
 
     - id: certManagerCAInjectorImage
       template:
@@ -102,7 +99,6 @@ spec:
             registry: resource.access.imageReference.toOCI().registry
             repository: resource.access.imageReference.toOCI().repository
             tag: resource.access.imageReference.toOCI().tag
-          interval: 1m
 
     - id: certManagerACMESolverImage
       template:
@@ -121,7 +117,6 @@ spec:
             registry: resource.access.imageReference.toOCI().registry
             repository: resource.access.imageReference.toOCI().repository
             tag: resource.access.imageReference.toOCI().tag
-          interval: 1m
 
     - id: certManagerStartupAPICheckImage
       template:
@@ -140,7 +135,6 @@ spec:
             registry: resource.access.imageReference.toOCI().registry
             repository: resource.access.imageReference.toOCI().repository
             tag: resource.access.imageReference.toOCI().tag
-          interval: 1m
 
     - id: certManagerOCIRepository
       template:
