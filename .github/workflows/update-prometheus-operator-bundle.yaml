@@ -22,10 +22,17 @@ jobs:
     name: Update Prometheus Operator Bundle
     runs-on: ubuntu-latest
     steps:
+      - name: Create GitHub App token
+        uses: actions/create-github-app-token@f8d387b68d61c58ab83c6c016672934102569859 # v3
+        id: app-token
+        with:
+          app-id: 1312871
+          private-key: ${{ secrets.OPENMCP_CI_APP_PRIVATE_KEY }}
+
       - name: Checkout code
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
         with:
-          token: ${{ secrets.GITHUB_TOKEN }}
+          token: ${{ steps.app-token.outputs.token }}
           fetch-depth: 0
 
       - name: Determine target version
@@ -96,7 +103,7 @@ jobs:
         if: steps.changes.outputs.has_changes == 'true'
         uses: peter-evans/create-pull-request@c0f553fe549906ede9cf27b5156039d195d2ece0 # v8
         with:
-          token: ${{ secrets.GITHUB_TOKEN }}
+          token: ${{ steps.app-token.outputs.token }}
           commit-message: |
             chore(deps): update prometheus-operator bundle to ${{ steps.version.outputs.target_version }}
           branch: chore/prometheus-operator-bundle-${{ steps.version.outputs.version_number }}
