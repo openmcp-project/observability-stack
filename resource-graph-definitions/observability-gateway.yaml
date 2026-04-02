@@ -58,7 +58,6 @@ spec:
             registry: resource.access.imageReference.toOCI().registry
             repository: resource.access.imageReference.toOCI().repository
             tag: resource.access.imageReference.toOCI().tag
-          interval: 1m
 
     - id: observabilityGatewayOCIRepository
       template:
