@@ -59,7 +59,6 @@ spec:
             registry: resource.access.imageReference.toOCI().registry
             repository: resource.access.imageReference.toOCI().repository
             tag: resource.access.imageReference.toOCI().tag
-          interval: 1m
 
     - id: prometheusImage
       template:
@@ -78,7 +77,6 @@ spec:
             registry: resource.access.imageReference.toOCI().registry
             repository: resource.access.imageReference.toOCI().repository
             tag: resource.access.imageReference.toOCI().tag
-          interval: 1m
 
     - id: alertmanagerImage
       template:
@@ -97,7 +95,6 @@ spec:
             registry: resource.access.imageReference.toOCI().registry
             repository: resource.access.imageReference.toOCI().repository
             tag: resource.access.imageReference.toOCI().tag
-          interval: 1m
 
     - id: prometheusOCIRepository
       template:
