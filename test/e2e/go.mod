@@ -3,7 +3,7 @@ module github.com/openmcp-project/observability-stack
 go 1.26.1
 
 require (
-	github.com/kubernetes-sigs/kro v0.9.0
+	github.com/kubernetes-sigs/kro v0.9.1
 	github.com/openmcp-project/openmcp-testing v0.3.2
 	github.com/prometheus/client_golang v1.23.2
 	github.com/prometheus/common v0.67.5
