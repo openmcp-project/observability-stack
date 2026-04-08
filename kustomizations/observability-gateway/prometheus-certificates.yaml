@@ -7,5 +7,4 @@ spec:
   issuerRef:
     name: gateway-selfsigned-issuer
     kind: Issuer
-  dnsNames:
-  - "<dnsname>"
+  dnsNames: []
