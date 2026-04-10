@@ -15,10 +15,10 @@ spec:
       openMCPGatewayRef:
         name: string | default="default"
         namespace: string | default="openmcp-system"
+      observabilityGatewayRef:
+        namespace: string | default="observability-gateway-system"
       forProvider:
         namespace: string | default="prometheus-system"
-        dashboard:
-          port: integer | default=8443 minimum=1024 maximum=49151
     status:
       ready: ${prometheusKustomization.status.conditions.exists(c, c.type == "Ready" && c.status == "True")}
       lastAttemptedRevisionDigest: ${prometheusKustomization.status.lastAttemptedRevision}
@@ -156,32 +156,10 @@ spec:
               - op: add
                 path: /spec/hostnames
                 value:
-                - prometheus.${prometheusNamespace.metadata.name}.${sharedGateway.metadata.annotations["dns.openmcp.cloud/base-domain"]}
-          - target:
-              kind: Certificate
-              name: prometheus-gateway-cert
-            patch: |-
-              - op: add
-                path: /spec/dnsNames
-                value:
-                - prometheus.${prometheusNamespace.metadata.name}.${sharedGateway.metadata.annotations["dns.openmcp.cloud/base-domain"]}
-          - target:
-              kind: Gateway
-              name: prometheus
-            patch: |-
-              - op: replace
-                path: /spec/listeners/0/port
-                value: ${"%d".format([schema.spec.forProvider.dashboard.port])}
-              - op: replace
-                path: /spec/listeners/0/tls/certificateRefs/0/namespace
-                value: ${prometheusNamespace.metadata.name}
-          - target:
-              kind: HTTPRoute
-              name: prometheus
-            patch: |-
+                - metrics.${schema.spec.observabilityGatewayRef.namespace}.${sharedGateway.metadata.annotations["dns.openmcp.cloud/base-domain"]}
               - op: replace
                 path: /spec/parentRefs/0/namespace
-                value: ${prometheusNamespace.metadata.name}
+                value: ${schema.spec.observabilityGatewayRef.namespace}
           - target:
               kind: Prometheus
               name: prometheus

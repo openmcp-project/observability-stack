@@ -14,6 +14,7 @@ spec:
         namespace: string | default="obs-stack"
       openTelemetryCollector:
         namespace: string | default="open-telemetry-collector-system"
+        clusterName: string | default=""
       forProvider:
         namespace: string | default="metrics-operator-system"
     status:

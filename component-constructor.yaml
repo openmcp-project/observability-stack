@@ -164,3 +164,27 @@ components:
           type: ociArtifact
           imageReference: "${KUSTOMIZATIONS_LOCATION_PREFIX}/metrics:${OBSERVABILITY_STACK_VERSION}"
 
+      # observability gateway
+      - name: observability-gateway-kustomization
+        version: ${OBSERVABILITY_STACK_VERSION}
+        type: kustomization
+        access:
+          type: ociArtifact
+          imageReference: "${KUSTOMIZATIONS_LOCATION_PREFIX}/observability-gateway:${OBSERVABILITY_STACK_VERSION}"
+
+      # victoria logs
+      - name: victoria-logs-kustomization
+        version: ${OBSERVABILITY_STACK_VERSION}
+        type: kustomization
+        access:
+          type: ociArtifact
+          imageReference: "${KUSTOMIZATIONS_LOCATION_PREFIX}/victoria-logs:${OBSERVABILITY_STACK_VERSION}"
+
+      - name: victoria-logs-image
+        version: ${VICTORIA_LOGS_IMAGE_VERSION}
+        type: ociImage
+        input:
+          type: ociImage
+          path: "docker.io/victoriametrics/victoria-logs:${VICTORIA_LOGS_IMAGE_VERSION}"
+          repository: images/victoria-logs
+

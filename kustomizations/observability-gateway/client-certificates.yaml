@@ -1,11 +1,11 @@
 apiVersion: cert-manager.io/v1
 kind: Certificate
 metadata:
-  name: prometheus-client-ca
+  name: observability-client-ca
 spec:
   isCA: true
-  commonName: prometheus-client-ca
-  secretName: prometheus-client-ca-cert
+  commonName: observability-client-ca
+  secretName: observability-client-ca-cert
   privateKey:
     algorithm: RSA
     size: 2048
@@ -16,20 +16,20 @@ spec:
 apiVersion: cert-manager.io/v1
 kind: Issuer
 metadata:
-  name: prometheus-client-issuer
+  name: observability-client-issuer
 spec:
   ca:
-    secretName: prometheus-client-ca-cert
+    secretName: observability-client-ca-cert
 ---
 apiVersion: cert-manager.io/v1
 kind: Certificate
 metadata:
-  name: prometheus-client-cert
+  name: observability-client-cert
 spec:
-  secretName: prometheus-client-cert
-  commonName: prometheus-client
+  secretName: observability-client-cert
+  commonName: observability-client
   usages:
   - client auth
   issuerRef:
-    name: prometheus-client-issuer
+    name: observability-client-issuer
     kind: Issuer

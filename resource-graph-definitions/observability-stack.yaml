@@ -25,12 +25,25 @@ spec:
         namespace: string | default="open-telemetry-operator-system"
       openTelemetryCollector:
         namespace: string | default="open-telemetry-collector-system"
+        clusterName: string | default=""
       prometheusOperator:
         namespace: string | default="prometheus-operator-system"
       prometheus:
         namespace: string | default="prometheus-system"
-        dashboard:
-          port: integer | default=8443 minimum=1024 maximum=49151
+      victoriaLogs:
+        namespace: string | default="victoria-logs-system"
+        retentionPeriod: string | default="7d"
+        storage: string | default="10Gi"
+        resources:
+          requests:
+            memory: string | default="256Mi"
+            cpu: string | default="100m"
+          limits:
+            memory: string | default="1Gi"
+            cpu: string | default="500m"
+      observabilityGateway:
+        namespace: string | default="observability-gateway-system"
+        port: integer | default=8443 minimum=1024 maximum=49151
     status:
       certManager:
         ready: ${certManager.status.ready}
@@ -46,8 +59,12 @@ spec:
         ready: ${prometheusOperator.status.ready}
       prometheus:
         ready: ${prometheus.status.ready}
+      victoriaLogs:
+        ready: ${victoriaLogs.status.ready}
+      observabilityGateway:
+        ready: ${observabilityGateway.status.ready}
       ready:
-        ${(certManager.status.ready == true) && (metricsOperator.status.ready) && (openTelemetryOperator.status.ready == true) && (prometheusOperator.status.ready == true) && (prometheus.status.ready == true) && (openTelemetryCollector.status.ready == true) && metrics.status.ready == true}
+        ${(certManager.status.ready == true) && (metricsOperator.status.ready) && (openTelemetryOperator.status.ready == true) && (prometheusOperator.status.ready == true) && (prometheus.status.ready == true) && (openTelemetryCollector.status.ready == true) && metrics.status.ready == true && victoriaLogs.status.ready == true && observabilityGateway.status.ready == true}
 
   resources:
     - id: certManager
@@ -136,6 +153,24 @@ spec:
       readyWhen:
         - ${prometheusOperator.status.ready == true}
 
+    - id: observabilityGateway
+      template:
+        apiVersion: kro.run/v1alpha1
+        kind: ObservabilityGateway
+        metadata:
+          name: observability-gateway
+          annotations:
+            dependency/cert-manager: ${certManager.status.lastAttemptedRevisionDigest}
+        spec:
+          componentRef: ${schema.spec.componentRef}
+          imagePullSecretRef: ${schema.spec.imagePullSecretRef}
+          openMCPGatewayRef: ${schema.spec.openMCPGatewayRef}
+          forProvider:
+            namespace: ${schema.spec.observabilityGateway.namespace}
+            port: ${schema.spec.observabilityGateway.port}
+      readyWhen:
+        - ${observabilityGateway.status.ready == true}
+
     - id: prometheus
       template:
         apiVersion: kro.run/v1alpha1
@@ -143,11 +178,31 @@ spec:
         metadata:
           name: prometheus
           annotations:
-            dependency/cert-manager: ${certManager.status.lastAttemptedRevisionDigest}
+            dependency/observability-gateway: ${observabilityGateway.status.lastAttemptedRevisionDigest}
         spec:
           componentRef: ${schema.spec.componentRef}
           imagePullSecretRef: ${schema.spec.imagePullSecretRef}
           openMCPGatewayRef: ${schema.spec.openMCPGatewayRef}
+          observabilityGatewayRef:
+            namespace: ${schema.spec.observabilityGateway.namespace}
           forProvider: ${schema.spec.prometheus}
       readyWhen:
         - ${prometheus.status.ready == true}
+
+    - id: victoriaLogs
+      template:
+        apiVersion: kro.run/v1alpha1
+        kind: VictoriaLogs
+        metadata:
+          name: victoria-logs
+          annotations:
+            dependency/observability-gateway: ${observabilityGateway.status.lastAttemptedRevisionDigest}
+        spec:
+          componentRef: ${schema.spec.componentRef}
+          imagePullSecretRef: ${schema.spec.imagePullSecretRef}
+          openMCPGatewayRef: ${schema.spec.openMCPGatewayRef}
+          observabilityGatewayRef:
+            namespace: ${schema.spec.observabilityGateway.namespace}
+          forProvider: ${schema.spec.victoriaLogs}
+      readyWhen:
+        - ${victoriaLogs.status.ready == true}

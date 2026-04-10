@@ -1,0 +1,10 @@
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: prometheus-gateway-cert
+spec:
+  secretName: prometheus-cert
+  issuerRef:
+    name: gateway-selfsigned-issuer
+    kind: Issuer
+  dnsNames: []

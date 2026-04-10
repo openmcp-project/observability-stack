@@ -4,7 +4,21 @@
 
 ## About this project
 
-A comprehensive observability stack for openMCP deployments, providing monitoring, metrics collection, and distributed tracing capabilities.
+A comprehensive observability stack for openMCP deployments, providing monitoring, metrics collection, log aggregation, and distributed tracing capabilities.
+
+The stack deploys the following components:
+
+| Component | Purpose |
+| --- | --- |
+| **cert-manager** | TLS certificate lifecycle management |
+| **metrics-operator** | openMCP metrics collection |
+| **OpenTelemetry Operator** | Manages OTel Collector instances |
+| **OTel Collector (Deployment)** | Scrapes Kubernetes metrics → Prometheus |
+| **OTel Collector (DaemonSet)** | Collects pod stdout/stderr logs → Victoria Logs |
+| **Prometheus Operator** | Manages Prometheus instances |
+| **Prometheus** | Metrics storage and query engine |
+| **Victoria Logs** | Log storage and query engine |
+| **Observability Gateway** | Shared Envoy Gateway providing HTTPS + mTLS access to Prometheus UI, Victoria Logs UI, and OTLP log ingestion |
 
 ## Requirements and Setup
 
@@ -152,8 +166,11 @@ spec:
     namespace: prometheus-operator-system
   prometheus:
     namespace: prometheus-system
-    dashboard:
-      port: 8443
+  victoriaLogs:
+    namespace: victoria-logs-system
+  observabilityGateway:
+    namespace: observability-gateway-system
+    port: 8443
 EOF
 ```
 
@@ -181,62 +198,87 @@ kubectl get pods -n open-telemetry-operator-system
 kubectl get pods -n open-telemetry-collector-system
 kubectl get pods -n prometheus-operator-system
 kubectl get pods -n prometheus-system
+kubectl get pods -n victoria-logs-system
+kubectl get pods -n observability-gateway-system
+
+# Verify the log collector DaemonSet is running on all nodes
+kubectl get daemonset -n open-telemetry-collector-system
 ```
 
-#### 6. Access Prometheus Dashboard
+#### 6. Access Observability Dashboards
 
-The Prometheus deployment automatically creates a Gateway and HTTPRoute for external access. The dashboard is accessible via HTTPS using a dynamically generated hostname based on the openMCP Gateway configuration.
+Both Prometheus and Victoria Logs are exposed through a single shared Envoy Gateway in the `observability-gateway-system` namespace. The gateway uses HTTPS with mTLS client certificate authentication.
 
-**Get the Dashboard URL:**
+**Hostname Pattern:**
+
+| Endpoint | URL | Purpose |
+| --- | --- | --- |
+| Prometheus UI | `https://metrics.<gateway-namespace>.<base-domain>:<port>` | Metrics query and dashboards |
+| Victoria Logs UI | `https://logs.<gateway-namespace>.<base-domain>:<port>` | Log query and UI |
+| OTLP log ingestion | `https://otlp-logs.<gateway-namespace>.<base-domain>:<port>` | Remote log ingestion (external clusters) |
+
+The `<base-domain>` is derived from the openMCP Gateway's `dns.openmcp.cloud/base-domain` annotation. With the default configuration (`observabilityGateway.namespace: observability-gateway-system`), the hostnames look like:
+
+- `metrics.observability-gateway-system.<base-domain>:8443`
+- `logs.observability-gateway-system.<base-domain>:8443`
+- `otlp-logs.observability-gateway-system.<base-domain>:8443`
+
+**Get the Dashboard URLs:**
 
 ```bash
-# Get the hostname from the HTTPRoute
+# Get the Prometheus hostname
 kubectl get httproute prometheus -n prometheus-system -o jsonpath='{.spec.hostnames[0]}'
+
+# Get the Victoria Logs hostname
+kubectl get httproute victoria-logs -n victoria-logs-system -o jsonpath='{.spec.hostnames[0]}'
+
+# Get the OTLP ingestion hostname
+kubectl get httproute victoria-logs-otlp -n victoria-logs-system -o jsonpath='{.spec.hostnames[0]}'
 ```
-
-The hostname follows the pattern: `prometheus.<namespace>.<base-domain>` where the base domain is derived from the openMCP Gateway's `dns.openmcp.cloud/base-domain` annotation.
-
-**Access the Dashboard:**
-
-```bash
-# Get the complete URL
-export HOSTNAME=$(kubectl get httproute prometheus -n prometheus-system -o jsonpath='{.spec.hostnames[0]}')
-echo "Prometheus Dashboard: https://${HOSTNAME}:8443"
-```
-
-Open the URL in your browser. The dashboard uses:
-
-- **HTTPS** with TLS termination at the Gateway
-- **mTLS** (mutual TLS) with client certificate validation
-- **Port** configured in the ObservabilityStack spec (default: 8443)
 
 **Extract mTLS Client Certificates:**
 
-To authenticate with the Prometheus dashboard, you need to extract the client certificates that are automatically generated during deployment:
+A single client certificate (`observability-client-cert`) is generated in the gateway namespace and can be used to authenticate against both Prometheus and Victoria Logs:
 
 ```bash
 # Create a directory for the certificates
-mkdir -p prometheus-certs
-cd prometheus-certs
+mkdir -p obs-certs
+cd obs-certs
 
 # Extract the client certificate (for mTLS authentication)
-kubectl get secret prometheus-client-cert -n prometheus-system -o jsonpath='{.data.tls\.crt}' | base64 -d > client.crt
+kubectl get secret observability-client-cert -n observability-gateway-system \
+  -o jsonpath='{.data.tls\.crt}' | base64 -d > client.crt
 
 # Extract the client private key
-kubectl get secret prometheus-client-cert -n prometheus-system -o jsonpath='{.data.tls\.key}' | base64 -d > client.key
+kubectl get secret observability-client-cert -n observability-gateway-system \
+  -o jsonpath='{.data.tls\.key}' | base64 -d > client.key
 
-# Extract the server certificate (for verifying the gateway's identity)
-kubectl get secret prometheus-cert -n prometheus-system -o jsonpath='{.data.tls\.crt}' | base64 -d > server.crt
+# Extract the Prometheus server certificate (for verifying the gateway's identity)
+kubectl get secret prometheus-cert -n observability-gateway-system \
+  -o jsonpath='{.data.tls\.crt}' | base64 -d > prometheus-server.crt
+
+# Extract the Victoria Logs server certificate
+kubectl get secret victoria-logs-cert -n observability-gateway-system \
+  -o jsonpath='{.data.tls\.crt}' | base64 -d > victoria-logs-server.crt
 ```
 
 **Use the Certificates with curl:**
 
 ```bash
-# Using the server certificate for verification
-curl --cert client.crt --key client.key --cacert server.crt "https://${HOSTNAME}:8443/api/v1/query?query=up"
+export METRICS_HOST=$(kubectl get httproute prometheus -n prometheus-system -o jsonpath='{.spec.hostnames[0]}')
+export LOGS_HOST=$(kubectl get httproute victoria-logs -n victoria-logs-system -o jsonpath='{.spec.hostnames[0]}')
+
+# Query Prometheus
+curl --cert client.crt --key client.key --cacert prometheus-server.crt \
+  "https://${METRICS_HOST}:8443/api/v1/query?query=up"
+
+# Query Victoria Logs
+curl --cert client.crt --key client.key --cacert victoria-logs-server.crt \
+  "https://${LOGS_HOST}:8443/select/logsql/query?query=*&limit=10"
 
 # Or skip certificate verification (not recommended for production)
-curl --cert client.crt --key client.key --insecure "https://${HOSTNAME}:8443/api/v1/query?query=up"
+curl --cert client.crt --key client.key --insecure \
+  "https://${METRICS_HOST}:8443/api/v1/query?query=up"
 ```
 
 **Use the Certificates with your Browser:**
@@ -244,25 +286,26 @@ curl --cert client.crt --key client.key --insecure "https://${HOSTNAME}:8443/api
 1. Combine the client certificate and key into a PKCS#12 file:
 
    ```bash
-   openssl pkcs12 -export -out prometheus-client.p12 \
+   openssl pkcs12 -export -out observability-client.p12 \
      -inkey client.key \
      -in client.crt \
-     -password pass:prometheus
+     -password pass:observability
    ```
 
-2. Import the `prometheus-client.p12` file into your browser:
+2. Import the `observability-client.p12` file into your browser:
    - **Chrome/Edge**: Settings → Privacy and security → Security → Manage certificates → Your certificates → Import
    - **Firefox**: Settings → Privacy & Security → Certificates → View Certificates → Your Certificates → Import
    - **Safari**: Open Keychain Access → File → Import Items
 
-3. Import the server certificate as a trusted CA (to avoid browser warnings about self-signed certificates):
-   - **Chrome/Edge**: Settings → Privacy and security → Security → Manage certificates → Authorities → Import `server.crt`
-   - **Firefox**: Settings → Privacy & Security → Certificates → View Certificates → Authorities → Import `server.crt`
-   - **Safari**: Open Keychain Access → File → Import Items (select `server.crt`), then double-click the certificate and set "Always Trust"
+3. Import the server certificates as trusted CAs (to avoid browser warnings about self-signed certificates):
+   - Import both `prometheus-server.crt` and `victoria-logs-server.crt` as trusted authorities
+   - **Chrome/Edge**: Settings → Privacy and security → Security → Manage certificates → Authorities → Import
+   - **Firefox**: Settings → Privacy & Security → Certificates → View Certificates → Authorities → Import
+   - **Safari**: Open Keychain Access → File → Import Items, then double-click and set "Always Trust"
 
-4. When prompted for the client certificate password, use: `prometheus` (or the password you set in step 1)
+4. When prompted for the client certificate password, use: `observability` (or the password you set in step 1)
 
-5. Navigate to the Prometheus dashboard URL and select the client certificate when prompted
+5. Navigate to the dashboard URLs and select the client certificate when prompted
 
 #### 7. Configure Alerting (per landscape)
 
@@ -340,19 +383,103 @@ kubectl get prometheus.monitoring.coreos.com prometheus -n prometheus-system -o 
 
 The Prometheus dashboard also shows the connected Alertmanager count under **Status → Runtime & Build Info**.
 
+#### 8. Log Collection and Cross-Cluster Ingestion
+
+Pod logs (stdout/stderr from all containers on every node) are automatically collected by an OpenTelemetry Collector DaemonSet running in `open-telemetry-collector-system`. It reads from `/var/log/pods` on each node and ships logs to Victoria Logs via OTLP HTTP.
+
+**Verify log ingestion:**
+
+```bash
+# Check the DaemonSet is running on all nodes
+kubectl get daemonset logs -n open-telemetry-collector-system
+
+# Port-forward to Victoria Logs and query recent logs
+kubectl port-forward -n victoria-logs-system svc/victoria-logs 9428:9428 &
+
+# Query any log from the last 15 minutes
+curl "http://localhost:9428/select/logsql/query?query=*&limit=5&start=now-15m"
+```
+
+**Access the Victoria Logs UI:**
+
+Once the port-forward is established (or using the HTTPS endpoint via the Observability Gateway), open the UI:
+
+```
+https://logs.<gateway-namespace>.<base-domain>:8443/select/vmui/
+```
+
+The UI provides a log query interface using [LogsQL](https://docs.victoriametrics.com/victorialogs/logsql/).
+
+**Ingest logs from external Kubernetes clusters:**
+
+The OTLP log ingestion endpoint (`otlp-logs.<gateway-ns>.<base-domain>:8443/insert/opentelemetry`) accepts logs from any OpenTelemetry Collector instance that presents a valid mTLS client certificate. To ship logs from another cluster:
+
+1. Extract the client certificate and OTLP server CA from the central cluster:
+
+   ```bash
+   # On the central cluster
+   kubectl get secret observability-client-cert -n observability-gateway-system \
+     -o jsonpath='{.data.tls\.crt}' | base64 -d > client.crt
+   kubectl get secret observability-client-cert -n observability-gateway-system \
+     -o jsonpath='{.data.tls\.key}' | base64 -d > client.key
+   kubectl get secret otlp-logs-cert -n observability-gateway-system \
+     -o jsonpath='{.data.tls\.crt}' | base64 -d > otlp-logs-server.crt
+   ```
+
+2. Create a secret in the remote cluster's OTel Collector namespace:
+
+   ```bash
+   # On the remote cluster
+   kubectl create secret generic observability-client-cert \
+     --from-file=tls.crt=client.crt \
+     --from-file=tls.key=client.key \
+     --from-file=ca.crt=otlp-logs-server.crt \
+     -n open-telemetry-collector-system
+   ```
+
+3. Configure the OTel Collector on the remote cluster to export logs via OTLP HTTP with mTLS:
+
+   ```yaml
+   config: |
+     exporters:
+       otlphttp/logs:
+         endpoint: "https://otlp-logs.<gateway-namespace>.<base-domain>:8443/insert/opentelemetry"
+         tls:
+           cert_file: /etc/otel/certs/tls.crt
+           key_file: /etc/otel/certs/tls.key
+           ca_file: /etc/otel/certs/ca.crt
+     service:
+       pipelines:
+         logs:
+           exporters: [otlphttp/logs]
+   volumeMounts:
+   - name: client-certs
+     mountPath: /etc/otel/certs
+     readOnly: true
+   volumes:
+   - name: client-certs
+     secret:
+       secretName: observability-client-cert
+   ```
+
 ### Configuration Options
 
-The `ObservabilityStack` custom resource supports various configuration options:
+The `ObservabilityStack` custom resource supports the following configuration options:
 
 - **componentRef**: Reference to the OCM component containing all stack resources
 - **imagePullSecretRef**: Secret for pulling container images
-- **certManager**: Configuration for cert-manager deployment
-- **metricsOperator**: Configuration for metrics-operator deployment
-- **metrics**: Configuration for metrics collection
-- **openTelemetryOperator**: Configuration for OpenTelemetry operator
-- **openTelemetryCollector**: Configuration for OpenTelemetry collector
-- **prometheusOperator**: Configuration for Prometheus operator
-- **prometheus**: Configuration for Prometheus, including dashboard port
+- **certManager**: Configuration for cert-manager (namespace)
+- **metricsOperator**: Configuration for the metrics-operator (namespace)
+- **metrics**: Configuration for openMCP metrics collection (namespace)
+- **openTelemetryOperator**: Configuration for the OpenTelemetry Operator (namespace)
+- **openTelemetryCollector**: Configuration for the OTel Collector Deployment that scrapes metrics (namespace)
+- **prometheusOperator**: Configuration for the Prometheus Operator (namespace)
+- **prometheus**: Configuration for the Prometheus instance (namespace)
+- **victoriaLogs**: Configuration for the Victoria Logs instance (namespace)
+- **observabilityGateway**: Configuration for the shared Envoy Gateway (namespace, port)
+
+The `observabilityGateway.namespace` is used as the subdomain component for all three external hostnames:
+`metrics.<namespace>.<base-domain>`, `logs.<namespace>.<base-domain>`, and `otlp-logs.<namespace>.<base-domain>`.
 
 Adjust the namespace and configuration values in the `ObservabilityStack` resource according to your requirements.
 

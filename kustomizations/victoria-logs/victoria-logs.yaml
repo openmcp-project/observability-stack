@@ -1,0 +1,59 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: victoria-logs
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: victoria-logs
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: victoria-logs
+    spec:
+      containers:
+        - name: victoria-logs
+          args:
+            - -storageDataPath=/vlogs-data
+            - -retentionPeriod=7d
+          ports:
+            - containerPort: 9428
+              name: http
+          volumeMounts:
+            - name: storage
+              mountPath: /vlogs-data
+          resources:
+            requests:
+              memory: 256Mi
+              cpu: 100m
+            limits:
+              memory: 1Gi
+              cpu: 500m
+      securityContext:
+        fsGroup: 2000
+        runAsNonRoot: true
+        runAsUser: 1000
+  volumeClaimTemplates:
+    - metadata:
+        name: storage
+      spec:
+        accessModes:
+          - ReadWriteOnce
+        resources:
+          requests:
+            storage: 10Gi
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: victoria-logs
+spec:
+  type: ClusterIP
+  ports:
+    - name: http
+      port: 9428
+      targetPort: http
+      protocol: TCP
+  selector:
+    app.kubernetes.io/name: victoria-logs

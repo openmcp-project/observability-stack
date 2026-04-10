@@ -26,6 +26,9 @@ PROMETHEUS_IMAGE_VERSION: "v3.11.0"
 # prometheus alertmanager
 ALERTMANAGER_IMAGE_VERSION: "v0.31.1"
 
+# victoria logs
+VICTORIA_LOGS_IMAGE_VERSION: "v1.6.0-victorialogs"
+
 
 # E2E Test dependencies
 # Not used for deployment

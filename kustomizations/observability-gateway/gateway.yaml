@@ -1,0 +1,94 @@
+apiVersion: gateway.networking.k8s.io/v1
+kind: Gateway
+metadata:
+  name: observability-gateway
+spec:
+  gatewayClassName: envoy-gateway
+  listeners:
+  - name: metrics
+    port: 8443
+    protocol: HTTPS
+    hostname: "<metrics-dnsname>"
+    allowedRoutes:
+      namespaces:
+        from: All
+    tls:
+      mode: Terminate
+      certificateRefs:
+      - kind: Secret
+        name: prometheus-cert
+  - name: logs
+    port: 8443
+    protocol: HTTPS
+    hostname: "<logs-dnsname>"
+    allowedRoutes:
+      namespaces:
+        from: All
+    tls:
+      mode: Terminate
+      certificateRefs:
+      - kind: Secret
+        name: victoria-logs-cert
+  - name: otlp-logs
+    port: 8443
+    protocol: HTTPS
+    hostname: "<otlp-logs-dnsname>"
+    allowedRoutes:
+      namespaces:
+        from: All
+    tls:
+      mode: Terminate
+      certificateRefs:
+      - kind: Secret
+        name: otlp-logs-cert
+---
+apiVersion: gateway.envoyproxy.io/v1alpha1
+kind: ClientTrafficPolicy
+metadata:
+  name: metrics-mtls
+spec:
+  targetRefs:
+  - group: gateway.networking.k8s.io
+    kind: Gateway
+    name: observability-gateway
+    sectionName: metrics
+  tls:
+    clientValidation:
+      caCertificateRefs:
+      - kind: "Secret"
+        group: ""
+        name: "observability-client-ca-cert"
+---
+apiVersion: gateway.envoyproxy.io/v1alpha1
+kind: ClientTrafficPolicy
+metadata:
+  name: logs-mtls
+spec:
+  targetRefs:
+  - group: gateway.networking.k8s.io
+    kind: Gateway
+    name: observability-gateway
+    sectionName: logs
+  tls:
+    clientValidation:
+      caCertificateRefs:
+      - kind: "Secret"
+        group: ""
+        name: "observability-client-ca-cert"
+---
+apiVersion: gateway.envoyproxy.io/v1alpha1
+kind: ClientTrafficPolicy
+metadata:
+  name: otlp-logs-mtls
+spec:
+  targetRefs:
+  - group: gateway.networking.k8s.io
+    kind: Gateway
+    name: observability-gateway
+    sectionName: otlp-logs
+  tls:
+    clientValidation:
+      caCertificateRefs:
+      - kind: "Secret"
+        group: ""
+        name: "observability-client-ca-cert"

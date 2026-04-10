@@ -1,11 +1,10 @@
 apiVersion: cert-manager.io/v1
 kind: Certificate
 metadata:
-  name: prometheus-gateway-cert
+  name: otlp-logs-gateway-cert
 spec:
-  secretName: prometheus-cert
+  secretName: otlp-logs-cert
   issuerRef:
     name: gateway-selfsigned-issuer
     kind: Issuer
-  dnsNames:
-  - "<dnsname>"
+  dnsNames: []

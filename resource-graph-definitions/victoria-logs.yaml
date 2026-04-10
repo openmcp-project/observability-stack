@@ -1,0 +1,195 @@
+apiVersion: kro.run/v1alpha1
+kind: ResourceGraphDefinition
+metadata:
+  name: victoria-logs
+spec:
+  schema:
+    apiVersion: v1alpha1
+    kind: VictoriaLogs
+    spec:
+      componentRef:
+        name: string | default="obs-stack-component"
+      imagePullSecretRef:
+        name: string | default="imgpull"
+        namespace: string | default="obs-stack"
+      openMCPGatewayRef:
+        name: string | default="default"
+        namespace: string | default="openmcp-system"
+      observabilityGatewayRef:
+        namespace: string | default="observability-gateway-system"
+      forProvider:
+        namespace: string | default="victoria-logs-system"
+        retentionPeriod: string | default="7d"
+        storage: string | default="10Gi"
+        resources:
+          requests:
+            memory: string | default="256Mi"
+            cpu: string | default="100m"
+          limits:
+            memory: string | default="1Gi"
+            cpu: string | default="500m"
+    status:
+      ready: ${victoriaLogsKustomization.status.conditions.exists(c, c.type == "Ready" && c.status == "True")}
+      lastAttemptedRevisionDigest: ${victoriaLogsKustomization.status.lastAttemptedRevision}
+
+  resources:
+    # shared image pull secret copied into the Victoria Logs namespace
+    - id: sharedImagePullSecret
+      externalRef:
+        apiVersion: v1
+        kind: Secret
+        metadata:
+          name: ${schema.spec.imagePullSecretRef.name}
+          namespace: ${schema.spec.imagePullSecretRef.namespace}
+
+    # openMCP default gateway used to acquire the DNS base domain
+    - id: sharedGateway
+      externalRef:
+        apiVersion: gateway.networking.k8s.io/v1
+        kind: Gateway
+        metadata:
+          name: ${schema.spec.openMCPGatewayRef.name}
+          namespace: ${schema.spec.openMCPGatewayRef.namespace}
+
+    - id: victoriaLogsKustomizationResource
+      template:
+        apiVersion: delivery.ocm.software/v1alpha1
+        kind: Resource
+        metadata:
+          name: victoria-logs-kustomization
+          namespace: ${schema.metadata.namespace}
+        spec:
+          componentRef: ${schema.spec.componentRef}
+          resource:
+            byReference:
+              resource:
+                name: victoria-logs-kustomization
+          additionalStatusFields:
+            registry: resource.access.imageReference.toOCI().registry
+            repository: resource.access.imageReference.toOCI().repository
+            tag: resource.access.imageReference.toOCI().tag
+
+    - id: victoriaLogsImage
+      template:
+        apiVersion: delivery.ocm.software/v1alpha1
+        kind: Resource
+        metadata:
+          name: victoria-logs-image
+          namespace: ${schema.metadata.namespace}
+        spec:
+          componentRef: ${schema.spec.componentRef}
+          resource:
+            byReference:
+              resource:
+                name: victoria-logs-image
+          additionalStatusFields:
+            registry: resource.access.imageReference.toOCI().registry
+            repository: resource.access.imageReference.toOCI().repository
+            tag: resource.access.imageReference.toOCI().tag
+
+    - id: victoriaLogsOCIRepository
+      template:
+        apiVersion: source.toolkit.fluxcd.io/v1
+        kind: OCIRepository
+        metadata:
+          name: victoria-logs-ocirepository
+          namespace: ${schema.metadata.namespace}
+        spec:
+          interval: 1m0s
+          insecure: true
+          layerSelector:
+            mediaType: "application/vnd.cncf.flux.content.v1.tar+gzip"
+            operation: copy
+          url: oci://${victoriaLogsKustomizationResource.status.additional.registry}/${victoriaLogsKustomizationResource.status.additional.repository}
+          ref:
+            tag: ${victoriaLogsKustomizationResource.status.additional.tag}
+          secretRef:
+            name: ${schema.spec.imagePullSecretRef.name}
+
+    - id: victoriaLogsNamespace
+      template:
+        apiVersion: v1
+        kind: Namespace
+        metadata:
+          name: ${schema.spec.forProvider.namespace}
+
+    - id: victoriaLogsImagePullSecret
+      template:
+        apiVersion: v1
+        kind: Secret
+        metadata:
+          name: victoria-logs-imgpull
+          namespace: ${victoriaLogsNamespace.metadata.name}
+        type: ${sharedImagePullSecret.type}
+        data: ${sharedImagePullSecret.data}
+
+    - id: victoriaLogsKustomization
+      template:
+        apiVersion: kustomize.toolkit.fluxcd.io/v1
+        kind: Kustomization
+        metadata:
+          name: victoria-logs-kustomization
+          namespace: ${schema.metadata.namespace}
+        spec:
+          interval: 1m
+          targetNamespace: ${victoriaLogsNamespace.metadata.name}
+          sourceRef:
+            kind: OCIRepository
+            name: ${victoriaLogsOCIRepository.metadata.name}
+          path: ""
+          prune: true
+          timeout: 1m
+          patches:
+          - target:
+              kind: HTTPRoute
+              name: victoria-logs
+            patch: |-
+              - op: add
+                path: /spec/hostnames
+                value:
+                - logs.${schema.spec.observabilityGatewayRef.namespace}.${sharedGateway.metadata.annotations["dns.openmcp.cloud/base-domain"]}
+              - op: replace
+                path: /spec/parentRefs/0/namespace
+                value: ${schema.spec.observabilityGatewayRef.namespace}
+          - target:
+              kind: HTTPRoute
+              name: victoria-logs-otlp
+            patch: |-
+              - op: add
+                path: /spec/hostnames
+                value:
+                - otlp-logs.${schema.spec.observabilityGatewayRef.namespace}.${sharedGateway.metadata.annotations["dns.openmcp.cloud/base-domain"]}
+              - op: replace
+                path: /spec/parentRefs/0/namespace
+                value: ${schema.spec.observabilityGatewayRef.namespace}
+          - target:
+              kind: StatefulSet
+              name: victoria-logs
+            patch: |-
+              - op: replace
+                path: /spec/template/spec/containers/0/image
+                value: ${victoriaLogsImage.status.resource.access.imageReference}
+              - op: add
+                path: /spec/template/spec/imagePullSecrets
+                value:
+                - name: ${victoriaLogsImagePullSecret.metadata.name}
+              - op: replace
+                path: /spec/template/spec/containers/0/args/1
+                value: "-retentionPeriod=${schema.spec.forProvider.retentionPeriod}"
+              - op: replace
+                path: /spec/volumeClaimTemplates/0/spec/resources/requests/storage
+                value: ${schema.spec.forProvider.storage}
+              - op: replace
+                path: /spec/template/spec/containers/0/resources/requests/memory
+                value: ${schema.spec.forProvider.resources.requests.memory}
+              - op: replace
+                path: /spec/template/spec/containers/0/resources/requests/cpu
+                value: ${schema.spec.forProvider.resources.requests.cpu}
+              - op: replace
+                path: /spec/template/spec/containers/0/resources/limits/memory
+                value: ${schema.spec.forProvider.resources.limits.memory}
+              - op: replace
+                path: /spec/template/spec/containers/0/resources/limits/cpu
+                value: ${schema.spec.forProvider.resources.limits.cpu}
+      readyWhen:
+        - ${victoriaLogsKustomization.status.conditions.exists(c, c.type == "Ready" && c.status == "True")}
