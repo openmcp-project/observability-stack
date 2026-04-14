@@ -30,7 +30,7 @@ spec:
       type: primitive
 
     - name: cl_provider
-      fieldPath: "metadata.labels[clusters.openmcp.cloud/provider]"
+      fieldPath: "metadata.labels['clusters.openmcp.cloud/provider']"
       type: primitive
       default: Unknown
 
