@@ -1,0 +1,41 @@
+apiVersion: metrics.openmcp.cloud/v1alpha1
+kind: Metric
+metadata:
+  name: accessrequests
+spec:
+  name: co_accessrequests
+  description: openMCP AccessRequests
+  target:
+    kind: AccessRequest
+    group: clusters.openmcp.cloud
+    version: v1alpha1
+  interval: "1m"
+  dataSinkRef:
+    name: default
+  projections:
+    - name: ar_name
+      fieldPath: "metadata.name"
+      type: primitive
+
+    - name: ar_namespace
+      fieldPath: "metadata.namespace"
+      type: primitive
+
+    - name: ar_cluster_ref
+      fieldPath: "spec.clusterRef"
+      type: map
+      default:
+        name: Unknown
+        namespace: Unknown
+
+    - name: ar_request_ref
+      fieldPath: "spec.requestRef"
+      type: map
+      default:
+        name: Unknown
+        namespace: Unknown
+
+    - name: ar_phase
+      fieldPath: "status.phase"
+      type: primitive
+      default: Unknown
