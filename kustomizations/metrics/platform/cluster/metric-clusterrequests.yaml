@@ -1,0 +1,38 @@
+apiVersion: metrics.openmcp.cloud/v1alpha1
+kind: Metric
+metadata:
+  name: clusterrequests
+spec:
+  name: co_clusterrequests
+  description: openMCP ClusterRequests
+  target:
+    kind: ClusterRequest
+    group: clusters.openmcp.cloud
+    version: v1alpha1
+  interval: "1m"
+  dataSinkRef:
+    name: default
+  projections:
+    - name: cr_name
+      fieldPath: "metadata.name"
+      type: primitive
+
+    - name: cr_namespace
+      fieldPath: "metadata.namespace"
+      type: primitive
+
+    - name: cr_purpose
+      fieldPath: "spec.purpose"
+      type: primitive
+
+    - name: cr_cluster
+      fieldPath: "status.cluster"
+      type: map
+      default:
+        name: Unknown
+        namespace: Unknown
+
+    - name: cr_phase
+      fieldPath: "status.phase"
+      type: primitive
+      default: Unknown

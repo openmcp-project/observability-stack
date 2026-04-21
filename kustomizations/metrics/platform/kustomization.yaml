@@ -4,6 +4,7 @@ resources:
   - flux/
   - openmcp-operator/
   - gateway/
+  - cluster/
   - serviceproviders/
   - clusterproviders/
   - platformservices/
