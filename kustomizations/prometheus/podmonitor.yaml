@@ -1,0 +1,25 @@
+apiVersion: monitoring.coreos.com/v1
+kind: PodMonitor
+metadata:
+  name: annotation-scrape
+  labels:
+    prometheus: enabled
+spec:
+  namespaceSelector:
+    any: true
+  selector: {}
+  podMetricsEndpoints:
+    - path: /metrics
+      relabelings:
+        - sourceLabels: [__meta_kubernetes_pod_annotation_prometheus_io_scrape]
+          action: keep
+          regex: "true"
+        - sourceLabels: [__meta_kubernetes_pod_ip, __meta_kubernetes_pod_annotation_prometheus_io_port]
+          action: replace
+          targetLabel: __address__
+          regex: (.+);(.+)
+          replacement: $1:$2
+        - sourceLabels: [__meta_kubernetes_pod_annotation_prometheus_io_path]
+          action: replace
+          targetLabel: __metrics_path__
+          regex: (.+)

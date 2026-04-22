@@ -4,3 +4,4 @@ resources:
   - prometheus.yaml
   - alertmanager.yaml
   - httproute.yaml
+  - podmonitor.yaml
