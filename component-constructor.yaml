@@ -66,15 +66,6 @@ components:
           path: "quay.io/jetstack/cert-manager-startupapicheck:${CERT_MANAGER_VERSION}"
           repository: images/cert-manager-startupapicheck
 
-      # kube rbac proxy
-      - name: kube-rbac-proxy-image
-        version: ${KUBE_RBAC_PROXY_VERSION}
-        type: ociImage
-        input:
-          type: ociImage
-          path: "quay.io/brancz/kube-rbac-proxy:${KUBE_RBAC_PROXY_VERSION}"
-          repository: images/kube-rbac-proxy
-
       # open telemetry operator
       - name: open-telemetry-operator-chart
         version: ${OPEN_TELEMETRY_OPERATOR_CHART_VERSION}
