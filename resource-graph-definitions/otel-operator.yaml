@@ -82,24 +82,6 @@ spec:
             repository: resource.access.imageReference.toOCI().repository
             tag: resource.access.imageReference.toOCI().tag
 
-    - id: kubeRBACProxyImage
-      template:
-        apiVersion: delivery.ocm.software/v1alpha1
-        kind: Resource
-        metadata:
-          name: kube-rbac-proxy-image
-          namespace: ${schema.metadata.namespace}
-        spec:
-          componentRef: ${schema.spec.componentRef}
-          resource:
-            byReference:
-              resource:
-                name: kube-rbac-proxy-image
-          additionalStatusFields:
-            registry: resource.access.imageReference.toOCI().registry
-            repository: resource.access.imageReference.toOCI().repository
-            tag: resource.access.imageReference.toOCI().tag
-
     - id: openTelemetryOperatorOCIRepository
       template:
         apiVersion: source.toolkit.fluxcd.io/v1
@@ -164,9 +146,5 @@ spec:
               collectorImage:
                 repository: ${openTelemetryCollectorImage.status.additional.registry}/${openTelemetryCollectorImage.status.additional.repository}
                 tag: ${openTelemetryCollectorImage.status.additional.tag}
-            kubeRBACProxy:
-              image:
-                repository: ${kubeRBACProxyImage.status.additional.registry}/${kubeRBACProxyImage.status.additional.repository}
-                tag: ${kubeRBACProxyImage.status.additional.tag}
       readyWhen:
         - ${openTelemetryOperatorHelmRelease.status.conditions.exists(c, c.type == "Ready" && c.status == "True")}
