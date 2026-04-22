@@ -31,17 +31,21 @@ jobs:
 
             console.log(`Cleaning up dev versions older than ${cutoffDate.toISOString()}`);
 
-            // Get package versions
-            let versions;
+            // Get all package versions across all pages
+            let versions = [];
             try {
-              const response = await github.rest.packages.getAllPackageVersionsForPackageOwnedByOrg({
-                package_type: 'container',
-                package_name: packageName,
-                org: context.repo.owner,
-                per_page: 100,
-                state: 'active'
-              });
-              versions = response.data;
+              for (let page = 1; ; page++) {
+                const response = await github.rest.packages.getAllPackageVersionsForPackageOwnedByOrg({
+                  package_type: 'container',
+                  package_name: packageName,
+                  org: context.repo.owner,
+                  per_page: 100,
+                  page: page,
+                  state: 'active'
+                });
+                if (response.data.length === 0) break;
+                versions = versions.concat(response.data);
+              }
             } catch (error) {
               if (error.status === 404) {
                 console.log('Package not found. This is expected if no versions have been published yet.');
