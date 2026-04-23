@@ -1,0 +1,66 @@
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: controller-runtime-alerts
+  labels:
+    prometheus: prometheus
+    app: prometheus
+spec:
+  groups:
+    - name: controller.runtime
+      interval: 30s
+      rules:
+        - alert: ControllerWorkqueueDepthHigh
+          expr: |
+            workqueue_depth{} > 100
+          for: 5m
+          labels:
+            severity: warning
+            component: deployment
+          annotations:
+            summary: "Controller {{ $labels.name }} workqueue depth is high"
+            description: "Controller {{ $labels.name }} on cluster {{ $labels.cluster }} has a workqueue depth of {{ $value }}, which may indicate processing is falling behind."
+
+        - alert: ControllerReconcileErrors
+          expr: |
+            rate(controller_runtime_reconcile_errors_total[5m]) > 0
+          for: 5m
+          labels:
+            severity: warning
+            component: deployment
+          annotations:
+            summary: "Controller {{ $labels.controller }} is experiencing reconcile errors"
+            description: "Controller {{ $labels.controller }} on cluster {{ $labels.cluster }} is producing reconcile errors at a rate of {{ $value }} per second."
+
+        - alert: ControllerReconcileDurationHigh
+          expr: |
+            histogram_quantile(0.99, rate(controller_runtime_reconcile_time_seconds_bucket[5m])) > 30
+          for: 5m
+          labels:
+            severity: warning
+            component: deployment
+          annotations:
+            summary: "Controller {{ $labels.controller }} reconcile duration is high"
+            description: "Controller {{ $labels.controller }} on cluster {{ $labels.cluster }} has a p99 reconcile duration of {{ $value }}s, which may indicate a slow or stuck reconcile loop."
+
+        - alert: ControllerWorkqueueRetriesHigh
+          expr: |
+            rate(workqueue_retries_total[5m]) > 5
+          for: 5m
+          labels:
+            severity: warning
+            component: deployment
+          annotations:
+            summary: "Controller {{ $labels.name }} workqueue retries are high"
+            description: "Controller {{ $labels.name }} on cluster {{ $labels.cluster }} is retrying workqueue items at a rate of {{ $value }} per second, which may indicate a stuck reconcile loop."
+
+        - alert: ControllerWorkqueueUnfinishedWork
+          expr: |
+            workqueue_unfinished_work_seconds > 300
+          for: 5m
+          labels:
+            severity: warning
+            component: deployment
+          annotations:
+            summary: "Controller {{ $labels.name }} has unfinished workqueue items"
+            description: "Controller {{ $labels.name }} on cluster {{ $labels.cluster }} has items that have been processing for {{ $value }}s, which may indicate a deadlock or very slow reconciliation."

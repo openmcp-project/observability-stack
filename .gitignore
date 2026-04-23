@@ -1,9 +1,11 @@
 .claude
 .vscode
+.env
 
 ctf
 tmp
 prometheus-certs
+__debug_*
 
 # Python
 __pycache__/

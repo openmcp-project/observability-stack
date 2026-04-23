@@ -8,3 +8,4 @@ resources:
   - serviceproviders/
   - clusterproviders/
   - platformservices/
+  - controller-runtime/
