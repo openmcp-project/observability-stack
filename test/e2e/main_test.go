@@ -44,10 +44,11 @@ func TestMain(m *testing.M) {
 	openmcp := setup.OpenMCPSetup{
 		Namespace: "openmcp-system",
 		Operator: setup.OpenMCPOperatorSetup{
-			Name:         "openmcp-operator",
-			Image:        fmt.Sprintf("ghcr.io/openmcp-project/images/openmcp-operator:%s", settings.MustGetSetting("OPENMCP_OPERATOR_VERSION")),
-			Environment:  "debug",
-			PlatformName: "platform",
+			Name:               "openmcp-operator",
+			Image:              fmt.Sprintf("ghcr.io/openmcp-project/images/openmcp-operator:%s", "v0.19.0-dev-77ca289753565f69d9e963198632572205469936-linux-arm64"),
+			Environment:        "debug",
+			PlatformName:       "platform",
+			LoadImageToCluster: true,
 		},
 		ClusterProviders: []providers.ClusterProviderSetup{
 			{
