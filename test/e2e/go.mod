@@ -8,9 +8,9 @@ require (
 	github.com/prometheus/client_golang v1.23.2
 	github.com/prometheus/common v0.67.5
 	helm.sh/helm/v3 v3.20.2
-	k8s.io/api v0.35.4
-	k8s.io/apimachinery v0.35.4
-	k8s.io/client-go v0.35.4
+	k8s.io/api v0.36.0
+	k8s.io/apimachinery v0.36.0
+	k8s.io/client-go v0.36.0
 	k8s.io/klog/v2 v2.140.0
 	ocm.software/open-component-model/kubernetes/controller v0.4.0
 	sigs.k8s.io/e2e-framework v0.7.0
