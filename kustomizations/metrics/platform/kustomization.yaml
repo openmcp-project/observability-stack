@@ -9,3 +9,4 @@ resources:
   - clusterproviders/
   - platformservices/
   - controller-runtime/
+  - e2e/
