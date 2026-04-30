@@ -76,14 +76,14 @@ spec:
           name: metrics-kustomization
           namespace: ${schema.metadata.namespace}
         spec:
-          interval: 1m
+          interval: 10m
           targetNamespace: ${schema.spec.forProvider.namespace}
           sourceRef:
             kind: OCIRepository
             name: ${metricsOCIRepository.metadata.name}
           path: ""
           prune: true
-          timeout: 1m
+          timeout: 5m
           patches:
           - target:
               kind: DataSink

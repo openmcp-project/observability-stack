@@ -140,14 +140,14 @@ spec:
           name: prometheus-kustomization
           namespace: ${schema.metadata.namespace}
         spec:
-          interval: 1m
+          interval: 10m
           targetNamespace: ${prometheusNamespace.metadata.name}
           sourceRef:
             kind: OCIRepository
             name: ${prometheusOCIRepository.metadata.name}
           path: ""
           prune: true
-          timeout: 1m
+          timeout: 5m
           patches:
           - target:
               kind: HTTPRoute

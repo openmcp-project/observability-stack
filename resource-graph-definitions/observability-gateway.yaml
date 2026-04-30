@@ -103,14 +103,14 @@ spec:
           name: observability-gateway-kustomization
           namespace: ${schema.metadata.namespace}
         spec:
-          interval: 1m
+          interval: 10m
           targetNamespace: ${observabilityGatewayNamespace.metadata.name}
           sourceRef:
             kind: OCIRepository
             name: ${observabilityGatewayOCIRepository.metadata.name}
           path: ""
           prune: true
-          timeout: 1m
+          timeout: 5m
           patches:
           - target:
               kind: Gateway

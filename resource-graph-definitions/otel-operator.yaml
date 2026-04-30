@@ -131,7 +131,7 @@ spec:
           install:
             createNamespace: false
             crds: CreateReplace
-          interval: 1m
+          interval: 10m
           timeout: 5m
           chartRef:
             kind: OCIRepository
