@@ -17,10 +17,6 @@ spec:
       fieldPath: "metadata.name"
       type: primitive
 
-    - name: tr_namespace
-      fieldPath: "metadata.namespace"
-      type: primitive
-
     - name: tr_spec_runner_version
       fieldPath: "spec.runner.version"
       type: primitive
