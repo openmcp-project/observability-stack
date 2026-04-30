@@ -80,6 +80,24 @@ spec:
       readyWhen:
         - ${certManager.status.ready == true}
 
+    - id: observabilityGateway
+      template:
+        apiVersion: kro.run/v1alpha1
+        kind: ObservabilityGateway
+        metadata:
+          name: observability-gateway
+          annotations:
+            dependency/cert-manager: ${certManager.status.lastAttemptedRevisionDigest}
+        spec:
+          componentRef: ${schema.spec.componentRef}
+          imagePullSecretRef: ${schema.spec.imagePullSecretRef}
+          openMCPGatewayRef: ${schema.spec.openMCPGatewayRef}
+          forProvider:
+            namespace: ${schema.spec.observabilityGateway.namespace}
+            port: ${schema.spec.observabilityGateway.port}
+      readyWhen:
+        - ${observabilityGateway.status.ready == true}
+
     - id: metricsOperator
       template:
         apiVersion: kro.run/v1alpha1
@@ -101,6 +119,7 @@ spec:
           name: openmcp-metrics
           annotations:
             dependency/prometheus-operator: ${prometheusOperator.status.lastAttemptedRevisionDigest}
+            dependency/metrics-operator: ${metricsOperator.status.lastAttemptedRevisionDigest}
         spec:
           componentRef: ${schema.spec.componentRef}
           imagePullSecretRef: ${schema.spec.imagePullSecretRef}
@@ -108,6 +127,38 @@ spec:
           forProvider: ${schema.spec.metrics}
       readyWhen:
         - ${metrics.status.ready == true}
+
+    - id: prometheusOperator
+      template:
+        apiVersion: kro.run/v1alpha1
+        kind: PrometheusOperator
+        metadata:
+          name: prometheus-operator
+        spec:
+          componentRef: ${schema.spec.componentRef}
+          imagePullSecretRef: ${schema.spec.imagePullSecretRef}
+          forProvider: ${schema.spec.prometheusOperator}
+      readyWhen:
+        - ${prometheusOperator.status.ready == true}
+
+    - id: prometheus
+      template:
+        apiVersion: kro.run/v1alpha1
+        kind: Prometheus
+        metadata:
+          name: prometheus
+          annotations:
+            dependency/observability-gateway: ${observabilityGateway.status.lastAttemptedRevisionDigest}
+            dependency/prometheus-operator: ${prometheusOperator.status.lastAttemptedRevisionDigest}
+        spec:
+          componentRef: ${schema.spec.componentRef}
+          imagePullSecretRef: ${schema.spec.imagePullSecretRef}
+          openMCPGatewayRef: ${schema.spec.openMCPGatewayRef}
+          observabilityGatewayRef:
+            namespace: ${schema.spec.observabilityGateway.namespace}
+          forProvider: ${schema.spec.prometheus}
+      readyWhen:
+        - ${prometheus.status.ready == true}
 
     - id: openTelemetryOperator
       template:
@@ -131,63 +182,14 @@ spec:
         metadata:
           name: open-telemetry-collector
           annotations:
-            dependency/cert-manager: ${certManager.status.lastAttemptedRevisionDigest}
             dependency/prometheus-operator: ${prometheusOperator.status.lastAttemptedRevisionDigest}
+            dependency/open-telemetry-operator: ${openTelemetryOperator.status.lastAttemptedRevisionDigest}
         spec:
           componentRef: ${schema.spec.componentRef}
           imagePullSecretRef: ${schema.spec.imagePullSecretRef}
           forProvider: ${schema.spec.openTelemetryCollector}
       readyWhen:
         - ${openTelemetryCollector.status.ready == true}
-
-    - id: prometheusOperator
-      template:
-        apiVersion: kro.run/v1alpha1
-        kind: PrometheusOperator
-        metadata:
-          name: prometheus-operator
-        spec:
-          componentRef: ${schema.spec.componentRef}
-          imagePullSecretRef: ${schema.spec.imagePullSecretRef}
-          forProvider: ${schema.spec.prometheusOperator}
-      readyWhen:
-        - ${prometheusOperator.status.ready == true}
-
-    - id: observabilityGateway
-      template:
-        apiVersion: kro.run/v1alpha1
-        kind: ObservabilityGateway
-        metadata:
-          name: observability-gateway
-          annotations:
-            dependency/cert-manager: ${certManager.status.lastAttemptedRevisionDigest}
-        spec:
-          componentRef: ${schema.spec.componentRef}
-          imagePullSecretRef: ${schema.spec.imagePullSecretRef}
-          openMCPGatewayRef: ${schema.spec.openMCPGatewayRef}
-          forProvider:
-            namespace: ${schema.spec.observabilityGateway.namespace}
-            port: ${schema.spec.observabilityGateway.port}
-      readyWhen:
-        - ${observabilityGateway.status.ready == true}
-
-    - id: prometheus
-      template:
-        apiVersion: kro.run/v1alpha1
-        kind: Prometheus
-        metadata:
-          name: prometheus
-          annotations:
-            dependency/observability-gateway: ${observabilityGateway.status.lastAttemptedRevisionDigest}
-        spec:
-          componentRef: ${schema.spec.componentRef}
-          imagePullSecretRef: ${schema.spec.imagePullSecretRef}
-          openMCPGatewayRef: ${schema.spec.openMCPGatewayRef}
-          observabilityGatewayRef:
-            namespace: ${schema.spec.observabilityGateway.namespace}
-          forProvider: ${schema.spec.prometheus}
-      readyWhen:
-        - ${prometheus.status.ready == true}
 
     - id: victoriaLogs
       template:
