@@ -17,7 +17,7 @@ spec:
         namespace: string | default="openmcp-system"
       forProvider:
         namespace: string | default="observability-gateway-system"
-        port: integer | default=8443 minimum=1024 maximum=49151
+        port: integer | default=8443
     status:
       ready: ${observabilityGatewayKustomization.status.conditions.exists(c, c.type == "Ready" && c.status == "True")}
       lastAttemptedRevisionDigest: ${observabilityGatewayKustomization.status.lastAttemptedRevision}

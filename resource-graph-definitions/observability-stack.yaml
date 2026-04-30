@@ -43,7 +43,7 @@ spec:
             cpu: string | default="500m"
       observabilityGateway:
         namespace: string | default="observability-gateway-system"
-        port: integer | default=8443 minimum=1024 maximum=49151
+        port: integer | default=8443
     status:
       certManager:
         ready: ${certManager.status.ready}
