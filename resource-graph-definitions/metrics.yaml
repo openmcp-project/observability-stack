@@ -76,14 +76,14 @@ spec:
           name: metrics-kustomization
           namespace: ${schema.metadata.namespace}
         spec:
-          interval: 1m
+          interval: 10m
           targetNamespace: ${schema.spec.forProvider.namespace}
           sourceRef:
             kind: OCIRepository
             name: ${metricsOCIRepository.metadata.name}
           path: ""
           prune: true
-          timeout: 1m
+          timeout: 5m
           patches:
           - target:
               kind: DataSink
@@ -92,5 +92,18 @@ spec:
               - op: replace
                 path: /spec/connection/endpoint
                 value: http://default-collector.${schema.spec.openTelemetryCollector.namespace}.svc.cluster.local:4318/v1/metrics
+          - target:
+              kind: FederatedClusterAccess
+              name: onboarding-cluster
+            patch: |-
+              - op: replace
+                path: /spec/fieldSelector
+                value: "metadata.name=onboarding-cluster,metadata.namespace=${schema.spec.forProvider.namespace}"
+          - target:
+              kind: FederatedMetric
+            patch: |-
+              - op: replace
+                path: /spec/federateClusterAccessRef/namespace
+                value: "${schema.spec.forProvider.namespace}"
       readyWhen:
         - ${metricsKustomization.status.conditions.exists(c, c.type == "Ready" && c.status == "True")}

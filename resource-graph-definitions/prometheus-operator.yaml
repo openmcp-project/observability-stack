@@ -126,14 +126,14 @@ spec:
           name: prometheus-operator-kustomization
           namespace: ${schema.metadata.namespace}
         spec:
-          interval: 1m
+          interval: 10m
           targetNamespace: ${prometheusOperatorNamespace.metadata.name}
           sourceRef:
             kind: OCIRepository
             name: ${prometheusOperatorOCIRepository.metadata.name}
           path: ""
           prune: true
-          timeout: 1m
+          timeout: 5m
           patches:
           - target:
               kind: Deployment
