@@ -16,6 +16,7 @@ import (
 	krov1alpha1 "github.com/kubernetes-sigs/kro/api/v1alpha1"
 	ocmv1alpha1 "ocm.software/open-component-model/kubernetes/controller/api/v1alpha1"
 
+	"github.com/openmcp-project/openmcp-testing/pkg/clusterutils"
 	"github.com/openmcp-project/openmcp-testing/pkg/conditions"
 	"github.com/openmcp-project/openmcp-testing/pkg/resources"
 )
@@ -26,7 +27,11 @@ const (
 )
 
 func TestObsStack(t *testing.T) {
-	var objectList []k8s.Object
+	var (
+		objectList       []k8s.Object
+		onboardingList   *unstructured.UnstructuredList
+		onboardingConfig *envconf.Config
+	)
 	obsStackTest := features.New("observability-stack test").
 		Setup(func(ctx context.Context, t *testing.T, c *envconf.Config) context.Context {
 			// create the obs-stack namespace
@@ -45,6 +50,17 @@ func TestObsStack(t *testing.T) {
 				t.Fatalf("failed to apply YAML files: %v", err)
 			}
 			objectList = append(objectList, objs...)
+
+			onboardingConfig, err = clusterutils.OnboardingConfig()
+			if err != nil {
+				t.Error(err)
+				return ctx
+			}
+
+			onboardingList, err = resources.CreateObjectsFromDir(ctx, onboardingConfig, "onboarding")
+			if err != nil {
+				t.Error(err)
+			}
 
 			return ctx
 		}).
@@ -151,6 +167,8 @@ func TestObsStack(t *testing.T) {
 			assertMetricsAvailable(ctx, t, promAPI, []string{
 				// metrics-operator custom metrics
 				"co_kustomization",
+				// metrics-operator custom federated metrics
+				"co_managedcontrolplanev2",
 				// controller-runtime workqueue metrics (scraped via annotation-based PodMonitor)
 				"workqueue_depth",
 				"controller_runtime_reconcile_errors_total",
@@ -174,6 +192,12 @@ func TestObsStack(t *testing.T) {
 			for i := len(objectList) - 1; i >= 0; i-- {
 				if err := resources.DeleteObject(ctx, config, objectList[i], wait.WithTimeout(5*time.Minute)); err != nil {
 					t.Errorf("failed to delete object: %v", err)
+				}
+			}
+
+			for i := len(onboardingList.Items) - 1; i >= 0; i-- {
+				if err := resources.DeleteObject(ctx, onboardingConfig, &onboardingList.Items[i], wait.WithTimeout(5*time.Minute)); err != nil {
+					t.Errorf("failed to delete object on onboarding cluster: %v", err)
 				}
 			}
 
