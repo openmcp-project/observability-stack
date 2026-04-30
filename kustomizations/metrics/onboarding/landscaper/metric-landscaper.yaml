@@ -28,4 +28,4 @@ spec:
 
   federateClusterAccessRef:
     name: onboarding-cluster
-    namespace: obs-system
+    namespace: NAMESPACE_PLACEHOLDER

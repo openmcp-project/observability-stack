@@ -23,9 +23,8 @@ apiVersion: metrics.openmcp.cloud/v1alpha1
 kind: FederatedClusterAccess
 metadata:
   name: onboarding-cluster
-  namespace: obs-system
 spec:
-  fieldSelector: "metadata.name=onboarding-cluster,metadata.namespace=obs-system"
+  fieldSelector: "metadata.name=onboarding-cluster,metadata.namespace=NAMESPACE_PLACEHOLDER"
   target:
     kind: AccessRequest
     group: clusters.openmcp.cloud
