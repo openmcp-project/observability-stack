@@ -15,6 +15,20 @@ spec:
       openTelemetryCollector:
         namespace: string | default="open-telemetry-collector-system"
         clusterName: string | default=""
+        resources:
+          requests:
+            memory: string | default="256Mi"
+            cpu: string | default="100m"
+          limits:
+            memory: string | default="512Mi"
+            cpu: string | default="500m"
+        logCollectorResources:
+          requests:
+            memory: string | default="128Mi"
+            cpu: string | default="50m"
+          limits:
+            memory: string | default="256Mi"
+            cpu: string | default="200m"
       forProvider:
         namespace: string | default="metrics-operator-system"
     status:
