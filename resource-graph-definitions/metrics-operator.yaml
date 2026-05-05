@@ -14,6 +14,13 @@ spec:
         namespace: string | default="obs-stack"
       forProvider:
         namespace: string | default="metrics-operator-system"
+        resources:
+          requests:
+            memory: string | default="64Mi"
+            cpu: string | default="10m"
+          limits:
+            memory: string | default="128Mi"
+            cpu: string | default="100m"
     status:
       ready: ${metricsOperatorHelmRelease.status.conditions.exists(c, c.type == "Ready" && c.status == "True")}
       lastAttemptedRevisionDigest: ${metricsOperatorHelmRelease.status.lastAttemptedRevisionDigest}
@@ -128,5 +135,12 @@ spec:
             image:
               repository: ${metricsOperatorImage.status.additional.registry}/${metricsOperatorImage.status.additional.repository}
               tag: ${metricsOperatorImage.status.additional.tag}
+            resources:
+              requests:
+                memory: ${schema.spec.forProvider.resources.requests.memory}
+                cpu: ${schema.spec.forProvider.resources.requests.cpu}
+              limits:
+                memory: ${schema.spec.forProvider.resources.limits.memory}
+                cpu: ${schema.spec.forProvider.resources.limits.cpu}
       readyWhen:
         - ${metricsOperatorHelmRelease.status.conditions.exists(c, c.type == "Ready" && c.status == "True")}
