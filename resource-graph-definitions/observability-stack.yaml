@@ -19,6 +19,13 @@ spec:
         namespace: string | default="cert-manager-system"
       metricsOperator:
         namespace: string | default="metrics-operator-system"
+        resources:
+          requests:
+            memory: string | default="64Mi"
+            cpu: string | default="10m"
+          limits:
+            memory: string | default="128Mi"
+            cpu: string | default="100m"
       metrics:
         namespace: string | default="metrics-operator-system"
       openTelemetryOperator:
@@ -26,10 +33,32 @@ spec:
       openTelemetryCollector:
         namespace: string | default="open-telemetry-collector-system"
         clusterName: string | default=""
+        resources:
+          requests:
+            memory: string | default="256Mi"
+            cpu: string | default="100m"
+          limits:
+            memory: string | default="512Mi"
+            cpu: string | default="500m"
+        logCollectorResources:
+          requests:
+            memory: string | default="128Mi"
+            cpu: string | default="50m"
+          limits:
+            memory: string | default="256Mi"
+            cpu: string | default="200m"
       prometheusOperator:
         namespace: string | default="prometheus-operator-system"
       prometheus:
         namespace: string | default="prometheus-system"
+        storage: string | default="10Gi"
+        resources:
+          requests:
+            memory: string | default="400Mi"
+            cpu: string | default="100m"
+          limits:
+            memory: string | default="2Gi"
+            cpu: string | default="1000m"
       victoriaLogs:
         namespace: string | default="victoria-logs-system"
         retentionPeriod: string | default="7d"

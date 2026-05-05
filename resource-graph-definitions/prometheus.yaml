@@ -19,6 +19,14 @@ spec:
         namespace: string | default="observability-gateway-system"
       forProvider:
         namespace: string | default="prometheus-system"
+        storage: string | default="10Gi"
+        resources:
+          requests:
+            memory: string | default="400Mi"
+            cpu: string | default="100m"
+          limits:
+            memory: string | default="2Gi"
+            cpu: string | default="1000m"
     status:
       ready: ${prometheusKustomization.status.conditions.exists(c, c.type == "Ready" && c.status == "True")}
       lastAttemptedRevisionDigest: ${prometheusKustomization.status.lastAttemptedRevision}
@@ -171,6 +179,21 @@ spec:
                 path: /spec/imagePullSecrets
                 value:
                 - name: ${prometheusImagePullSecret.metadata.name}
+              - op: replace
+                path: /spec/resources/requests/memory
+                value: ${schema.spec.forProvider.resources.requests.memory}
+              - op: replace
+                path: /spec/resources/requests/cpu
+                value: ${schema.spec.forProvider.resources.requests.cpu}
+              - op: replace
+                path: /spec/resources/limits/memory
+                value: ${schema.spec.forProvider.resources.limits.memory}
+              - op: replace
+                path: /spec/resources/limits/cpu
+                value: ${schema.spec.forProvider.resources.limits.cpu}
+              - op: replace
+                path: /spec/storage/volumeClaimTemplate/spec/resources/requests/storage
+                value: ${schema.spec.forProvider.storage}
           - target:
               kind: Alertmanager
               name: alertmanager
