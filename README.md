@@ -252,14 +252,6 @@ kubectl get secret observability-client-cert -n observability-gateway-system \
 # Extract the client private key
 kubectl get secret observability-client-cert -n observability-gateway-system \
   -o jsonpath='{.data.tls\.key}' | base64 -d > client.key
-
-# Extract the Prometheus server certificate (for verifying the gateway's identity)
-kubectl get secret prometheus-cert -n observability-gateway-system \
-  -o jsonpath='{.data.tls\.crt}' | base64 -d > prometheus-server.crt
-
-# Extract the Victoria Logs server certificate
-kubectl get secret victoria-logs-cert -n observability-gateway-system \
-  -o jsonpath='{.data.tls\.crt}' | base64 -d > victoria-logs-server.crt
 ```
 
 **Use the Certificates with curl:**
@@ -268,17 +260,13 @@ kubectl get secret victoria-logs-cert -n observability-gateway-system \
 export METRICS_HOST=$(kubectl get httproute prometheus -n prometheus-system -o jsonpath='{.spec.hostnames[0]}')
 export LOGS_HOST=$(kubectl get httproute victoria-logs -n victoria-logs-system -o jsonpath='{.spec.hostnames[0]}')
 
-# Query Prometheus
-curl --cert client.crt --key client.key --cacert prometheus-server.crt \
+# Query Prometheus (skip server cert verification — gateway uses a self-signed cert)
+curl --cert client.crt --key client.key --insecure \
   "https://${METRICS_HOST}:8443/api/v1/query?query=up"
 
 # Query Victoria Logs
-curl --cert client.crt --key client.key --cacert victoria-logs-server.crt \
-  "https://${LOGS_HOST}:8443/select/logsql/query?query=*&limit=10"
-
-# Or skip certificate verification (not recommended for production)
 curl --cert client.crt --key client.key --insecure \
-  "https://${METRICS_HOST}:8443/api/v1/query?query=up"
+  "https://${LOGS_HOST}:8443/select/logsql/query?query=*&limit=10"
 ```
 
 **Use the Certificates with your Browser:**
@@ -297,15 +285,9 @@ curl --cert client.crt --key client.key --insecure \
    - **Firefox**: Settings → Privacy & Security → Certificates → View Certificates → Your Certificates → Import
    - **Safari**: Open Keychain Access → File → Import Items
 
-3. Import the server certificates as trusted CAs (to avoid browser warnings about self-signed certificates):
-   - Import both `prometheus-server.crt` and `victoria-logs-server.crt` as trusted authorities
-   - **Chrome/Edge**: Settings → Privacy and security → Security → Manage certificates → Authorities → Import
-   - **Firefox**: Settings → Privacy & Security → Certificates → View Certificates → Authorities → Import
-   - **Safari**: Open Keychain Access → File → Import Items, then double-click and set "Always Trust"
+3. When prompted for the client certificate password, use: `observability` (or the password you set in step 1)
 
-4. When prompted for the client certificate password, use: `observability` (or the password you set in step 1)
-
-5. Navigate to the dashboard URLs and select the client certificate when prompted
+4. Navigate to the dashboard URLs, accept the browser warning about the self-signed server certificate, and select the client certificate when prompted
 
 #### 7. Configure Alerting (per landscape)
 
@@ -414,7 +396,7 @@ The UI provides a log query interface using [LogsQL](https://docs.victoriametric
 
 The OTLP log ingestion endpoint (`otlp-logs.<gateway-ns>.<base-domain>:8443/insert/opentelemetry`) accepts logs from any OpenTelemetry Collector instance that presents a valid mTLS client certificate. To ship logs from another cluster:
 
-1. Extract the client certificate and OTLP server CA from the central cluster:
+1. Extract the client certificate from the central cluster:
 
    ```bash
    # On the central cluster
