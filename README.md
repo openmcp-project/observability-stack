@@ -318,7 +318,12 @@ stringData:
       group_interval: 5m
       repeat_interval: 12h
       receiver: 'all'
+      routes:
+        - receiver: 'null'
+          match:
+            inhibit_alert: "true"
     receivers:
+      - name: 'null'
       - name: 'all'
         slack_configs:
           - api_url: 'https://hooks.slack.com/services/YOUR/SLACK/WEBHOOK'
@@ -352,6 +357,8 @@ stringData:
 
 If you only need one notification channel, remove the unused `_configs` block.
 See <https://prometheus.io/docs/alerting/latest/configuration/> for prometheus alerting configuration.
+
+> **Note:** Some alert rules in this stack carry the label `inhibit_alert: "true"` (currently the onboarding rules and controller-runtime rules). These alerts are intentionally visible in the Prometheus dashboard for status observability, but are suppressed in Alertmanager via the `null` receiver route above. The base route structure including the `null` receiver and its matcher **must** be present in your Alertmanager config for suppression to work.
 
 **Verify Alertmanager is connected:**
 
