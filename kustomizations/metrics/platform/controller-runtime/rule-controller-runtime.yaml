@@ -17,6 +17,7 @@ spec:
           labels:
             severity: warning
             component: deployment
+            inhibit_alert: "true"
           annotations:
             summary: "Controller {{ $labels.name }} workqueue depth is high"
             description: "Controller {{ $labels.name }} on cluster {{ $labels.cluster }} has a workqueue depth of {{ $value }}, which may indicate processing is falling behind."
@@ -28,6 +29,7 @@ spec:
           labels:
             severity: warning
             component: deployment
+            inhibit_alert: "true"
           annotations:
             summary: "Controller {{ $labels.controller }} is experiencing reconcile errors"
             description: "Controller {{ $labels.controller }} on cluster {{ $labels.cluster }} is producing reconcile errors at a rate of {{ $value }} per second."
@@ -39,6 +41,7 @@ spec:
           labels:
             severity: warning
             component: deployment
+            inhibit_alert: "true"
           annotations:
             summary: "Controller {{ $labels.controller }} reconcile duration is high"
             description: "Controller {{ $labels.controller }} on cluster {{ $labels.cluster }} has a p99 reconcile duration of {{ $value }}s, which may indicate a slow or stuck reconcile loop."
@@ -50,6 +53,7 @@ spec:
           labels:
             severity: warning
             component: deployment
+            inhibit_alert: "true"
           annotations:
             summary: "Controller {{ $labels.name }} workqueue retries are high"
             description: "Controller {{ $labels.name }} on cluster {{ $labels.cluster }} is retrying workqueue items at a rate of {{ $value }} per second, which may indicate a stuck reconcile loop."
@@ -61,6 +65,7 @@ spec:
           labels:
             severity: warning
             component: deployment
+            inhibit_alert: "true"
           annotations:
             summary: "Controller {{ $labels.name }} has unfinished workqueue items"
             description: "Controller {{ $labels.name }} on cluster {{ $labels.cluster }} has items that have been processing for {{ $value }}s, which may indicate a deadlock or very slow reconciliation."

@@ -17,6 +17,7 @@ spec:
           labels:
             severity: warning
             component: managedcontrolplane
+            inhibit_alert: "true"
           annotations:
             summary: "ManagedControlPlaneV2 {{ $labels.mcp_name }} in namespace {{ $labels.mcp_namespace }} is not in phase Ready"
             description: "ManagedControlPlaneV2 {{ $labels.mcp_name }} in namespace {{ $labels.mcp_namespace }} on cluster {{ $labels.cluster }} is not in phase Ready."
