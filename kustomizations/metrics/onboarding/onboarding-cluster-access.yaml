@@ -10,8 +10,7 @@ spec:
     permissions:
     - rules:
       - apiGroups:
-        - core.openmcp.cloud
-        - openmcp.cloud
+        - '*'
         resources:
         - '*'
         verbs:
