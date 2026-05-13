@@ -74,6 +74,19 @@ func portForwardToPod(t *testing.T, namespace, podName string, remotePort int) (
 		return 0, nil, fmt.Errorf("timed out waiting for port-forward to become ready")
 	}
 
+	// Wait until the application is actually accepting connections on the forwarded port.
+	if err := wait.For(func(context.Context) (bool, error) {
+		conn, dialErr := net.DialTimeout("tcp", fmt.Sprintf("127.0.0.1:%d", localPort), time.Second)
+		if dialErr != nil {
+			return false, nil
+		}
+		conn.Close()
+		return true, nil
+	}, wait.WithTimeout(30*time.Second)); err != nil {
+		close(stopCh)
+		return 0, nil, fmt.Errorf("timed out waiting for port %d to accept connections: %w", localPort, err)
+	}
+
 	return localPort, func() { close(stopCh) }, nil
 }
 
