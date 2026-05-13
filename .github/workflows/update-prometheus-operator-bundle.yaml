@@ -104,8 +104,8 @@ jobs:
         uses: peter-evans/create-pull-request@5f6978faf089d4d20b00c7766989d076bb2fc7f1 # v8
         with:
           token: ${{ steps.app-token.outputs.token }}
-          author: "openmcp-ci[bot] <1312871+openmcp-ci[bot]@users.noreply.github.com>"
-          committer: "openmcp-ci[bot] <1312871+openmcp-ci[bot]@users.noreply.github.com>"
+          author: "openmcp-ci[bot] <213051267+openmcp-ci[bot]@users.noreply.github.com>"
+          committer: "openmcp-ci[bot] <213051267+openmcp-ci[bot]@users.noreply.github.com>"
           commit-message: |
             chore(deps): update prometheus-operator bundle to ${{ steps.version.outputs.target_version }}
           branch: chore/prometheus-operator-bundle-${{ steps.version.outputs.version_number }}
