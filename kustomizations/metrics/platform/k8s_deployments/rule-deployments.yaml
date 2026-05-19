@@ -1,0 +1,32 @@
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: deployment-alerts
+  labels:
+    prometheus: prometheus
+    app: prometheus
+spec:
+  groups:
+    - name: openmcp.deployments
+      interval: 30s
+      rules:
+        # this is an ugly hack because the query language doesn't support comparisons between labels
+        - alert: DeploymentNotReady
+          expr: |
+            co_k8s_deployments{dep_namespace!="kube-system", dep_readyReplicas="0", dep_replicas!="0"}
+            or co_k8s_deployments{dep_namespace!="kube-system", dep_readyReplicas="1", dep_replicas=~"[2-9]|[1-9][0-9]+"}
+            or co_k8s_deployments{dep_namespace!="kube-system", dep_readyReplicas="2", dep_replicas=~"[3-9]|[1-9][0-9]+"}
+            or co_k8s_deployments{dep_namespace!="kube-system", dep_readyReplicas="3", dep_replicas=~"[4-9]|[1-9][0-9]+"}
+            or co_k8s_deployments{dep_namespace!="kube-system", dep_readyReplicas="4", dep_replicas=~"[5-9]|[1-9][0-9]+"}
+            or co_k8s_deployments{dep_namespace!="kube-system", dep_readyReplicas="5", dep_replicas=~"[6-9]|[1-9][0-9]+"}
+            or co_k8s_deployments{dep_namespace!="kube-system", dep_readyReplicas="6", dep_replicas=~"[7-9]|[1-9][0-9]+"}
+            or co_k8s_deployments{dep_namespace!="kube-system", dep_readyReplicas="7", dep_replicas=~"[8-9]|[1-9][0-9]+"}
+            or co_k8s_deployments{dep_namespace!="kube-system", dep_readyReplicas="8", dep_replicas=~"9|[1-9][0-9]+"}
+            or co_k8s_deployments{dep_namespace!="kube-system", dep_readyReplicas="9", dep_replicas=~"[1-9][0-9]+"}
+          for: 15m
+          labels:
+            severity: warning
+            component: deployment
+          annotations:
+            summary: "Deployment {{ $labels.dep_name }} is not ready"
+            description: "Deployment {{ $labels.dep_name }} in namespace {{ $labels.dep_namespace }} on cluster {{ $labels.cluster }} has {{ $labels.dep_replicas }} replicas but only {{ $labels.dep_readyReplicas }} are ready."
