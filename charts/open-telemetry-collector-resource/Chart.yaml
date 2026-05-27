@@ -1,5 +1,5 @@
 apiVersion: v2
-name: open-telemetry-collector
+name: open-telemetry-collector-resource
 description: A Helm chart for an OpenTelemetryCollector resource.
 type: application
 version: 0.0.1
