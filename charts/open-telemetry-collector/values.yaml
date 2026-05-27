@@ -14,3 +14,8 @@ additionalVolumes: [] # additional volumes for the collector pod, e.g. to mount 
 
 serviceAccount:
   create: true
+  automount: false
+  imagePullSecrets: [] # image pull secrets for the service account
+  # expected format is
+  # - name: secret-name
+  # The image pull secret(s) for the open-telemetry-collector image must be included here if not accessible publicly.
