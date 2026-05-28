@@ -486,7 +486,8 @@ All community members must abide by our [Code of Conduct](https://github.com/ope
 
 ## Licensing
 
-Copyright OpenControlPlane contributors. See [LICENSE](LICENSE) for details. Licensing information is available [via the REUSE tool](https://api.reuse.software/info/github.com/openmcp-project/community).
+Copyright OpenControlPlane contributors. Please see our [LICENSE](LICENSE) for copyright and license information. Detailed information including third-party components and their licensing/copyright information is available [via the REUSE tool](https://api.reuse.software/info/github.com/openmcp-project/observability-stack).
+
 ---
 
 <p align="center">
