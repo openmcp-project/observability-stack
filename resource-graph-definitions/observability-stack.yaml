@@ -237,3 +237,18 @@ spec:
           forProvider: ${schema.spec.victoriaLogs}
       readyWhen:
         - ${victoriaLogs.status.ready == true}
+
+    - id: remoteObservability
+      template:
+        apiVersion: kro.run/v1alpha1
+        kind: RemoteObservability
+        metadata:
+          name: remote-observability
+          annotations:
+            dependency/observability-gateway: ${observabilityGateway.status.lastAttemptedRevisionDigest}
+            dependency/victoria-logs: ${victoriaLogs.status.lastAttemptedRevisionDigest}
+        spec:
+          componentRef: ${schema.spec.componentRef}
+          imagePullSecretRef: ${schema.spec.imagePullSecretRef}
+          gateway:
+            namespace: ${schema.spec.observabilityGateway.namespace}

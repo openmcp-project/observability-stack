@@ -1,0 +1,541 @@
+apiVersion: kro.run/v1alpha1
+kind: ResourceGraphDefinition
+metadata:
+  name: remote-observability
+spec:
+  schema:
+    apiVersion: v1alpha1
+    kind: RemoteObservability
+    spec:
+      componentRef:
+        name: string | default="obs-stack-component"
+      imagePullSecretRef:
+        name: string | default="imgpull"
+        namespace: string | default="obs-stack"
+      common: # configuration for all components of the remote observability stack
+        platformClusterNamespace: string | default="remote-observability-system"
+        clusterSelector: 'ClusterSelector | default={"matchPurposes": [{"operator": "ContainsAll", "values": ["workload"]}]}'
+      certManager:
+        enabled: boolean | default=true
+        namespace: string | default="cert-manager-system"
+      openTelemetryOperator:
+        namespace: string | default="open-telemetry-operator-system"
+      openTelemetryCollector:
+        namespace: string | default="open-telemetry-collector-system"
+      gateway: # configuration of the gateway deployed by the observability gateway component
+        namespace: string | default="observability-gateway-system"
+        gatewayName: string | default="observability-gateway"
+        clientCertName: string | default="observability-client-cert"
+        otlpLogsCertName: string | default="otlp-logs-gateway-cert"
+    types:
+      PurposeMatcher:
+        operator: string | required=true
+        values: '[]string'
+      LabelExpressionMatcher:
+        key: string | required=true
+        operator: string | required=true
+        values: '[]string'
+      IdentityMatcher:
+        namespace: string | required=true
+        name: string | required=true
+      ClusterSelector:
+        matchPurposes: '[]PurposeMatcher'
+        matchExpressions: '[]LabelExpressionMatcher'
+        matchLabels: 'map[string]string'
+        matchIdentities: '[]IdentityMatcher'
+    additionalPrinterColumns:
+      - jsonPath: .status.certManager
+        name: CertManager
+        type: string
+      - jsonPath: .status.openTelemetryOperator
+        name: OTELOperator
+        type: string
+      - jsonPath: .status.openTelemetryCollector
+        name: OTELCollector
+        type: string
+    status:
+      # Currently, referencing 'schema' is not possible in the status section, so we cannot determine whether the cert-manager is enabled or not.
+      # This will be fixed with https://github.com/kubernetes-sigs/kro/pull/1300.
+      # certManager: ${schema.spec.certManager.enabled ? ( certManagerHelmDeployment.status.observedGeneration == certManagerHelmDeployment.metadata.generation ? certManagerHelmDeployment.status.phase :"Outdated") :"Disabled"}
+      openTelemetryOperator: ${otelOperatorHelmDeployment.status.observedGeneration == otelOperatorHelmDeployment.metadata.generation ? otelOperatorHelmDeployment.status.phase :"Outdated"}
+      openTelemetryCollector: ${otelCollectorResourceHelmDeployment.status.observedGeneration == otelCollectorResourceHelmDeployment.metadata.generation ? otelCollectorResourceHelmDeployment.status.phase :"Outdated"}
+
+  resources:
+    - id: remoteObsNamespace
+      template:
+        apiVersion: v1
+        kind: Namespace
+        metadata:
+          name: ${schema.spec.common.platformClusterNamespace}
+
+    # this is the shared image pull secret that will be copied into the remote-observability namespace
+    - id: sharedImagePullSecret
+      externalRef:
+        apiVersion: v1
+        kind: Secret
+        metadata:
+          name: ${schema.spec.imagePullSecretRef.name}
+          namespace: ${schema.spec.imagePullSecretRef.namespace}
+
+    - id: genericPullSecret
+      template:
+        apiVersion: v1
+        kind: Secret
+        metadata:
+          name: registry-credentials
+          namespace: ${remoteObsNamespace.metadata.name}
+        type:  ${sharedImagePullSecret.type}
+        data: ${sharedImagePullSecret.data}
+
+####################
+### Cert Manager ###
+####################
+
+    - id: certManagerImagePullSecret
+      includeWhen:
+        - ${schema.spec.certManager.enabled}
+      template:
+        apiVersion: v1
+        kind: Secret
+        metadata:
+          name: cert-manager-imgpull
+          namespace: ${remoteObsNamespace.metadata.name}
+        type:  ${sharedImagePullSecret.type}
+        data: ${sharedImagePullSecret.data}
+
+    - id: certManagerChart
+      includeWhen:
+        - ${schema.spec.certManager.enabled}
+      template:
+        apiVersion: delivery.ocm.software/v1alpha1
+        kind: Resource
+        metadata:
+          name: cert-manager-chart
+          namespace: ${schema.metadata.namespace}
+        spec:
+          componentRef: ${schema.spec.componentRef}
+          resource:
+            byReference:
+              resource:
+                name: cert-manager-chart
+          additionalStatusFields:
+            registry: resource.access.imageReference.toOCI().registry
+            repository: resource.access.imageReference.toOCI().repository
+            tag: resource.access.imageReference.toOCI().tag
+
+    - id: certManagerControllerImage
+      includeWhen:
+        - ${schema.spec.certManager.enabled}
+      template:
+        apiVersion: delivery.ocm.software/v1alpha1
+        kind: Resource
+        metadata:
+          name: cert-manager-controller-image
+          namespace: ${schema.metadata.namespace}
+        spec:
+          componentRef: ${schema.spec.componentRef}
+          resource:
+            byReference:
+              resource:
+                name: cert-manager-controller-image
+          additionalStatusFields:
+            registry: resource.access.imageReference.toOCI().registry
+            repository: resource.access.imageReference.toOCI().repository
+            tag: resource.access.imageReference.toOCI().tag
+
+    - id: certManagerWebhookImage
+      includeWhen:
+        - ${schema.spec.certManager.enabled}
+      template:
+        apiVersion: delivery.ocm.software/v1alpha1
+        kind: Resource
+        metadata:
+          name: cert-manager-webhook-image
+          namespace: ${schema.metadata.namespace}
+        spec:
+          componentRef: ${schema.spec.componentRef}
+          resource:
+            byReference:
+              resource:
+                name: cert-manager-webhook-image
+          additionalStatusFields:
+            registry: resource.access.imageReference.toOCI().registry
+            repository: resource.access.imageReference.toOCI().repository
+            tag: resource.access.imageReference.toOCI().tag
+
+    - id: certManagerCAInjectorImage
+      includeWhen:
+        - ${schema.spec.certManager.enabled}
+      template:
+        apiVersion: delivery.ocm.software/v1alpha1
+        kind: Resource
+        metadata:
+          name: cert-manager-cainjector-image
+          namespace: ${schema.metadata.namespace}
+        spec:
+          componentRef: ${schema.spec.componentRef}
+          resource:
+            byReference:
+              resource:
+                name: cert-manager-cainjector-image
+          additionalStatusFields:
+            registry: resource.access.imageReference.toOCI().registry
+            repository: resource.access.imageReference.toOCI().repository
+            tag: resource.access.imageReference.toOCI().tag
+
+    - id: certManagerACMESolverImage
+      includeWhen:
+        - ${schema.spec.certManager.enabled}
+      template:
+        apiVersion: delivery.ocm.software/v1alpha1
+        kind: Resource
+        metadata:
+          name: cert-manager-acmesolver-image
+          namespace: ${schema.metadata.namespace}
+        spec:
+          componentRef: ${schema.spec.componentRef}
+          resource:
+            byReference:
+              resource:
+                name: cert-manager-acmesolver-image
+          additionalStatusFields:
+            registry: resource.access.imageReference.toOCI().registry
+            repository: resource.access.imageReference.toOCI().repository
+            tag: resource.access.imageReference.toOCI().tag
+
+    - id: certManagerStartupAPICheckImage
+      includeWhen:
+        - ${schema.spec.certManager.enabled}
+      template:
+        apiVersion: delivery.ocm.software/v1alpha1
+        kind: Resource
+        metadata:
+          name: cert-manager-startupapicheck-image
+          namespace: ${schema.metadata.namespace}
+        spec:
+          componentRef: ${schema.spec.componentRef}
+          resource:
+            byReference:
+              resource:
+                name: cert-manager-startupapicheck-image
+          additionalStatusFields:
+            registry: resource.access.imageReference.toOCI().registry
+            repository: resource.access.imageReference.toOCI().repository
+            tag: resource.access.imageReference.toOCI().tag
+
+    - id: certManagerHelmDeployment
+      includeWhen:
+        - ${schema.spec.certManager.enabled}
+      template:
+        apiVersion: helm.open-control-plane.io/v1alpha1
+        kind: HelmDeployment
+        metadata:
+          name: remote-cert-manager
+          namespace: ${remoteObsNamespace.metadata.name}
+        spec:
+          chartSource:
+            oci:
+              interval: 1m0s
+              insecure: true
+              layerSelector:
+                mediaType: "application/vnd.cncf.helm.chart.content.v1.tar+gzip"
+                operation: copy
+              url: oci://${certManagerChart.status.additional.registry}/${certManagerChart.status.additional.repository}
+              ref:
+                tag: ${certManagerChart.status.additional.tag}
+              secretRef:
+                name: ${genericPullSecret.metadata.name}
+          namespace: ${schema.spec.certManager.namespace}
+          selector: ${schema.spec.common.clusterSelector}
+          install:
+            createNamespace: true
+            crds: CreateReplace
+          interval: 10m
+          timeout: 5m
+          helmValues:
+            global:
+              imagePullSecrets:
+                - name: ${certManagerImagePullSecret.metadata.name}
+            crds:
+              enabled: true
+            image:
+              repository: ${certManagerControllerImage.status.additional.registry}/${certManagerControllerImage.status.additional.repository}
+              tag: ${certManagerControllerImage.status.additional.tag}
+            webhook:
+              image:
+                repository: ${certManagerWebhookImage.status.additional.registry}/${certManagerWebhookImage.status.additional.repository}
+                tag: ${certManagerWebhookImage.status.additional.tag}
+            cainjector:
+              image:
+                repository: ${certManagerCAInjectorImage.status.additional.registry}/${certManagerCAInjectorImage.status.additional.repository}
+                tag: ${certManagerCAInjectorImage.status.additional.tag}
+            acmesolver:
+              image:
+                repository: ${certManagerACMESolverImage.status.additional.registry}/${certManagerACMESolverImage.status.additional.repository}
+                tag: ${certManagerACMESolverImage.status.additional.tag}
+            startupapicheck:
+              image:
+                repository: ${certManagerStartupAPICheckImage.status.additional.registry}/${certManagerStartupAPICheckImage.status.additional.repository}
+                tag: ${certManagerStartupAPICheckImage.status.additional.tag}
+          secretsToCopy:
+            toPlatformCluster:
+            - source:
+                name: ${genericPullSecret.metadata.name}
+            toTargetCluster:
+            - source:
+                name: ${certManagerImagePullSecret.metadata.name}
+      readyWhen:
+        - ${certManagerHelmDeployment.status.phase == "Ready"}
+
+###############################
+### Open Telemetry Operator ###
+###############################
+
+    - id: otelOperatorImagePullSecret
+      template:
+        apiVersion: v1
+        kind: Secret
+        metadata:
+          name: open-telemetry-operator-imgpull
+          namespace: ${remoteObsNamespace.metadata.name}
+        type:  ${sharedImagePullSecret.type}
+        data: ${sharedImagePullSecret.data}
+
+
+    - id: otelOperatorChart
+      template:
+        apiVersion: delivery.ocm.software/v1alpha1
+        kind: Resource
+        metadata:
+          name: open-telemetry-operator-chart
+          namespace: ${schema.metadata.namespace}
+        spec:
+          componentRef: ${schema.spec.componentRef}
+          resource:
+            byReference:
+              resource:
+                name: open-telemetry-operator-chart
+          additionalStatusFields:
+            registry: resource.access.imageReference.toOCI().registry
+            repository: resource.access.imageReference.toOCI().repository
+            tag: resource.access.imageReference.toOCI().tag
+
+    - id: otelOperatorImage
+      template:
+        apiVersion: delivery.ocm.software/v1alpha1
+        kind: Resource
+        metadata:
+          name: open-telemetry-operator-image
+          namespace: ${schema.metadata.namespace}
+        spec:
+          componentRef: ${schema.spec.componentRef}
+          resource:
+            byReference:
+              resource:
+                name: open-telemetry-operator-image
+          additionalStatusFields:
+            registry: resource.access.imageReference.toOCI().registry
+            repository: resource.access.imageReference.toOCI().repository
+            tag: resource.access.imageReference.toOCI().tag
+
+    - id: openTelemetryCollectorImage
+      template:
+        apiVersion: delivery.ocm.software/v1alpha1
+        kind: Resource
+        metadata:
+          name: open-telemetry-collector-image
+          namespace: ${schema.metadata.namespace}
+        spec:
+          componentRef: ${schema.spec.componentRef}
+          resource:
+            byReference:
+              resource:
+                name: open-telemetry-collector-image
+          additionalStatusFields:
+            registry: resource.access.imageReference.toOCI().registry
+            repository: resource.access.imageReference.toOCI().repository
+            tag: resource.access.imageReference.toOCI().tag
+
+    - id: otelOperatorHelmDeployment
+      template:
+        apiVersion: helm.open-control-plane.io/v1alpha1
+        kind: HelmDeployment
+        metadata:
+          name: remote-telemetry-operator
+          namespace: ${remoteObsNamespace.metadata.name}
+        spec:
+          chartSource:
+            oci:
+              interval: 1m0s
+              insecure: true
+              layerSelector:
+                mediaType: "application/vnd.cncf.helm.chart.content.v1.tar+gzip"
+                operation: copy
+              url: oci://${otelOperatorChart.status.additional.registry}/${otelOperatorChart.status.additional.repository}
+              ref:
+                tag: ${otelOperatorChart.status.additional.tag}
+              secretRef:
+                name: ${genericPullSecret.metadata.name}
+          namespace: ${schema.spec.openTelemetryOperator.namespace}
+          selector: ${schema.spec.common.clusterSelector}
+          releaseName: remote-telemetry-operator # must be set because generated name leads to resource names exceeding the k8s name length limit
+          install:
+            createNamespace: true
+            crds: CreateReplace
+          interval: 10m
+          timeout: 5m
+          helmValues:
+            imagePullSecrets:
+              - name: ${otelOperatorImagePullSecret.metadata.name}
+            manager:
+              image:
+                repository: ${otelOperatorImage.status.additional.registry}/${otelOperatorImage.status.additional.repository}
+                tag: ${otelOperatorImage.status.additional.tag}
+              collectorImage:
+                repository: ${openTelemetryCollectorImage.status.additional.registry}/${openTelemetryCollectorImage.status.additional.repository}
+                tag: ${openTelemetryCollectorImage.status.additional.tag}
+          secretsToCopy:
+            toPlatformCluster:
+            - source:
+                name: ${genericPullSecret.metadata.name}
+            toTargetCluster:
+            - source:
+                name: ${otelOperatorImagePullSecret.metadata.name}
+      readyWhen:
+        - ${otelOperatorHelmDeployment.status.phase == "Ready"}
+
+#######################################
+### OpenTelemetryCollector Resource ###
+#######################################
+
+    - id: otelCollectorImagePullSecret
+      template:
+        apiVersion: v1
+        kind: Secret
+        metadata:
+          name: open-telemetry-collector-imgpull
+          namespace: ${remoteObsNamespace.metadata.name}
+        type:  ${sharedImagePullSecret.type}
+        data: ${sharedImagePullSecret.data}
+
+    - id: observabilityClientCert
+      externalRef:
+        apiVersion: cert-manager.io/v1
+        kind: Certificate
+        metadata:
+          name: ${schema.spec.gateway.clientCertName}
+          namespace: ${schema.spec.gateway.namespace}
+    
+    - id: observabilityClientCertSecret
+      externalRef:
+        apiVersion: v1
+        kind: Secret
+        metadata:
+          name: ${observabilityClientCert.spec.secretName}
+          namespace: ${schema.spec.gateway.namespace}
+
+    - id: otlpLogsCert
+      externalRef:
+        apiVersion: cert-manager.io/v1
+        kind: Certificate
+        metadata:
+          name: ${schema.spec.gateway.otlpLogsCertName}
+          namespace: ${schema.spec.gateway.namespace}
+
+    - id: otlpLogsCertSecret
+      externalRef:
+        apiVersion: v1
+        kind: Secret
+        metadata:
+          name: ${otlpLogsCert.spec.secretName}
+          namespace: ${schema.spec.gateway.namespace}
+
+    - id: remoteClientCertSecret
+      template:
+        apiVersion: v1
+        kind: Secret
+        metadata:
+          name: observability-client-cert
+          namespace: ${remoteObsNamespace.metadata.name}
+        type: Opaque
+        data:
+          tls.crt: ${observabilityClientCertSecret.data["tls.crt"]}
+          tls.key: ${observabilityClientCertSecret.data["tls.key"]}
+          ca.crt: ${otlpLogsCertSecret.data["tls.crt"]}
+
+    - id: observabilityGateway
+      externalRef:
+        apiVersion: gateway.networking.k8s.io/v1
+        kind: Gateway
+        metadata:
+          name: ${schema.spec.gateway.gatewayName}
+          namespace: ${schema.spec.gateway.namespace}
+
+    - id: otelCollectorResourceChart
+      template:
+        apiVersion: delivery.ocm.software/v1alpha1
+        kind: Resource
+        metadata:
+          name: open-telemetry-collector-resource-chart
+          namespace: ${schema.metadata.namespace}
+        spec:
+          componentRef: ${schema.spec.componentRef}
+          resource:
+            byReference:
+              resource:
+                name: open-telemetry-collector-resource-chart
+          additionalStatusFields:
+            registry: resource.access.imageReference.toOCI().registry
+            repository: resource.access.imageReference.toOCI().repository
+            tag: resource.access.imageReference.toOCI().tag
+
+    - id: otelCollectorResourceHelmDeployment
+      template:
+        apiVersion: helm.open-control-plane.io/v1alpha1
+        kind: HelmDeployment
+        metadata:
+          name: remote-telemetry-collector
+          namespace: ${remoteObsNamespace.metadata.name}
+        spec:
+          chartSource:
+            oci:
+              interval: 1m0s
+              insecure: true
+              layerSelector:
+                mediaType: "application/vnd.cncf.helm.chart.content.v1.tar+gzip"
+                operation: copy
+              url: oci://${otelCollectorResourceChart.status.additional.registry}/${otelCollectorResourceChart.status.additional.repository}
+              ref:
+                tag: ${otelCollectorResourceChart.status.additional.tag}
+              secretRef:
+                name: ${genericPullSecret.metadata.name}
+          namespace: ${schema.spec.openTelemetryCollector.namespace}
+          selector: ${schema.spec.common.clusterSelector}
+          helmValues:
+            cluster:
+              identity: "<cluster.namespace>/<cluster.name>"
+            endpoint: "https://${observabilityGateway.spec.listeners.filter(elem, elem.name == 'otlp-logs')[0].hostname}:${string(observabilityGateway.spec.listeners.filter(elem, elem.name == 'otlp-logs')[0].port)}/insert/opentelemetry"
+            tls:
+              enabled: true
+              certFile: /etc/otel/certs/tls.crt
+              keyFile: /etc/otel/certs/tls.key
+              caFile: /etc/otel/certs/ca.crt
+            additionalVolumeMounts:
+              - name: observability-client-cert
+                mountPath: /etc/otel/certs
+                readOnly: true
+            additionalVolumes:
+              - name: observability-client-cert
+                secret:
+                  secretName: ${remoteClientCertSecret.metadata.name}
+            serviceAccount:
+              imagePullSecrets:
+                - name: ${otelCollectorImagePullSecret.metadata.name}
+          secretsToCopy:
+            toTargetCluster:
+            - source:
+                name: ${otelCollectorImagePullSecret.metadata.name}
+            - source:
+                name: ${remoteClientCertSecret.metadata.name}
+      readyWhen:
+        - ${otelCollectorResourceHelmDeployment.status.phase == "Ready"}
