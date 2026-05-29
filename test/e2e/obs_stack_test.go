@@ -44,8 +44,8 @@ func TestObsStack(t *testing.T) {
 
 			objectList = append(objectList, namespace)
 
-			// Process and apply the platform ocm manifests
-			objs, err := applyYAMLFilesFromGlob(ctx, t, c, "platform/ocm/*.yaml")
+			// Process and apply the platform manifests
+			objs, err := applyYAMLFilesFromGlob(ctx, t, c, "platform/manifests/*.yaml")
 			if err != nil {
 				t.Fatalf("failed to apply YAML files: %v", err)
 			}
