@@ -245,6 +245,7 @@ spec:
         metadata:
           name: remote-observability
           annotations:
+            dependency/cert-manager: ${certManager.status.lastAttemptedRevisionDigest}
             dependency/observability-gateway: ${observabilityGateway.status.lastAttemptedRevisionDigest}
             dependency/victoria-logs: ${victoriaLogs.status.lastAttemptedRevisionDigest}
         spec:
