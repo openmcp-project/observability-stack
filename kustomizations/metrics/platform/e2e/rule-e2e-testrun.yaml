@@ -8,7 +8,7 @@ metadata:
 spec:
   groups:
     - name: e2e.testrun
-      interval: 30s
+      interval: 5m
       rules:
         - alert: E2ETestRunConditionFailed
           expr: |
@@ -21,7 +21,7 @@ spec:
               or co_e2e_testruns{tr_tc_create_mcpv2_cleanup_status="False"}
             ) and on(cluster, tr_name)
             topk by(cluster) (1, max by(cluster, tr_name) (co_e2e_testruns))
-          for: 10s
+          for: 1m
           labels:
             severity: warning
             component: e2e
