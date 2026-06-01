@@ -418,36 +418,58 @@ spec:
         type:  ${sharedImagePullSecret.type}
         data: ${sharedImagePullSecret.data}
 
-    - id: observabilityClientCert
-      externalRef:
-        apiVersion: cert-manager.io/v1
-        kind: Certificate
-        metadata:
-          name: ${schema.spec.gateway.clientCertName}
-          namespace: ${schema.spec.gateway.namespace}
+    # Referencing a 'Certificate' is currently not possible, because this CRD is only created when the cert-manager is deployed,
+    # but kro tries to validate it already during creation of the ResourceGraphDefinition.
+    # See https://github.com/kubernetes-sigs/kro/issues/1293 for details.
+    # As a workaround, we reference the secrets directly, using their hard-coded names.
+    # - id: observabilityClientCert
+    #   externalRef:
+    #     apiVersion: cert-manager.io/v1
+    #     kind: Certificate
+    #     metadata:
+    #       name: ${schema.spec.gateway.clientCertName}
+    #       namespace: ${schema.spec.gateway.namespace}
     
+    # - id: observabilityClientCertSecret
+    #   externalRef:
+    #     apiVersion: v1
+    #     kind: Secret
+    #     metadata:
+    #       name: ${observabilityClientCert.spec.secretName}
+    #       namespace: ${schema.spec.gateway.namespace}
+
+    # - id: otlpLogsCert
+    #   externalRef:
+    #     apiVersion: cert-manager.io/v1
+    #     kind: Certificate
+    #     metadata:
+    #       name: ${schema.spec.gateway.otlpLogsCertName}
+    #       namespace: ${schema.spec.gateway.namespace}
+
+    # - id: otlpLogsCertSecret
+    #   externalRef:
+    #     apiVersion: v1
+    #     kind: Secret
+    #     metadata:
+    #       name: ${otlpLogsCert.spec.secretName}
+    #       namespace: ${schema.spec.gateway.namespace}
+
+    # Remove after the issue mentioned above is fixed.
     - id: observabilityClientCertSecret
       externalRef:
         apiVersion: v1
         kind: Secret
         metadata:
-          name: ${observabilityClientCert.spec.secretName}
+          name: observability-client-ca-cert
           namespace: ${schema.spec.gateway.namespace}
 
-    - id: otlpLogsCert
-      externalRef:
-        apiVersion: cert-manager.io/v1
-        kind: Certificate
-        metadata:
-          name: ${schema.spec.gateway.otlpLogsCertName}
-          namespace: ${schema.spec.gateway.namespace}
-
+    # Remove after the issue mentioned above is fixed.
     - id: otlpLogsCertSecret
       externalRef:
         apiVersion: v1
         kind: Secret
         metadata:
-          name: ${otlpLogsCert.spec.secretName}
+          name: otlp-logs-cert
           namespace: ${schema.spec.gateway.namespace}
 
     - id: remoteClientCertSecret
