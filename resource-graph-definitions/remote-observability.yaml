@@ -384,8 +384,9 @@ spec:
             createNamespace: true
             crds: CreateReplace
           interval: 10m
-          timeout: 5m
+          timeout: 10m
           helmValues:
+            fullnameOverride: remote-telemetry-operator # required, otherwise some resource names become too long
             imagePullSecrets:
               - name: ${otelOperatorImagePullSecret.metadata.name}
             manager:
@@ -535,6 +536,7 @@ spec:
           namespace: ${schema.spec.openTelemetryCollector.namespace}
           selector: ${schema.spec.common.clusterSelector}
           releaseName: remote-telemetry-collector
+          timeout: 15m
           helmValues:
             cluster:
               identity: "<cluster.namespace>/<cluster.name>"
