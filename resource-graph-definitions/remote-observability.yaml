@@ -98,7 +98,7 @@ spec:
         apiVersion: v1
         kind: Secret
         metadata:
-          name: cert-manager-imgpull
+          name: remote-cert-manager-imgpull
           namespace: ${remoteObsNamespace.metadata.name}
         type:  ${sharedImagePullSecret.type}
         data: ${sharedImagePullSecret.data}
@@ -110,7 +110,7 @@ spec:
         apiVersion: delivery.ocm.software/v1alpha1
         kind: Resource
         metadata:
-          name: cert-manager-chart
+          name: remote-cert-manager-chart
           namespace: ${schema.metadata.namespace}
         spec:
           componentRef: ${schema.spec.componentRef}
@@ -130,7 +130,7 @@ spec:
         apiVersion: delivery.ocm.software/v1alpha1
         kind: Resource
         metadata:
-          name: cert-manager-controller-image
+          name: remote-cert-manager-controller-image
           namespace: ${schema.metadata.namespace}
         spec:
           componentRef: ${schema.spec.componentRef}
@@ -150,7 +150,7 @@ spec:
         apiVersion: delivery.ocm.software/v1alpha1
         kind: Resource
         metadata:
-          name: cert-manager-webhook-image
+          name: remote-cert-manager-webhook-image
           namespace: ${schema.metadata.namespace}
         spec:
           componentRef: ${schema.spec.componentRef}
@@ -170,7 +170,7 @@ spec:
         apiVersion: delivery.ocm.software/v1alpha1
         kind: Resource
         metadata:
-          name: cert-manager-cainjector-image
+          name: remote-cert-manager-cainjector-image
           namespace: ${schema.metadata.namespace}
         spec:
           componentRef: ${schema.spec.componentRef}
@@ -190,7 +190,7 @@ spec:
         apiVersion: delivery.ocm.software/v1alpha1
         kind: Resource
         metadata:
-          name: cert-manager-acmesolver-image
+          name: remote-cert-manager-acmesolver-image
           namespace: ${schema.metadata.namespace}
         spec:
           componentRef: ${schema.spec.componentRef}
@@ -210,7 +210,7 @@ spec:
         apiVersion: delivery.ocm.software/v1alpha1
         kind: Resource
         metadata:
-          name: cert-manager-startupapicheck-image
+          name: remote-cert-manager-startupapicheck-image
           namespace: ${schema.metadata.namespace}
         spec:
           componentRef: ${schema.spec.componentRef}
@@ -250,8 +250,9 @@ spec:
           install:
             createNamespace: true
             crds: CreateReplace
+            strategy:
+              name: RetryOnFailure
           interval: 10m
-          timeout: 5m
           releaseName: cert-manager
           helmValues:
             global:
@@ -297,7 +298,7 @@ spec:
         apiVersion: v1
         kind: Secret
         metadata:
-          name: open-telemetry-operator-imgpull
+          name: remote-open-telemetry-operator-imgpull
           namespace: ${remoteObsNamespace.metadata.name}
         type:  ${sharedImagePullSecret.type}
         data: ${sharedImagePullSecret.data}
@@ -308,7 +309,7 @@ spec:
         apiVersion: delivery.ocm.software/v1alpha1
         kind: Resource
         metadata:
-          name: open-telemetry-operator-chart
+          name: remote-open-telemetry-operator-chart
           namespace: ${schema.metadata.namespace}
         spec:
           componentRef: ${schema.spec.componentRef}
@@ -326,7 +327,7 @@ spec:
         apiVersion: delivery.ocm.software/v1alpha1
         kind: Resource
         metadata:
-          name: open-telemetry-operator-image
+          name: remote-open-telemetry-operator-image
           namespace: ${schema.metadata.namespace}
         spec:
           componentRef: ${schema.spec.componentRef}
@@ -344,7 +345,7 @@ spec:
         apiVersion: delivery.ocm.software/v1alpha1
         kind: Resource
         metadata:
-          name: open-telemetry-collector-image
+          name: remote-open-telemetry-collector-image
           namespace: ${schema.metadata.namespace}
         spec:
           componentRef: ${schema.spec.componentRef}
@@ -383,8 +384,9 @@ spec:
           install:
             createNamespace: true
             crds: CreateReplace
+            strategy:
+              name: RetryOnFailure
           interval: 10m
-          timeout: 10m
           helmValues:
             fullnameOverride: remote-telemetry-operator # required, otherwise some resource names become too long
             imagePullSecrets:
@@ -415,7 +417,7 @@ spec:
         apiVersion: v1
         kind: Secret
         metadata:
-          name: open-telemetry-collector-imgpull
+          name: remote-open-telemetry-collector-imgpull
           namespace: ${remoteObsNamespace.metadata.name}
         type:  ${sharedImagePullSecret.type}
         data: ${sharedImagePullSecret.data}
@@ -500,7 +502,7 @@ spec:
         apiVersion: delivery.ocm.software/v1alpha1
         kind: Resource
         metadata:
-          name: open-telemetry-collector-resource-chart
+          name: remote-open-telemetry-collector-resource-chart
           namespace: ${schema.metadata.namespace}
         spec:
           componentRef: ${schema.spec.componentRef}
@@ -535,8 +537,11 @@ spec:
                 name: ${genericPullSecret.metadata.name}
           namespace: ${schema.spec.openTelemetryCollector.namespace}
           selector: ${schema.spec.common.clusterSelector}
+          install:
+            strategy:
+              name: RetryOnFailure
           releaseName: remote-telemetry-collector
-          timeout: 15m
+          interval: 10m
           helmValues:
             cluster:
               identity: "<cluster.namespace>/<cluster.name>"
