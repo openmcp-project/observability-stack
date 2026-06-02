@@ -252,6 +252,7 @@ spec:
             crds: CreateReplace
           interval: 10m
           timeout: 5m
+          releaseName: cert-manager
           helmValues:
             global:
               imagePullSecrets:
@@ -378,7 +379,7 @@ spec:
                 name: ${genericPullSecret.metadata.name}
           namespace: ${schema.spec.openTelemetryOperator.namespace}
           selector: ${schema.spec.common.clusterSelector}
-          releaseName: remote-telemetry-operator # must be set because generated name leads to resource names exceeding the k8s name length limit
+          releaseName: remote-telemetry-operator
           install:
             createNamespace: true
             crds: CreateReplace
@@ -533,6 +534,7 @@ spec:
                 name: ${genericPullSecret.metadata.name}
           namespace: ${schema.spec.openTelemetryCollector.namespace}
           selector: ${schema.spec.common.clusterSelector}
+          releaseName: remote-telemetry-collector
           helmValues:
             cluster:
               identity: "<cluster.namespace>/<cluster.name>"
