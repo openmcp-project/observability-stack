@@ -12,6 +12,9 @@ spec:
   interval: "1m"
   dataSinkRef:
     name: default
+  valueFrom:
+    fieldPath: "metadata.creationTimestamp"
+    type: timestamp
   projections:
     - name: tr_name
       fieldPath: "metadata.name"
