@@ -92,8 +92,21 @@ spec:
         ready: ${victoriaLogs.status.ready}
       observabilityGateway:
         ready: ${observabilityGateway.status.ready}
-      ready:
-        ${(certManager.status.ready == true) && (metricsOperator.status.ready) && (openTelemetryOperator.status.ready == true) && (prometheusOperator.status.ready == true) && (prometheus.status.ready == true) && (openTelemetryCollector.status.ready == true) && metrics.status.ready == true && victoriaLogs.status.ready == true && observabilityGateway.status.ready == true}
+      remoteObservability:
+        ready: ${remoteObservability.status.ready}
+      ready: |-
+        ${
+          (certManager.status.ready == true) && 
+          (metricsOperator.status.ready == true) && 
+          (openTelemetryOperator.status.ready == true) && 
+          (prometheusOperator.status.ready == true) && 
+          (prometheus.status.ready == true) && 
+          (openTelemetryCollector.status.ready == true) && 
+          (metrics.status.ready == true) && 
+          (victoriaLogs.status.ready == true) && 
+          (observabilityGateway.status.ready == true) && 
+          (remoteObservability.status.ready == true)
+        }
 
   resources:
     - id: certManager
@@ -253,3 +266,5 @@ spec:
           imagePullSecretRef: ${schema.spec.imagePullSecretRef}
           gateway:
             namespace: ${schema.spec.observabilityGateway.namespace}
+      readyWhen:
+        - ${remoteObservability.status.ready == true}
