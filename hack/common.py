@@ -271,3 +271,32 @@ def run_command(
             if e.stderr:
                 print(f"stderr: {e.stderr}", file=sys.stderr, flush=True)
         raise
+
+def set_chart_version(chart_path: str, version: str) -> None:
+    """
+    Sets the 'version' and 'appVersion' fields in a Helm Chart.yaml file.
+    Either the path to the Chart.yaml file directly or the directory containing it can be provided.
+    """
+    if not chart_path.endswith("Chart.yaml"):
+        chart_path = os.path.join(chart_path, "Chart.yaml")
+
+    with open(chart_path, "r") as f:
+        chart = yaml.safe_load(f)
+
+    chart["version"] = version
+    chart["appVersion"] = version
+
+    with open(chart_path, "w") as f:
+        yaml.dump(chart, f, default_flow_style=False)
+
+def set_all_charts_versions(repo_root: Path, version: str) -> None:
+    """
+    Sets 'version' and 'appVersion' for all charts in the charts directory to match the given version.
+    """
+    charts_dir = os.path.join(repo_root, "charts")
+    for name in os.listdir(charts_dir):
+        chart_path = os.path.join(charts_dir, name, "Chart.yaml")
+        if os.path.isfile(chart_path):
+            print(f"Setting version for '{name}' chart to {version} ...", flush=True)
+            set_chart_version(chart_path, version)
+

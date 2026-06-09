@@ -173,6 +173,20 @@ jobs:
           username: ${{ github.repository_owner }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
+      - name: Set helm charts versions to release version and create commit
+        if: ${{ env.SKIP != 'true' }}
+        run: |
+          python3 -u ./hack/set-charts-versions.py
+
+          git config user.name "${{ env.AUTHOR_NAME }}"
+          git config user.email "${{ env.AUTHOR_EMAIL }}"
+
+          git add charts/
+          git commit -m "chore: set helm charts versions to release version [skip ci]"
+          git push origin main
+        env:
+          PYTHONUNBUFFERED: "1"
+
       - name: Build OCM component
         if: ${{ env.SKIP != 'true' }}
         run: |
