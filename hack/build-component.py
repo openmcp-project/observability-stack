@@ -23,6 +23,7 @@ from common import (
     merge_rgd_files,
     build_ocm_vars,
     run_command,
+    set_all_charts_versions,
 )
 
 
@@ -207,6 +208,9 @@ def main():
 
         # Read version from VERSION file
         version = read_version_file(repo_root)
+
+        # Set helm chart versions to match component version
+        set_all_charts_versions(repo_root, version)
 
         # Merge ResourceGraphDefinition files
         # This is a workaround until the OCM controllers allow deploying directories

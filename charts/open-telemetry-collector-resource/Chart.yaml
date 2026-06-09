@@ -1,0 +1,6 @@
+apiVersion: v2
+appVersion: v0.0.12-dev
+description: A Helm chart for an OpenTelemetryCollector resource.
+name: open-telemetry-collector-resource
+type: application
+version: v0.0.12-dev

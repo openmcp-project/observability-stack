@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	urls "net/url"
 	"testing"
 	"time"
 
@@ -18,9 +19,23 @@ import (
 // It queries the LogsQL HTTP API at /select/logsql/query, which returns NDJSON.
 // A non-empty response body indicates that logs have been ingested.
 func assertLogsAvailable(ctx context.Context, t *testing.T, localPort int) {
+	assertLogsAvailable_helper(ctx, t, localPort, false)
+}
+
+// assertWorkloadLogsAvailable works like assertLogsAvailable, but it explicitly queries for logs from the workload cluster.
+func assertWorkloadLogsAvailable(ctx context.Context, t *testing.T, localPort int) {
+	assertLogsAvailable_helper(ctx, t, localPort, true)
+}
+
+func assertLogsAvailable_helper(ctx context.Context, t *testing.T, localPort int, workload bool) {
 	t.Helper()
 	if err := wait.For(func(ctx context.Context) (bool, error) {
-		url := fmt.Sprintf("http://localhost:%d/select/logsql/query?query=*&limit=1&start=now-30m", localPort)
+		var url string
+		if workload {
+			url = fmt.Sprintf("http://localhost:%d/select/logsql/query?query=%s&limit=1&start=now-30m", localPort, urls.QueryEscape(`_stream:{k8s_cluster="openmcp-system/workload"}`))
+		} else {
+			url = fmt.Sprintf("http://localhost:%d/select/logsql/query?query=*&limit=1&start=now-30m", localPort)
+		}
 		req, err := http.NewRequestWithContext(ctx, http.MethodGet, url, nil)
 		if err != nil {
 			return false, nil

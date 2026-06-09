@@ -1,0 +1,127 @@
+apiVersion: opentelemetry.io/v1beta1
+kind: OpenTelemetryCollector
+metadata:
+  name: {{ include "otc.fullname" . }}
+  labels:
+    {{- include "otc.labels" . | nindent 4 }}
+spec:
+  mode: daemonset
+  serviceAccount: {{ include "otc.serviceAccountName" . }}
+  securityContext:
+    runAsUser: 0
+  config:
+    receivers:
+      filelog:
+        include:
+          - /var/log/pods/*/*/*.log
+        exclude:
+          - /var/log/pods/kube-system_*/*/*.log
+        start_at: beginning
+        include_file_path: true
+        include_file_name: false
+        operators:
+          # Route to the correct parser based on container runtime format
+          - type: router
+            id: get-format
+            routes:
+              - output: parser-docker
+                expr: 'body matches "^\\{"'
+            default: parser-containerd
+
+          # Docker JSON format (e.g. Docker Desktop, older clusters)
+          - type: json_parser
+            id: parser-docker
+            output: move-log-to-body
+            timestamp:
+              parse_from: attributes.time
+              layout: '%Y-%m-%dT%H:%M:%S.%LZ'
+
+          # Containerd / CRI-O space-delimited format (most modern clusters)
+          - type: regex_parser
+            id: parser-containerd
+            regex: '^(?P<time>[^ Z]+Z) (?P<stream>stdout|stderr) (?P<logtag>[^ ]*) ?(?P<log>.*)$'
+            output: move-log-to-body
+            timestamp:
+              parse_from: attributes.time
+              layout: '%Y-%m-%dT%H:%M:%S.%LZ'
+
+          # Move the parsed log field to body (both Docker and containerd / CRI-O)
+          - type: move
+            id: move-log-to-body
+            from: attributes.log
+            to: body
+            output: extract-pod-metadata
+
+          # Extract pod metadata (namespace, pod name, uid, container) from the file path
+          - type: regex_parser
+            id: extract-pod-metadata
+            parse_from: attributes["log.file.path"]
+            regex: '^/var/log/pods/(?P<k8s_namespace>[^_]+)_(?P<k8s_pod>[^_]+)_(?P<k8s_uid>[^/]+)/(?P<k8s_container>[^/]+)/\d+\.log$'
+            cache:
+              size: 128
+
+          # If the log body is JSON, promote its fields to attributes so Victoria Logs
+          # indexes them as individual fields. parse_to: attributes leaves body (= _msg)
+          # unchanged, so the original JSON string is always retained.
+          - type: json_parser
+            id: parse-json-body
+            parse_from: body
+            parse_to: attributes
+            if: 'body matches "^\\s*\\{"'
+            on_error: send
+
+    processors:
+      memory_limiter:
+        check_interval: 1s
+        limit_percentage: 75
+        spike_limit_percentage: 15
+      resource:
+        attributes:
+          - key: k8s_cluster
+            value: "{{ .Values.cluster.identity }}"
+            action: upsert
+      # Flatten nested attribute maps produced by json_parser so that nested
+      # objects (e.g. Cluster: {name, namespace}) become dot-separated scalar
+      # attributes (Cluster.name, Cluster.namespace) instead of KeyValueList
+      # values, which Victoria Logs serialises in an ugly AnyValue representation.
+      transform:
+        log_statements:
+          - context: log
+            statements:
+              - flatten(attributes, "", 10)
+      batch: {}
+
+    exporters:
+      otlphttp:
+        endpoint: "{{ .Values.endpoint }}"
+        tls:
+          {{- if .Values.tls.enabled }}
+          cert_file: {{ .Values.tls.certFile }}
+          key_file: {{ .Values.tls.keyFile }}
+          ca_file: {{ .Values.tls.caFile }}
+          {{- else }}
+          insecure: true
+          {{- end }}
+
+    service:
+      pipelines:
+        logs:
+          receivers: [filelog]
+          processors: [memory_limiter, resource, transform, batch]
+          exporters: [otlphttp]
+
+  volumeMounts:
+    - name: varlogpods
+      mountPath: /var/log/pods
+      readOnly: true
+    {{- with .Values.additionalVolumeMounts }}
+    {{- toYaml . | nindent 4 }}
+    {{- end }}
+
+  volumes:
+    - name: varlogpods
+      hostPath:
+        path: /var/log/pods
+    {{- with .Values.additionalVolumes }}
+    {{- toYaml . | nindent 4 }}
+    {{- end }}

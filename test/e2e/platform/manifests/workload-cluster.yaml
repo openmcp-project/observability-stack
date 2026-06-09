@@ -1,0 +1,8 @@
+apiVersion: clusters.openmcp.cloud/v1alpha1
+kind: ClusterRequest
+metadata:
+  name: wl-test
+  namespace: openmcp-system
+spec:
+  purpose: workload
+  waitForClusterDeletion: true

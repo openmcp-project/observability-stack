@@ -1,0 +1,21 @@
+cluster:
+  identity: cluster # used to distinguish logs from different clusters, replace with cluster identity
+
+endpoint: "http://victoria-logs.victoria-logs-system.svc.cluster.local:9428/insert/opentelemetry" # endpoint to send logs to
+
+tls:
+  enabled: false # set to true to enable TLS for the endpoint
+  certFile: /etc/otel/certs/tls.crt # path to TLS certificate file
+  keyFile: /etc/otel/certs/tls.key # path to TLS key file
+  caFile: /etc/otel/certs/ca.crt # path to CA
+
+additionalVolumeMounts: [] # additional volume mounts for the collector container, e.g. to mount TLS certs
+additionalVolumes: [] # additional volumes for the collector pod, e.g. to mount TLS certs
+
+serviceAccount:
+  create: true
+  automount: false
+  imagePullSecrets: [] # image pull secrets for the service account
+  # expected format is
+  # - name: secret-name
+  # The image pull secret(s) for the open-telemetry-collector image must be included here if not accessible publicly.

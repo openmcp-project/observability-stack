@@ -99,6 +99,15 @@ components:
           path: "docker.io/otel/opentelemetry-collector-contrib:${OPEN_TELEMETRY_COLLECTOR_IMAGE_VERSION#v}"
           repository: images/opentelemetry-collector
 
+      # open telemetry collector resource chart
+      - name: open-telemetry-collector-resource-chart
+        version: ${OBSERVABILITY_STACK_VERSION}
+        type: helmChart
+        input:
+          type: helm
+          path: charts/open-telemetry-collector-resource
+          repository: charts/open-telemetry-collector-resource:${OBSERVABILITY_STACK_VERSION}
+
       # prometheus operator
       - name: prometheus-operator-kustomization
         version: ${OBSERVABILITY_STACK_VERSION}
