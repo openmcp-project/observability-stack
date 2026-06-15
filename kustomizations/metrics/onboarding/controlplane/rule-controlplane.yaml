@@ -1,0 +1,23 @@
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: openmcp-controlplane-alerts
+  labels:
+    prometheus: prometheus
+    app: prometheus
+spec:
+  groups:
+    - name: openmcp.controlplane
+      interval: 30s
+      rules:
+        - alert: ControlPlanePhaseNotReady
+          expr: |
+            co_controlplane{cp_phase!="Ready"}
+          for: 30m
+          labels:
+            severity: warning
+            component: controlplane
+            inhibit_alert: "true"
+          annotations:
+            summary: "ControlPlane {{ $labels.cp_name }} in namespace {{ $labels.cp_namespace }} is not in phase Ready"
+            description: "ControlPlane {{ $labels.cp_name }} in namespace {{ $labels.cp_namespace }} on cluster {{ $labels.cluster }} is not in phase Ready."

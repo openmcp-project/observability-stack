@@ -288,7 +288,7 @@ func TestObsStack(t *testing.T) {
 				// metrics-operator custom metrics
 				"co_kustomization",
 				// metrics-operator custom federated metrics
-				"co_managedcontrolplanev2",
+				"co_controlplane",
 				// controller-runtime workqueue metrics (scraped via annotation-based PodMonitor)
 				"workqueue_depth",
 				"controller_runtime_reconcile_errors_total",
