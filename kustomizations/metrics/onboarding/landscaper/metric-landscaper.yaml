@@ -3,7 +3,7 @@ kind: FederatedMetric
 metadata:
   name: landscaper
 spec:
-  name: co_landscaper
+  name: ocp_landscaper
   description: Landscaper Service Provider Metrics
   target:
     kind: Landscaper

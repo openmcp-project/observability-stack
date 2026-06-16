@@ -3,8 +3,8 @@ kind: Metric
 metadata:
   name: clusterrequests
 spec:
-  name: co_clusterrequests
-  description: openMCP ClusterRequests
+  name: ocp_clusterrequests
+  description: open-control-plane ClusterRequests
   target:
     kind: ClusterRequest
     group: clusters.openmcp.cloud

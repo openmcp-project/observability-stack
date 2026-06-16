@@ -12,7 +12,7 @@ spec:
       rules:
         - alert: GitRepositoryNotReady
           expr: |
-            co_gitrepository{gr_ready_status=~"False|Unknown"}
+            ocp_gitrepository{gr_ready_status=~"False|Unknown"}
           for: 5m
           labels:
             severity: warning

@@ -3,8 +3,8 @@ kind: Metric
 metadata:
   name: serviceprovider
 spec:
-  name: co_serviceprovider
-  description: openMCP Service Providers
+  name: ocp_serviceprovider
+  description: open-control-plane Service Providers
   target:
     kind: ServiceProvider
     group: openmcp.cloud

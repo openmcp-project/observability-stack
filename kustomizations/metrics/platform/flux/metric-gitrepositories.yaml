@@ -3,7 +3,7 @@ kind: Metric
 metadata:
   name: gitrepository
 spec:
-  name: co_gitrepository
+  name: ocp_gitrepository
   description: FluxCD GitRepository
   target:
     kind: GitRepository

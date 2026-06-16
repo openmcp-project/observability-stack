@@ -7,21 +7,21 @@ metadata:
     app: prometheus
 spec:
   groups:
-    - name: openmcp.operator
+    - name: open-control-plane.openmcp-operator
       interval: 30s
       rules:
         # this is an ugly hack because the query language doesn't support comparisons between labels
         - alert: OpenMCPOperatorNotReady
           expr: |
-            co_openmcpoperator{op_readyReplicas="0", op_replicas!="0"}
-            or co_openmcpoperator{op_readyReplicas="1", op_replicas=~"[2-9]|[1-9][0-9]+"}
-            or co_openmcpoperator{op_readyReplicas="2", op_replicas=~"[3-9]|[1-9][0-9]+"}
-            or co_openmcpoperator{op_readyReplicas="3", op_replicas=~"[4-9]|[1-9][0-9]+"}
-            or co_openmcpoperator{op_readyReplicas="4", op_replicas=~"[5-9]|[1-9][0-9]+"}
+            ocp_openmcpoperator{op_readyReplicas="0", op_replicas!="0"}
+            or ocp_openmcpoperator{op_readyReplicas="1", op_replicas=~"[2-9]|[1-9][0-9]+"}
+            or ocp_openmcpoperator{op_readyReplicas="2", op_replicas=~"[3-9]|[1-9][0-9]+"}
+            or ocp_openmcpoperator{op_readyReplicas="3", op_replicas=~"[4-9]|[1-9][0-9]+"}
+            or ocp_openmcpoperator{op_readyReplicas="4", op_replicas=~"[5-9]|[1-9][0-9]+"}
           for: 5m
           labels:
             severity: warning
             component: deployment
           annotations:
-            summary: "openMCP Operator is not ready"
-            description: "openMCP Operator on cluster {{ $labels.cluster }} has {{ $labels.op_replicas }} replicas but only {{ $labels.op_readyReplicas }} are ready."
+            summary: "openmcp-operator is not ready"
+            description: "openmcp-operator on cluster {{ $labels.cluster }} has {{ $labels.op_replicas }} replicas but only {{ $labels.op_readyReplicas }} are ready."

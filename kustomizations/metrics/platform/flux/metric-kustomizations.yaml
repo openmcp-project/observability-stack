@@ -3,7 +3,7 @@ kind: Metric
 metadata:
   name: kustomization
 spec:
-  name: co_kustomization
+  name: ocp_kustomization
   description: FluxCD Kustomizations
   target:
     kind: Kustomization

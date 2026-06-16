@@ -1,18 +1,18 @@
 apiVersion: monitoring.coreos.com/v1
 kind: PrometheusRule
 metadata:
-  name: openmcp-serviceprovider-alerts
+  name: open-control-plane-serviceprovider-alerts
   labels:
     prometheus: prometheus
     app: prometheus
 spec:
   groups:
-    - name: openmcp.serviceprovider
+    - name: open-control-plane.serviceprovider
       interval: 30s
       rules:
         - alert: ServiceProviderPhaseNotReady
           expr: |
-            co_serviceprovider{sp_phase!="Ready"}
+            ocp_serviceprovider{sp_phase!="Ready"}
           for: 5m
           labels:
             severity: warning

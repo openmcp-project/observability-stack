@@ -3,8 +3,8 @@ kind: Metric
 metadata:
   name: accessrequests
 spec:
-  name: co_accessrequests
-  description: openMCP AccessRequests
+  name: ocp_accessrequests
+  description: open-control-plane AccessRequests
   target:
     kind: AccessRequest
     group: clusters.openmcp.cloud

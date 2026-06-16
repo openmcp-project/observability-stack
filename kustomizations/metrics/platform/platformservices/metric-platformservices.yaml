@@ -3,8 +3,8 @@ kind: Metric
 metadata:
   name: platformservice
 spec:
-  name: co_platformservice
-  description: openMCP Platform Services
+  name: ocp_platformservice
+  description: open-control-plane Platform Services
   target:
     kind: PlatformService
     group: openmcp.cloud

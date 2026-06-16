@@ -1,18 +1,18 @@
 apiVersion: monitoring.coreos.com/v1
 kind: PrometheusRule
 metadata:
-  name: openmcp-accessrequest-alerts
+  name: open-control-plane-accessrequest-alerts
   labels:
     prometheus: prometheus
     app: prometheus
 spec:
   groups:
-    - name: openmcp.accessrequest
+    - name: open-control-plane.accessrequest
       interval: 30s
       rules:
         - alert: AccessRequestPhaseNotGranted
           expr: |
-            co_accessrequests{ar_phase!="Granted"}
+            ocp_accessrequests{ar_phase!="Granted"}
           for: 5m
           labels:
             severity: warning
