@@ -12,7 +12,7 @@ spec:
       rules:
         - alert: ControlPlanePhaseNotReady
           expr: |
-            ocp_controlplane{cp_phase!="Ready"}
+            opencontrolplane_controlplane{cp_phase!="Ready"}
           for: 30m
           labels:
             severity: warning

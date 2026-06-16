@@ -3,7 +3,7 @@ kind: Metric
 metadata:
   name: kustomization
 spec:
-  name: ocp_kustomization
+  name: opencontrolplane_kustomization
   description: FluxCD Kustomizations
   target:
     kind: Kustomization

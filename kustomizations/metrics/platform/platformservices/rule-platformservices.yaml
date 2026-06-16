@@ -12,7 +12,7 @@ spec:
       rules:
         - alert: PlatformServicePhaseNotReady
           expr: |
-            ocp_platformservice{ps_phase!="Ready"}
+            opencontrolplane_platformservice{ps_phase!="Ready"}
           for: 5m
           labels:
             severity: warning

@@ -3,7 +3,7 @@ kind: Metric
 metadata:
   name: e2e-testruns
 spec:
-  name: ocp_e2e_testruns
+  name: opencontrolplane_e2e_testruns
   description: open-control-plane E2E Test Runs
   target:
     kind: E2ETestRun

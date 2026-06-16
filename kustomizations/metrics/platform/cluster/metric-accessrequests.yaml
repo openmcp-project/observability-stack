@@ -3,7 +3,7 @@ kind: Metric
 metadata:
   name: accessrequests
 spec:
-  name: ocp_accessrequests
+  name: opencontrolplane_accessrequests
   description: open-control-plane AccessRequests
   target:
     kind: AccessRequest

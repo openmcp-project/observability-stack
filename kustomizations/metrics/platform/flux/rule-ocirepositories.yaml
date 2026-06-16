@@ -12,7 +12,7 @@ spec:
       rules:
         - alert: OciRepositoryNotReady
           expr: |
-            ocp_ocirepository{or_ready_status=~"False|Unknown"}
+            opencontrolplane_ocirepository{or_ready_status=~"False|Unknown"}
           for: 5m
           labels:
             severity: warning

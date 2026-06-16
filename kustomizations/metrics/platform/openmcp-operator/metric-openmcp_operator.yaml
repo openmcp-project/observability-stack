@@ -3,7 +3,7 @@ kind: Metric
 metadata:
   name: openmcp-operator
 spec:
-  name: ocp_openmcpoperator
+  name: opencontrolplane_openmcpoperator
   description: open-control-plane openmcp-operator
   target:
     kind: Deployment

@@ -12,7 +12,7 @@ spec:
       rules:
         - alert: AccessRequestPhaseNotGranted
           expr: |
-            ocp_accessrequests{ar_phase!="Granted"}
+            opencontrolplane_accessrequests{ar_phase!="Granted"}
           for: 5m
           labels:
             severity: warning

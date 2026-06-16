@@ -3,7 +3,7 @@ kind: Metric
 metadata:
   name: clusterrequests
 spec:
-  name: ocp_clusterrequests
+  name: opencontrolplane_clusterrequests
   description: open-control-plane ClusterRequests
   target:
     kind: ClusterRequest

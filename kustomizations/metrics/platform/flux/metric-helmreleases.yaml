@@ -3,7 +3,7 @@ kind: Metric
 metadata:
   name: helmrelease
 spec:
-  name: ocp_helmrelease
+  name: opencontrolplane_helmrelease
   description: FluxCD HelmReleases
   target:
     kind: HelmRelease

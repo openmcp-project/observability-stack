@@ -3,7 +3,7 @@ kind: Metric
 metadata:
   name: clusterprovider
 spec:
-  name: ocp_clusterprovider
+  name: opencontrolplane_clusterprovider
   description: open-control-plane Cluster Providers
   target:
     kind: ClusterProvider

@@ -3,7 +3,7 @@ kind: FederatedMetric
 metadata:
   name: controlplane
 spec:
-  name: ocp_controlplane
+  name: opencontrolplane_controlplane
   description: Control Plane Metrics
   target:
     kind: ControlPlane

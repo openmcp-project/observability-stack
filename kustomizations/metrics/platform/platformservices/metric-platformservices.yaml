@@ -3,7 +3,7 @@ kind: Metric
 metadata:
   name: platformservice
 spec:
-  name: ocp_platformservice
+  name: opencontrolplane_platformservice
   description: open-control-plane Platform Services
   target:
     kind: PlatformService

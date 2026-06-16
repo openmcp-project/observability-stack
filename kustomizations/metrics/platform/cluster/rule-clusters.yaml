@@ -12,7 +12,7 @@ spec:
       rules:
         - alert: ClusterPhaseNotReady
           expr: |
-            ocp_clusters{cl_phase!="Ready"}
+            opencontrolplane_clusters{cl_phase!="Ready"}
           for: 40m
           labels:
             severity: warning

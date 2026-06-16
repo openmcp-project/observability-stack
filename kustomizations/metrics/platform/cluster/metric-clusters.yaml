@@ -3,7 +3,7 @@ kind: Metric
 metadata:
   name: clusters
 spec:
-  name: ocp_clusters
+  name: opencontrolplane_clusters
   description: open-control-plane Clusters
   target:
     kind: Cluster

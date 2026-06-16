@@ -3,7 +3,7 @@ kind: Metric
 metadata:
   name: serviceprovider
 spec:
-  name: ocp_serviceprovider
+  name: opencontrolplane_serviceprovider
   description: open-control-plane Service Providers
   target:
     kind: ServiceProvider

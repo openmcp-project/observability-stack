@@ -3,7 +3,7 @@ kind: FederatedMetric
 metadata:
   name: crossplane
 spec:
-  name: ocp_crossplane
+  name: opencontrolplane_crossplane
   description: Crossplane Service Provider Metrics
   target:
     kind: Crossplane

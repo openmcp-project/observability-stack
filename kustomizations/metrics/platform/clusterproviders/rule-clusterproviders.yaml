@@ -12,7 +12,7 @@ spec:
       rules:
         - alert: ClusterProviderPhaseNotReady
           expr: |
-            ocp_clusterprovider{cp_phase!="Ready"}
+            opencontrolplane_clusterprovider{cp_phase!="Ready"}
           for: 5m
           labels:
             severity: warning

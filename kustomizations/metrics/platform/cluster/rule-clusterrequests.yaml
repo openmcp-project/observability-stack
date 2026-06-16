@@ -12,7 +12,7 @@ spec:
       rules:
         - alert: ClusterRequestPhaseNotGranted
           expr: |
-            ocp_clusterrequests{cr_phase!="Granted"}
+            opencontrolplane_clusterrequests{cr_phase!="Granted"}
           for: 40m
           labels:
             severity: warning

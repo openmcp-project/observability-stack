@@ -12,7 +12,7 @@ spec:
       rules:
         - alert: GatewayNotProgrammed
           expr: |
-            ocp_gateway{gw_programmed_status!="True"}
+            opencontrolplane_gateway{gw_programmed_status!="True"}
           for: 5m
           labels:
             severity: warning
@@ -23,7 +23,7 @@ spec:
 
         - alert: GatewayNotAccepted
           expr: |
-            ocp_gateway{gw_accepted_status!="True"}
+            opencontrolplane_gateway{gw_accepted_status!="True"}
           for: 5m
           labels:
             severity: warning

@@ -12,7 +12,7 @@ spec:
       rules:
         - alert: GitRepositoryNotReady
           expr: |
-            ocp_gitrepository{gr_ready_status=~"False|Unknown"}
+            opencontrolplane_gitrepository{gr_ready_status=~"False|Unknown"}
           for: 5m
           labels:
             severity: warning

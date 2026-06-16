@@ -12,7 +12,7 @@ spec:
       rules:
         - alert: HelmReleaseNotReady
           expr: |
-            ocp_helmrelease{hr_ready_status=~"False|Unknown"}
+            opencontrolplane_helmrelease{hr_ready_status=~"False|Unknown"}
           for: 5m
           labels:
             severity: warning

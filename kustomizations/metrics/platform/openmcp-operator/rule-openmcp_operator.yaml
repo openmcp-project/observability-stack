@@ -13,11 +13,11 @@ spec:
         # this is an ugly hack because the query language doesn't support comparisons between labels
         - alert: OpenMCPOperatorNotReady
           expr: |
-            ocp_openmcpoperator{op_readyReplicas="0", op_replicas!="0"}
-            or ocp_openmcpoperator{op_readyReplicas="1", op_replicas=~"[2-9]|[1-9][0-9]+"}
-            or ocp_openmcpoperator{op_readyReplicas="2", op_replicas=~"[3-9]|[1-9][0-9]+"}
-            or ocp_openmcpoperator{op_readyReplicas="3", op_replicas=~"[4-9]|[1-9][0-9]+"}
-            or ocp_openmcpoperator{op_readyReplicas="4", op_replicas=~"[5-9]|[1-9][0-9]+"}
+            opencontrolplane_openmcpoperator{op_readyReplicas="0", op_replicas!="0"}
+            or opencontrolplane_openmcpoperator{op_readyReplicas="1", op_replicas=~"[2-9]|[1-9][0-9]+"}
+            or opencontrolplane_openmcpoperator{op_readyReplicas="2", op_replicas=~"[3-9]|[1-9][0-9]+"}
+            or opencontrolplane_openmcpoperator{op_readyReplicas="3", op_replicas=~"[4-9]|[1-9][0-9]+"}
+            or opencontrolplane_openmcpoperator{op_readyReplicas="4", op_replicas=~"[5-9]|[1-9][0-9]+"}
           for: 5m
           labels:
             severity: warning
