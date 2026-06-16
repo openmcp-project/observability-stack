@@ -19,9 +19,37 @@ env:
   GO_VERSION: '1.26'
 
 jobs:
+  check_changes:
+    name: Check changed files
+    runs-on: ubuntu-latest
+    outputs:
+      only_version_changed: ${{ steps.check.outputs.only_version_changed }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        with:
+          fetch-depth: 2
+
+      - name: Check if only VERSION changed
+        id: check
+        run: |
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            echo "only_version_changed=false" >> $GITHUB_OUTPUT
+            exit 0
+          fi
+          CHANGED=$(git diff --name-only HEAD~1 HEAD)
+          echo "Changed files: $CHANGED"
+          if [ "$CHANGED" = "VERSION" ]; then
+            echo "only_version_changed=true" >> $GITHUB_OUTPUT
+          else
+            echo "only_version_changed=false" >> $GITHUB_OUTPUT
+          fi
+
   e2e_test:
     name: Run E2E Test
     runs-on: ubuntu-latest
+    needs: check_changes
+    if: needs.check_changes.outputs.only_version_changed != 'true'
     steps:
       - name: Checkout code
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
@@ -104,7 +132,8 @@ jobs:
   release_tag:
     name: Release version
     runs-on: ubuntu-latest
-    needs: e2e_test
+    needs: [check_changes, e2e_test]
+    if: always() && !failure() && !cancelled()
     steps:
       - name: Create GitHub App token
         uses: actions/create-github-app-token@bcd2ba49218906704ab6c1aa796996da409d3eb1 # v3
@@ -173,13 +202,20 @@ jobs:
           username: ${{ github.repository_owner }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
+      - name: Set git author identity
+        if: ${{ env.SKIP != 'true' }}
+        run: |
+          AUTHOR_NAME=$(git log -1 --pretty=format:'%an')
+          AUTHOR_EMAIL=$(git log -1 --pretty=format:'%ae')
+          echo "AUTHOR_NAME=$AUTHOR_NAME" >> $GITHUB_ENV
+          echo "AUTHOR_EMAIL=$AUTHOR_EMAIL" >> $GITHUB_ENV
+          git config user.name "$AUTHOR_NAME"
+          git config user.email "$AUTHOR_EMAIL"
+
       - name: Set helm charts versions to release version and create commit
         if: ${{ env.SKIP != 'true' }}
         run: |
           python3 -u ./hack/set-charts-versions.py
-
-          git config user.name "${{ env.AUTHOR_NAME }}"
-          git config user.email "${{ env.AUTHOR_EMAIL }}"
 
           git add charts/
           git commit -m "chore: set helm charts versions to release version [skip ci]"
@@ -204,16 +240,6 @@ jobs:
       - name: Create Git tag
         if: ${{ env.SKIP != 'true' }}
         run: |
-          AUTHOR_NAME=$(git log -1 --pretty=format:'%an')
-          AUTHOR_EMAIL=$(git log -1 --pretty=format:'%ae')
-          echo "Tagging as $AUTHOR_NAME <$AUTHOR_EMAIL>"
-
-          echo "AUTHOR_NAME=$AUTHOR_NAME" >> $GITHUB_ENV
-          echo "AUTHOR_EMAIL=$AUTHOR_EMAIL" >> $GITHUB_ENV
-
-          git config user.name "$AUTHOR_NAME"
-          git config user.email "$AUTHOR_EMAIL"
-
           git tag -a "${{ env.version }}" -m "Release ${{ env.version }}"
           git push origin "${{ env.version }}"
 
@@ -370,9 +396,6 @@ jobs:
       - name: Commit VERSION change
         if: ${{ env.SKIP != 'true' }}
         run: |
-          git config user.name "${{ env.AUTHOR_NAME }}"
-          git config user.email "${{ env.AUTHOR_EMAIL }}"
-
           git add VERSION
           git commit -m "chore: bump VERSION to ${{ env.version }}-dev after release [skip ci]"
           git push origin main
