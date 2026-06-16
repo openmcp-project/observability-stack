@@ -3,11 +3,11 @@ kind: FederatedMetric
 metadata:
   name: crossplane
 spec:
-  name: co_crossplane
+  name: opencontrolplane_crossplane
   description: Crossplane Service Provider Metrics
   target:
     kind: Crossplane
-    group: crossplane.services.openmcp.cloud
+    group: crossplane.services.open-control-plane.io
     version: v1alpha1
   interval: "1m"
   dataSinkRef:

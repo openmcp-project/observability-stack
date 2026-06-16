@@ -3,7 +3,7 @@ kind: Metric
 metadata:
   name: gateway
 spec:
-  name: co_gateway
+  name: opencontrolplane_gateway
   description: Gateways
   target:
     kind: Gateway

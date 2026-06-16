@@ -1,18 +1,18 @@
 apiVersion: monitoring.coreos.com/v1
 kind: PrometheusRule
 metadata:
-  name: openmcp-gateway-alerts
+  name: open-control-plane-gateway-alerts
   labels:
     prometheus: prometheus
     app: prometheus
 spec:
   groups:
-    - name: openmcp.gateway
+    - name: open-control-plane.gateway
       interval: 30s
       rules:
         - alert: GatewayNotProgrammed
           expr: |
-            co_gateway{gw_programmed_status!="True"}
+            opencontrolplane_gateway{gw_programmed_status!="True"}
           for: 5m
           labels:
             severity: warning
@@ -23,7 +23,7 @@ spec:
 
         - alert: GatewayNotAccepted
           expr: |
-            co_gateway{gw_accepted_status!="True"}
+            opencontrolplane_gateway{gw_accepted_status!="True"}
           for: 5m
           labels:
             severity: warning

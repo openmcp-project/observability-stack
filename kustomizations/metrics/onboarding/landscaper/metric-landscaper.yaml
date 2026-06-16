@@ -3,11 +3,11 @@ kind: FederatedMetric
 metadata:
   name: landscaper
 spec:
-  name: co_landscaper
+  name: opencontrolplane_landscaper
   description: Landscaper Service Provider Metrics
   target:
     kind: Landscaper
-    group: landscaper.services.openmcp.cloud
+    group: landscaper.services.open-control-plane.io
     version: v1alpha2
   interval: "1m"
   dataSinkRef:

@@ -3,8 +3,8 @@ kind: Metric
 metadata:
   name: e2e-testruns
 spec:
-  name: co_e2e_testruns
-  description: openMCP E2E Test Runs
+  name: opencontrolplane_e2e_testruns
+  description: open-control-plane E2E Test Runs
   target:
     kind: E2ETestRun
     group: test-runner.openmcp.cloud

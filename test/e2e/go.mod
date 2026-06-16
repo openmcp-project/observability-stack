@@ -1,6 +1,6 @@
 module github.com/openmcp-project/observability-stack
 
-go 1.26.2
+go 1.26.4
 
 require (
 	github.com/kubernetes-sigs/kro v0.9.2
@@ -20,7 +20,7 @@ require (
 require (
 	github.com/fsnotify/fsnotify v1.10.1 // indirect
 	github.com/go-logr/zapr v1.3.0 // indirect
-	github.com/openmcp-project/openmcp-operator/lib v0.20.0 // indirect
+	github.com/openmcp-project/openmcp-operator/lib v1.0.1 // indirect
 	go.uber.org/multierr v1.11.0 // indirect
 	go.uber.org/zap v1.28.0 // indirect
 	golang.org/x/exp v0.0.0-20260508232706-74f9aab9d74a // indirect
@@ -56,14 +56,14 @@ require (
 	github.com/exponent-io/jsonpath v0.0.0-20210407135951-1de76d718b3f // indirect
 	github.com/fatih/color v1.18.0 // indirect
 	github.com/fluxcd/flux2/v2 v2.8.3 // indirect
-	github.com/fluxcd/helm-controller/api v1.5.4 // indirect
+	github.com/fluxcd/helm-controller/api v1.5.5 // indirect
 	github.com/fluxcd/kustomize-controller/api v1.8.2 // indirect
 	github.com/fluxcd/pkg/apis/acl v0.9.0 // indirect
 	github.com/fluxcd/pkg/apis/kustomize v1.18.0 // indirect
 	github.com/fluxcd/pkg/apis/meta v1.25.1 // indirect
 	github.com/fluxcd/pkg/kustomize v1.27.1 // indirect
 	github.com/fluxcd/pkg/tar v0.17.0 // indirect
-	github.com/fluxcd/source-controller/api v1.8.3 // indirect
+	github.com/fluxcd/source-controller/api v1.8.5 // indirect
 	github.com/fxamacker/cbor/v2 v2.9.2 // indirect
 	github.com/go-errors/errors v1.5.1 // indirect
 	github.com/go-gorp/gorp/v3 v3.1.0 // indirect
@@ -116,7 +116,7 @@ require (
 	github.com/opencontainers/image-spec v1.1.1 // indirect
 	github.com/openmcp-project/controller-utils v0.29.0
 	github.com/openmcp-project/opencontrolplane-runtime v0.2.1
-	github.com/openmcp-project/openmcp-operator/api v0.20.0
+	github.com/openmcp-project/openmcp-operator/api v1.0.1
 	github.com/pelletier/go-toml v1.9.5 // indirect
 	github.com/peterbourgon/diskv v2.0.1+incompatible // indirect
 	github.com/pkg/errors v0.9.1 // indirect
@@ -140,12 +140,12 @@ require (
 	go.yaml.in/yaml/v2 v2.4.4 // indirect
 	go.yaml.in/yaml/v3 v3.0.4 // indirect
 	golang.org/x/crypto v0.51.0 // indirect
-	golang.org/x/net v0.54.0 // indirect
+	golang.org/x/net v0.55.0 // indirect
 	golang.org/x/oauth2 v0.36.0 // indirect
-	golang.org/x/sync v0.20.0 // indirect
-	golang.org/x/sys v0.44.0 // indirect
-	golang.org/x/term v0.43.0 // indirect
-	golang.org/x/text v0.37.0 // indirect
+	golang.org/x/sync v0.21.0 // indirect
+	golang.org/x/sys v0.46.0 // indirect
+	golang.org/x/term v0.44.0 // indirect
+	golang.org/x/text v0.38.0 // indirect
 	golang.org/x/time v0.15.0 // indirect
 	google.golang.org/genproto/googleapis/rpc v0.0.0-20260406210006-6f92a3bedf2d // indirect
 	google.golang.org/grpc v1.80.0 // indirect

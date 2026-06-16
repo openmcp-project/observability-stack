@@ -3,7 +3,7 @@ kind: Metric
 metadata:
   name: ocirepository
 spec:
-  name: co_ocirepository
+  name: opencontrolplane_ocirepository
   description: FluxCD OciRepository
   target:
     kind: OciRepository

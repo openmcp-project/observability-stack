@@ -13,14 +13,14 @@ spec:
         - alert: E2ETestRunConditionFailed
           expr: |
             (
-              co_e2e_testruns{tr_tc_create_project_run_status="False"}
-              or co_e2e_testruns{tr_tc_create_project_cleanup_status="False"}
-              or co_e2e_testruns{tr_tc_create_workspace_run_status="False"}
-              or co_e2e_testruns{tr_tc_create_workspace_cleanup_status="False"}
-              or co_e2e_testruns{tr_tc_create_mcpv2_run_status="False"}
-              or co_e2e_testruns{tr_tc_create_mcpv2_cleanup_status="False"}
+              opencontrolplane_e2e_testruns{tr_tc_create_project_run_status="False"}
+              or opencontrolplane_e2e_testruns{tr_tc_create_project_cleanup_status="False"}
+              or opencontrolplane_e2e_testruns{tr_tc_create_workspace_run_status="False"}
+              or opencontrolplane_e2e_testruns{tr_tc_create_workspace_cleanup_status="False"}
+              or opencontrolplane_e2e_testruns{tr_tc_create_mcpv2_run_status="False"}
+              or opencontrolplane_e2e_testruns{tr_tc_create_mcpv2_cleanup_status="False"}
             ) and on(cluster, tr_name)
-            topk by(cluster) (1, max by(cluster, tr_name) (co_e2e_testruns))
+            topk by(cluster) (1, max by(cluster, tr_name) (opencontrolplane_e2e_testruns))
           for: 1m
           labels:
             severity: warning

@@ -1,27 +1,27 @@
 apiVersion: metrics.openmcp.cloud/v1alpha1
 kind: FederatedMetric
 metadata:
-  name: managedcontrolplanev2
+  name: controlplane
 spec:
-  name: co_managedcontrolplanev2
-  description: Managed Control Plane V2 Metrics
+  name: opencontrolplane_controlplane
+  description: Control Plane Metrics
   target:
-    kind: ManagedControlPlaneV2
-    group: core.openmcp.cloud
+    kind: ControlPlane
+    group: core.open-control-plane.io
     version: v2alpha1
   interval: "1m"
   dataSinkRef:
     name: default
   projections:
-    - name: mcp_namespace
+    - name: cp_namespace
       fieldPath: "metadata.namespace"
       type: primitive
 
-    - name: mcp_name
+    - name: cp_name
       fieldPath: "metadata.name"
       type: primitive
 
-    - name: mcp_phase
+    - name: cp_phase
       fieldPath: "status.phase"
       type: primitive
       default: Unknown

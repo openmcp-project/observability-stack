@@ -12,7 +12,7 @@ spec:
       rules:
         - alert: KustomizationNotReady
           expr: |
-            co_kustomization{kust_ready_status=~"False|Unknown"}
+            opencontrolplane_kustomization{kust_ready_status=~"False|Unknown"}
           for: 5m
           labels:
             severity: warning
@@ -23,7 +23,7 @@ spec:
 
         - alert: KustomizationNotHealthy
           expr: |
-            co_kustomization{kust_healthy_status="False"}
+            opencontrolplane_kustomization{kust_healthy_status="False"}
           for: 5m
           labels:
             severity: warning

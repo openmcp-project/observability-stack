@@ -1,18 +1,18 @@
 apiVersion: monitoring.coreos.com/v1
 kind: PrometheusRule
 metadata:
-  name: openmcp-crossplane-alerts
+  name: open-control-plane-crossplane-alerts
   labels:
     prometheus: prometheus
     app: prometheus
 spec:
   groups:
-    - name: openmcp.crossplane
+    - name: open-control-plane.crossplane
       interval: 30s
       rules:
         - alert: CrossplanePhaseNotReady
           expr: |
-            co_crossplane{xp_phase!="Ready"}
+            opencontrolplane_crossplane{xp_phase!="Ready"}
           for: 30m
           labels:
             severity: warning

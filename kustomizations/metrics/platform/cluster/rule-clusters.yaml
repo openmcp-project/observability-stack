@@ -1,18 +1,18 @@
 apiVersion: monitoring.coreos.com/v1
 kind: PrometheusRule
 metadata:
-  name: openmcp-cluster-alerts
+  name: open-control-plane-cluster-alerts
   labels:
     prometheus: prometheus
     app: prometheus
 spec:
   groups:
-    - name: openmcp.cluster
+    - name: open-control-plane.cluster
       interval: 30s
       rules:
         - alert: ClusterPhaseNotReady
           expr: |
-            co_clusters{cl_phase!="Ready"}
+            opencontrolplane_clusters{cl_phase!="Ready"}
           for: 40m
           labels:
             severity: warning

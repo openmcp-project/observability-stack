@@ -1,18 +1,18 @@
 apiVersion: monitoring.coreos.com/v1
 kind: PrometheusRule
 metadata:
-  name: openmcp-clusterrequest-alerts
+  name: open-control-plane-clusterrequest-alerts
   labels:
     prometheus: prometheus
     app: prometheus
 spec:
   groups:
-    - name: openmcp.clusterrequest
+    - name: open-control-plane.clusterrequest
       interval: 30s
       rules:
         - alert: ClusterRequestPhaseNotGranted
           expr: |
-            co_clusterrequests{cr_phase!="Granted"}
+            opencontrolplane_clusterrequests{cr_phase!="Granted"}
           for: 40m
           labels:
             severity: warning

@@ -3,8 +3,8 @@ kind: Metric
 metadata:
   name: clusters
 spec:
-  name: co_clusters
-  description: openMCP Clusters
+  name: opencontrolplane_clusters
+  description: open-control-plane Clusters
   target:
     kind: Cluster
     group: clusters.openmcp.cloud
