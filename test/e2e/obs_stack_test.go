@@ -286,9 +286,9 @@ func TestObsStack(t *testing.T) {
 
 			assertMetricsAvailable(ctx, t, promAPI, []string{
 				// metrics-operator custom metrics
-				"co_kustomization",
+				"ocp_kustomization",
 				// metrics-operator custom federated metrics
-				"co_controlplane",
+				"ocp_controlplane",
 				// controller-runtime workqueue metrics (scraped via annotation-based PodMonitor)
 				"workqueue_depth",
 				"controller_runtime_reconcile_errors_total",
