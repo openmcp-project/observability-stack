@@ -4,10 +4,11 @@ go 1.26.4
 
 require (
 	github.com/kubernetes-sigs/kro v0.9.2
-	github.com/openmcp-project/openmcp-testing v0.3.2
+	github.com/openmcp-project/openmcp-testing v1.0.1
 	github.com/prometheus/client_golang v1.23.2
 	github.com/prometheus/common v0.68.0
-	helm.sh/helm/v3 v3.21.0
+	helm.sh/helm/v3 v3.21.1
+	helm.sh/helm/v4 v4.2.1
 	k8s.io/api v0.36.1
 	k8s.io/apimachinery v0.36.1
 	k8s.io/client-go v0.36.1
@@ -35,7 +36,7 @@ require (
 	github.com/BurntSushi/toml v1.6.0 // indirect
 	github.com/MakeNowJust/heredoc v1.0.0 // indirect
 	github.com/Masterminds/goutils v1.1.1 // indirect
-	github.com/Masterminds/semver/v3 v3.4.0 // indirect
+	github.com/Masterminds/semver/v3 v3.5.0 // indirect
 	github.com/Masterminds/sprig/v3 v3.3.0 // indirect
 	github.com/Masterminds/squirrel v1.5.4 // indirect
 	github.com/asaskevich/govalidator v0.0.0-20230301143203-a9d515a09cc2 // indirect
@@ -54,14 +55,14 @@ require (
 	github.com/evanphx/json-patch v5.9.11+incompatible // indirect
 	github.com/evanphx/json-patch/v5 v5.9.11 // indirect
 	github.com/exponent-io/jsonpath v0.0.0-20210407135951-1de76d718b3f // indirect
-	github.com/fatih/color v1.18.0 // indirect
-	github.com/fluxcd/flux2/v2 v2.8.3 // indirect
+	github.com/fatih/color v1.19.0 // indirect
+	github.com/fluxcd/flux2/v2 v2.8.8 // indirect
 	github.com/fluxcd/helm-controller/api v1.5.5 // indirect
-	github.com/fluxcd/kustomize-controller/api v1.8.2 // indirect
+	github.com/fluxcd/kustomize-controller/api v1.8.5 // indirect
 	github.com/fluxcd/pkg/apis/acl v0.9.0 // indirect
 	github.com/fluxcd/pkg/apis/kustomize v1.18.0 // indirect
 	github.com/fluxcd/pkg/apis/meta v1.25.1 // indirect
-	github.com/fluxcd/pkg/kustomize v1.27.1 // indirect
+	github.com/fluxcd/pkg/kustomize v1.27.2 // indirect
 	github.com/fluxcd/pkg/tar v0.17.0 // indirect
 	github.com/fluxcd/source-controller/api v1.8.5 // indirect
 	github.com/fxamacker/cbor/v2 v2.9.2 // indirect
@@ -98,7 +99,7 @@ require (
 	github.com/klauspost/compress v1.18.4 // indirect
 	github.com/lann/builder v0.0.0-20180802200727-47ae307949d0 // indirect
 	github.com/lann/ps v0.0.0-20150810152359-62de8c46ede0 // indirect
-	github.com/lib/pq v1.11.2 // indirect
+	github.com/lib/pq v1.12.3 // indirect
 	github.com/liggitt/tabwriter v0.0.0-20181228230101-89fcab3d43de // indirect
 	github.com/mattn/go-colorable v0.1.14 // indirect
 	github.com/mattn/go-isatty v0.0.20 // indirect
@@ -139,7 +140,7 @@ require (
 	go.opentelemetry.io/otel/trace v1.43.0 // indirect
 	go.yaml.in/yaml/v2 v2.4.4 // indirect
 	go.yaml.in/yaml/v3 v3.0.4 // indirect
-	golang.org/x/crypto v0.51.0 // indirect
+	golang.org/x/crypto v0.53.0 // indirect
 	golang.org/x/net v0.55.0 // indirect
 	golang.org/x/oauth2 v0.36.0 // indirect
 	golang.org/x/sync v0.21.0 // indirect
@@ -155,19 +156,19 @@ require (
 	gopkg.in/yaml.v3 v3.0.1 // indirect
 	k8s.io/apiextensions-apiserver v0.36.1 // indirect
 	k8s.io/apiserver v0.36.1 // indirect
-	k8s.io/cli-runtime v0.36.0 // indirect
+	k8s.io/cli-runtime v0.36.1 // indirect
 	k8s.io/component-base v0.36.1 // indirect
 	k8s.io/kube-openapi v0.0.0-20260512234627-ef417d054102 // indirect
-	k8s.io/kubectl v0.36.0 // indirect
+	k8s.io/kubectl v0.36.1 // indirect
 	k8s.io/streaming v0.36.1 // indirect
 	k8s.io/utils v0.0.0-20260507154919-ff6756f316d2 // indirect
 	ocm.software/open-component-model/bindings/go/descriptor/v2 v2.0.3-alpha3 // indirect
 	ocm.software/open-component-model/bindings/go/runtime v0.0.8 // indirect
-	oras.land/oras-go/v2 v2.6.0 // indirect
+	oras.land/oras-go/v2 v2.6.1 // indirect
 	sigs.k8s.io/controller-runtime v0.24.1
 	sigs.k8s.io/gateway-api v1.5.1
 	sigs.k8s.io/json v0.0.0-20250730193827-2d320260d730 // indirect
-	sigs.k8s.io/kind v0.31.0 // indirect
+	sigs.k8s.io/kind v0.32.0 // indirect
 	sigs.k8s.io/kustomize/api v0.21.1 // indirect
 	sigs.k8s.io/kustomize/kyaml v0.21.1 // indirect
 	sigs.k8s.io/randfill v1.0.0 // indirect
