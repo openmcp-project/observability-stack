@@ -73,6 +73,7 @@ spec:
       observabilityGateway:
         namespace: string | default="observability-gateway-system"
         port: integer | default=8443
+        clientCertCommonName: string | default="observability-client"
     status:
       certManager:
         ready: ${certManager.status.ready}
@@ -137,6 +138,7 @@ spec:
           forProvider:
             namespace: ${schema.spec.observabilityGateway.namespace}
             port: ${schema.spec.observabilityGateway.port}
+            clientCertCommonName: ${schema.spec.observabilityGateway.clientCertCommonName}
       readyWhen:
         - ${observabilityGateway.status.ready == true}
 
