@@ -18,6 +18,7 @@ spec:
       forProvider:
         namespace: string | default="observability-gateway-system"
         port: integer | default=8443
+        clientCertCommonName: string | default="observability-client"
     status:
       ready: ${observabilityGatewayKustomization.status.conditions.exists(c, c.type == "Ready" && c.status == "True")}
       lastAttemptedRevisionDigest: ${observabilityGatewayKustomization.status.lastAttemptedRevision}
@@ -158,5 +159,19 @@ spec:
                 path: /spec/dnsNames
                 value:
                 - otlp-logs.${schema.spec.forProvider.namespace}.${sharedGateway.metadata.annotations["dns.openmcp.cloud/base-domain"]}
+          - target:
+              kind: Certificate
+              name: observability-client-ca
+            patch: |-
+              - op: replace
+                path: /spec/commonName
+                value: ${schema.spec.forProvider.clientCertCommonName}-ca
+          - target:
+              kind: Certificate
+              name: observability-client-cert
+            patch: |-
+              - op: replace
+                path: /spec/commonName
+                value: ${schema.spec.forProvider.clientCertCommonName}
       readyWhen:
         - ${observabilityGatewayKustomization.status.conditions.exists(c, c.type == "Ready" && c.status == "True")}
