@@ -1,0 +1,9 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: perses-config
+data:
+  config.yaml: |
+    database:
+      file:
+        folder: /tmp/perses

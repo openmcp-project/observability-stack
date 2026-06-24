@@ -1,0 +1,205 @@
+apiVersion: kro.run/v1alpha1
+kind: ResourceGraphDefinition
+metadata:
+  name: perses
+spec:
+  schema:
+    apiVersion: v1alpha1
+    kind: Perses
+    spec:
+      componentRef:
+        name: string | default="obs-stack-component"
+      imagePullSecretRef:
+        name: string | default="imgpull"
+        namespace: string | default="obs-stack"
+      openMCPGatewayRef:
+        name: string | default="default"
+        namespace: string | default="openmcp-system"
+      observabilityGatewayRef:
+        namespace: string | default="observability-gateway-system"
+      forProvider:
+        namespace: string | default="perses-system"
+        prometheusRef:
+          namespace: string | default="prometheus-system"
+          serviceName: string | default="prometheus-operated"
+          port: integer | default=9090
+        victoriaLogsRef:
+          namespace: string | default="victoria-logs-system"
+          serviceName: string | default="victoria-logs"
+          port: integer | default=9428
+        resources:
+          requests:
+            memory: string | default="128Mi"
+            cpu: string | default="50m"
+          limits:
+            memory: string | default="512Mi"
+            cpu: string | default="500m"
+    status:
+      ready: ${persesKustomization.status.conditions.exists(c, c.type == "Ready" && c.status == "True")}
+      lastAttemptedRevisionDigest: ${persesKustomization.status.lastAttemptedRevision}
+
+  resources:
+    - id: sharedImagePullSecret
+      externalRef:
+        apiVersion: v1
+        kind: Secret
+        metadata:
+          name: ${schema.spec.imagePullSecretRef.name}
+          namespace: ${schema.spec.imagePullSecretRef.namespace}
+
+    - id: sharedGateway
+      externalRef:
+        apiVersion: gateway.networking.k8s.io/v1
+        kind: Gateway
+        metadata:
+          name: ${schema.spec.openMCPGatewayRef.name}
+          namespace: ${schema.spec.openMCPGatewayRef.namespace}
+
+    - id: persesKustomizationResource
+      template:
+        apiVersion: delivery.ocm.software/v1alpha1
+        kind: Resource
+        metadata:
+          name: perses-kustomization
+          namespace: ${schema.metadata.namespace}
+        spec:
+          componentRef: ${schema.spec.componentRef}
+          resource:
+            byReference:
+              resource:
+                name: perses-kustomization
+          additionalStatusFields:
+            registry: resource.access.imageReference.toOCI().registry
+            repository: resource.access.imageReference.toOCI().repository
+            tag: resource.access.imageReference.toOCI().tag
+
+    - id: persesImage
+      template:
+        apiVersion: delivery.ocm.software/v1alpha1
+        kind: Resource
+        metadata:
+          name: perses-image
+          namespace: ${schema.metadata.namespace}
+        spec:
+          componentRef: ${schema.spec.componentRef}
+          resource:
+            byReference:
+              resource:
+                name: perses-image
+          additionalStatusFields:
+            registry: resource.access.imageReference.toOCI().registry
+            repository: resource.access.imageReference.toOCI().repository
+            tag: resource.access.imageReference.toOCI().tag
+
+    - id: persesOCIRepository
+      template:
+        apiVersion: source.toolkit.fluxcd.io/v1
+        kind: OCIRepository
+        metadata:
+          name: perses-ocirepository
+          namespace: ${schema.metadata.namespace}
+        spec:
+          interval: 1m0s
+          insecure: true
+          layerSelector:
+            mediaType: "application/vnd.cncf.flux.content.v1.tar+gzip"
+            operation: copy
+          url: oci://${persesKustomizationResource.status.additional.registry}/${persesKustomizationResource.status.additional.repository}
+          ref:
+            tag: ${persesKustomizationResource.status.additional.tag}
+          secretRef:
+            name: ${schema.spec.imagePullSecretRef.name}
+
+    - id: persesNamespace
+      template:
+        apiVersion: v1
+        kind: Namespace
+        metadata:
+          name: ${schema.spec.forProvider.namespace}
+
+    - id: persesImagePullSecret
+      template:
+        apiVersion: v1
+        kind: Secret
+        metadata:
+          name: perses-imgpull
+          namespace: ${persesNamespace.metadata.name}
+        type: ${sharedImagePullSecret.type}
+        data: ${sharedImagePullSecret.data}
+
+    - id: persesKustomization
+      template:
+        apiVersion: kustomize.toolkit.fluxcd.io/v1
+        kind: Kustomization
+        metadata:
+          name: perses-kustomization
+          namespace: ${schema.metadata.namespace}
+        spec:
+          interval: 10m
+          targetNamespace: ${persesNamespace.metadata.name}
+          sourceRef:
+            kind: OCIRepository
+            name: ${persesOCIRepository.metadata.name}
+          path: ""
+          prune: true
+          timeout: 5m
+          patches:
+          - target:
+              kind: HTTPRoute
+              name: perses
+            patch: |-
+              - op: add
+                path: /spec/hostnames
+                value:
+                - dashboards.${schema.spec.observabilityGatewayRef.namespace}.${sharedGateway.metadata.annotations["dns.openmcp.cloud/base-domain"]}
+              - op: replace
+                path: /spec/parentRefs/0/namespace
+                value: ${schema.spec.observabilityGatewayRef.namespace}
+          - target:
+              kind: Deployment
+              name: perses
+            patch: |-
+              - op: replace
+                path: /spec/template/spec/containers/0/image
+                value: ${persesImage.status.resource.access.imageReference}
+              - op: add
+                path: /spec/template/spec/imagePullSecrets
+                value:
+                - name: ${persesImagePullSecret.metadata.name}
+              - op: replace
+                path: /spec/template/spec/containers/0/resources/requests/memory
+                value: ${schema.spec.forProvider.resources.requests.memory}
+              - op: replace
+                path: /spec/template/spec/containers/0/resources/requests/cpu
+                value: ${schema.spec.forProvider.resources.requests.cpu}
+              - op: replace
+                path: /spec/template/spec/containers/0/resources/limits/memory
+                value: ${schema.spec.forProvider.resources.limits.memory}
+              - op: replace
+                path: /spec/template/spec/containers/0/resources/limits/cpu
+                value: ${schema.spec.forProvider.resources.limits.cpu}
+          - target:
+              kind: ConfigMap
+              name: perses-config
+            patch: |-
+              - op: replace
+                path: /data/config.yaml
+                value: |
+                  database:
+                    file:
+                      folder: /tmp/perses
+                  datasource:
+                    global:
+                      - name: prometheus
+                        default: true
+                        plugin:
+                          kind: PrometheusDatasource
+                          spec:
+                            directUrl: "http://${schema.spec.forProvider.prometheusRef.serviceName}.${schema.spec.forProvider.prometheusRef.namespace}.svc:${schema.spec.forProvider.prometheusRef.port}"
+                      - name: victoria-logs
+                        plugin:
+                          kind: TempoLokiDatasource
+                          spec:
+                            directUrl: "http://${schema.spec.forProvider.victoriaLogsRef.serviceName}.${schema.spec.forProvider.victoriaLogsRef.namespace}.svc:${schema.spec.forProvider.victoriaLogsRef.port}"
+      readyWhen:
+        - ${persesKustomization.status.conditions.exists(c, c.type == "Ready" && c.status == "True")}

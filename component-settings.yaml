@@ -26,6 +26,9 @@ ALERTMANAGER_IMAGE_VERSION: "v0.33.0"
 # victoria logs
 VICTORIA_LOGS_IMAGE_VERSION: "v1.6.0-victorialogs"
 
+# perses
+PERSES_IMAGE_VERSION: "v0.51.0"
+
 
 # E2E Test dependencies
 # Not used for deployment
