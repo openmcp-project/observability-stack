@@ -201,6 +201,6 @@ components:
         type: ociImage
         input:
           type: ociImage
-          path: "docker.io/persesdev/perses:${PERSES_IMAGE_VERSION#v}"
+          path: "docker.io/persesdev/perses:${PERSES_IMAGE_VERSION}"
           repository: images/perses
 
