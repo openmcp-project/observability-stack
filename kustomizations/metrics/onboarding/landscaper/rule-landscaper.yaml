@@ -19,5 +19,5 @@ spec:
             component: landscaper
             inhibit_alert: "true"
           annotations:
-            summary: "Landscaper {{ $labels.ls_name }} in namespace {{ $labels.ls_namespace }} is not in phase Ready"
-            description: "Landscaper {{ $labels.ls_name }} in namespace {{ $labels.ls_namespace }} on cluster {{ $labels.cluster }} is not in phase Ready."
+            summary: "Landscaper {{ $labels.obj_name }} in namespace {{ $labels.obj_namespace }} is not in phase Ready"
+            description: "Landscaper {{ $labels.obj_name }} in namespace {{ $labels.obj_namespace }} on cluster {{ $labels.cluster }} is not in phase Ready."

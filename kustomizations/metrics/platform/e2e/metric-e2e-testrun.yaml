@@ -16,7 +16,7 @@ spec:
     fieldPath: "metadata.creationTimestamp"
     type: timestamp
   projections:
-    - name: tr_name
+    - name: obj_name
       fieldPath: "metadata.name"
       type: primitive
 

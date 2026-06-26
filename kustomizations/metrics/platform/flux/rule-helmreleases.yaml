@@ -18,5 +18,5 @@ spec:
             severity: warning
             component: flux
           annotations:
-            summary: "HelmRelease {{ $labels.hr_name }} is not ready"
-            description: "HelmRelease {{ $labels.hr_name }} in namespace {{ $labels.hr_namespace }} on cluster {{ $labels.cluster }} has not been ready for 5 minutes."
+            summary: "HelmRelease {{ $labels.obj_name }} is not ready"
+            description: "HelmRelease {{ $labels.obj_name }} in namespace {{ $labels.obj_namespace }} on cluster {{ $labels.cluster }} has not been ready for 5 minutes."
