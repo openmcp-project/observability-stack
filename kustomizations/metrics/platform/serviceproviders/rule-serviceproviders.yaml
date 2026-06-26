@@ -18,5 +18,5 @@ spec:
             severity: warning
             component: deployment
           annotations:
-            summary: "ServiceProvider {{ $labels.sp_name }} is not in phase Ready"
-            description: "ServiceProvider {{ $labels.sp_name }} on cluster {{ $labels.cluster }} is not in phase Ready."
+            summary: "ServiceProvider {{ $labels.obj_name }} is not in phase Ready"
+            description: "ServiceProvider {{ $labels.obj_name }} on cluster {{ $labels.cluster }} is not in phase Ready."

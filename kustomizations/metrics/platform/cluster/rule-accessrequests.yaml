@@ -18,5 +18,5 @@ spec:
             severity: warning
             component: deployment
           annotations:
-            summary: "AccessRequest {{ $labels.ar_name }} is not in phase Granted"
-            description: "AccessRequest {{ $labels.ar_name }} on cluster {{ $labels.cluster }} is not in phase Granted."
+            summary: "AccessRequest {{ $labels.obj_name }} is not in phase Granted"
+            description: "AccessRequest {{ $labels.obj_name }} on cluster {{ $labels.cluster }} is not in phase Granted."

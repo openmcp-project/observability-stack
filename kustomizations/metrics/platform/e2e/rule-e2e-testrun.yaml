@@ -19,12 +19,12 @@ spec:
               or opencontrolplane_e2e_testruns{tr_tc_create_workspace_cleanup_status="False"}
               or opencontrolplane_e2e_testruns{tr_tc_create_mcpv2_run_status="False"}
               or opencontrolplane_e2e_testruns{tr_tc_create_mcpv2_cleanup_status="False"}
-            ) and on(cluster, tr_name)
-            topk by(cluster) (1, max by(cluster, tr_name) (opencontrolplane_e2e_testruns))
+            ) and on(cluster, obj_name)
+            topk by(cluster) (1, max by(cluster, obj_name) (opencontrolplane_e2e_testruns))
           for: 1m
           labels:
             severity: warning
             component: e2e
           annotations:
-            summary: "E2E test run {{ $labels.tr_name }} has a failed condition"
-            description: "E2E test run {{ $labels.tr_name }} on cluster {{ $labels.cluster }} has at least one test case condition with status False."
+            summary: "E2E test run {{ $labels.obj_name }} has a failed condition"
+            description: "E2E test run {{ $labels.obj_name }} on cluster {{ $labels.cluster }} has at least one test case condition with status False."

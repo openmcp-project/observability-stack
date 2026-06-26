@@ -13,11 +13,11 @@ spec:
   dataSinkRef:
     name: default
   projections:
-    - name: ar_name
+    - name: obj_name
       fieldPath: "metadata.name"
       type: primitive
 
-    - name: ar_namespace
+    - name: obj_namespace
       fieldPath: "metadata.namespace"
       type: primitive
 
