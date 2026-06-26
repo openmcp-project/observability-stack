@@ -18,5 +18,5 @@ spec:
             severity: warning
             component: deployment
           annotations:
-            summary: "ClusterRequest {{ $labels.cr_name }} is not in phase Granted"
-            description: "ClusterRequest {{ $labels.cr_name }} on cluster {{ $labels.cluster }} is not in phase Granted."
+            summary: "ClusterRequest {{ $labels.obj_name }} is not in phase Granted"
+            description: "ClusterRequest {{ $labels.obj_name }} on cluster {{ $labels.cluster }} is not in phase Granted."

@@ -18,8 +18,8 @@ spec:
             severity: warning
             component: deployment
           annotations:
-            summary: "Gateway {{ $labels.gw_name }} is not in Programmed"
-            description: "Gateway {{ $labels.gw_name }} in namespace {{ $labels.gw_namespace }} is not in Programmed."
+            summary: "Gateway {{ $labels.obj_name }} is not in Programmed"
+            description: "Gateway {{ $labels.obj_name }} in namespace {{ $labels.obj_namespace }} is not in Programmed."
 
         - alert: GatewayNotAccepted
           expr: |
@@ -29,5 +29,5 @@ spec:
             severity: warning
             component: deployment
           annotations:
-            summary: "Gateway {{ $labels.gw_name }} is not in Accepted"
-            description: "Gateway {{ $labels.gw_name }} in namespace {{ $labels.gw_namespace }} is not in Accepted."
+            summary: "Gateway {{ $labels.obj_name }} is not in Accepted"
+            description: "Gateway {{ $labels.obj_name }} in namespace {{ $labels.obj_namespace }} is not in Accepted."

@@ -18,5 +18,5 @@ spec:
             severity: warning
             component: deployment
           annotations:
-            summary: "Cluster {{ $labels.cl_name }} is not in phase Ready"
-            description: "Cluster {{ $labels.cl_name }} on cluster {{ $labels.cluster }} is not in phase Ready."
+            summary: "Cluster {{ $labels.obj_name }} is not in phase Ready"
+            description: "Cluster {{ $labels.obj_name }} on cluster {{ $labels.cluster }} is not in phase Ready."

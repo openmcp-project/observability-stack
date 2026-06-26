@@ -19,5 +19,5 @@ spec:
             component: crossplane
             inhibit_alert: "true"
           annotations:
-            summary: "Crossplane {{ $labels.xp_name }} in namespace {{ $labels.xp_namespace }} is not in phase Ready"
-            description: "Crossplane {{ $labels.xp_name }} in namespace {{ $labels.xp_namespace }} on cluster {{ $labels.cluster }} is not in phase Ready."
+            summary: "Crossplane {{ $labels.obj_name }} in namespace {{ $labels.obj_namespace }} is not in phase Ready"
+            description: "Crossplane {{ $labels.obj_name }} in namespace {{ $labels.obj_namespace }} on cluster {{ $labels.cluster }} is not in phase Ready."

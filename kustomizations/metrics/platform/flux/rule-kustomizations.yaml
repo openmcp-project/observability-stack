@@ -18,8 +18,8 @@ spec:
             severity: warning
             component: flux
           annotations:
-            summary: "Kustomization {{ $labels.kust_name }} is not ready"
-            description: "Kustomization {{ $labels.kust_name }} in namespace {{ $labels.kust_namespace }} on cluster {{ $labels.cluster }} has not been ready for 5 minutes."
+            summary: "Kustomization {{ $labels.obj_name }} is not ready"
+            description: "Kustomization {{ $labels.obj_name }} in namespace {{ $labels.obj_namespace }} on cluster {{ $labels.cluster }} has not been ready for 5 minutes."
 
         - alert: KustomizationNotHealthy
           expr: |
@@ -29,5 +29,5 @@ spec:
             severity: warning
             component: flux
           annotations:
-            summary: "Kustomization {{ $labels.kust_name }} is not healthy"
-            description: "Kustomization {{ $labels.kust_name }} in namespace {{ $labels.kust_namespace }} on cluster {{ $labels.cluster }} is not healthy."
+            summary: "Kustomization {{ $labels.obj_name }} is not healthy"
+            description: "Kustomization {{ $labels.obj_name }} in namespace {{ $labels.obj_namespace }} on cluster {{ $labels.cluster }} is not healthy."

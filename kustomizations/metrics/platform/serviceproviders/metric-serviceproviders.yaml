@@ -13,7 +13,7 @@ spec:
   dataSinkRef:
     name: default
   projections:
-    - name: sp_name
+    - name: obj_name
       fieldPath: "metadata.name"
       type: primitive
 

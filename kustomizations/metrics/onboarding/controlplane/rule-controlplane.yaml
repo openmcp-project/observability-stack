@@ -19,5 +19,5 @@ spec:
             component: controlplane
             inhibit_alert: "true"
           annotations:
-            summary: "ControlPlane {{ $labels.cp_name }} in namespace {{ $labels.cp_namespace }} is not in phase Ready"
-            description: "ControlPlane {{ $labels.cp_name }} in namespace {{ $labels.cp_namespace }} on cluster {{ $labels.cluster }} is not in phase Ready."
+            summary: "ControlPlane {{ $labels.obj_name }} in namespace {{ $labels.obj_namespace }} is not in phase Ready"
+            description: "ControlPlane {{ $labels.obj_name }} in namespace {{ $labels.obj_namespace }} on cluster {{ $labels.cluster }} is not in phase Ready."
