@@ -188,18 +188,44 @@ spec:
                   database:
                     file:
                       folder: /tmp/perses
-                  datasource:
-                    global:
-                      - name: prometheus
-                        default: true
-                        plugin:
-                          kind: PrometheusDatasource
+                  plugin:
+                    path: /tmp/perses-plugins
+                  provisioning:
+                    folders:
+                      - /etc/perses/provisioning
+                      - /etc/perses/dashboards
+          - target:
+              kind: ConfigMap
+              name: perses-provisioning
+            patch: |-
+              - op: replace
+                path: /data/datasources.yaml
+                value: |
+                  kind: GlobalDatasource
+                  metadata:
+                    name: prometheus
+                  spec:
+                    default: true
+                    plugin:
+                      kind: PrometheusDatasource
+                      spec:
+                        proxy:
+                          kind: HTTPProxy
                           spec:
-                            directUrl: "http://${schema.spec.forProvider.prometheusRef.serviceName}.${schema.spec.forProvider.prometheusRef.namespace}.svc:${schema.spec.forProvider.prometheusRef.port}"
-                      - name: victoria-logs
-                        plugin:
-                          kind: TempoLokiDatasource
+                            url: "http://${schema.spec.forProvider.prometheusRef.serviceName}.${schema.spec.forProvider.prometheusRef.namespace}.svc:${string(schema.spec.forProvider.prometheusRef.port)}"
+              - op: replace
+                path: /data/victoria-logs-datasource.yaml
+                value: |
+                  kind: GlobalDatasource
+                  metadata:
+                    name: victoria-logs
+                  spec:
+                    plugin:
+                      kind: VictoriaLogsDatasource
+                      spec:
+                        proxy:
+                          kind: HTTPProxy
                           spec:
-                            directUrl: "http://${schema.spec.forProvider.victoriaLogsRef.serviceName}.${schema.spec.forProvider.victoriaLogsRef.namespace}.svc:${schema.spec.forProvider.victoriaLogsRef.port}"
+                            url: "http://${schema.spec.forProvider.victoriaLogsRef.serviceName}.${schema.spec.forProvider.victoriaLogsRef.namespace}.svc:${string(schema.spec.forProvider.victoriaLogsRef.port)}"
       readyWhen:
         - ${persesKustomization.status.conditions.exists(c, c.type == "Ready" && c.status == "True")}

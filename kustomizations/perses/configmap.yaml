@@ -7,3 +7,40 @@ data:
     database:
       file:
         folder: /tmp/perses
+    plugin:
+      path: /tmp/perses-plugins
+    provisioning:
+      folders:
+        - /etc/perses/provisioning
+        - /etc/perses/dashboards
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: perses-provisioning
+data:
+  datasources.yaml: |
+    kind: GlobalDatasource
+    metadata:
+      name: prometheus
+    spec:
+      default: true
+      plugin:
+        kind: PrometheusDatasource
+        spec:
+          proxy:
+            kind: HTTPProxy
+            spec:
+              url: "http://prometheus-operated.prometheus-system.svc:9090"
+  victoria-logs-datasource.yaml: |
+    kind: GlobalDatasource
+    metadata:
+      name: victoria-logs
+    spec:
+      plugin:
+        kind: VictoriaLogsDatasource
+        spec:
+          proxy:
+            kind: HTTPProxy
+            spec:
+              url: "http://victoria-logs.victoria-logs-system.svc:9428"

@@ -25,7 +25,12 @@ spec:
               name: http
           volumeMounts:
             - name: config
-              mountPath: /etc/perses
+              mountPath: /etc/perses/config.yaml
+              subPath: config.yaml
+            - name: provisioning
+              mountPath: /etc/perses/provisioning
+            - name: dashboards
+              mountPath: /etc/perses/dashboards
           resources:
             requests:
               memory: 128Mi
@@ -37,3 +42,9 @@ spec:
         - name: config
           configMap:
             name: perses-config
+        - name: provisioning
+          configMap:
+            name: perses-provisioning
+        - name: dashboards
+          configMap:
+            name: perses-dashboards
