@@ -143,7 +143,7 @@ spec:
             patch: |-
               - op: replace
                 path: /spec/env/0/value
-                value: ${schema.spec.forProvider.clusterName}
+                value: "${schema.spec.forProvider.clusterName}"
               - op: add
                 path: /spec/resources
                 value:
