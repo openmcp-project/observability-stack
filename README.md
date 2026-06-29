@@ -51,18 +51,18 @@ Create an OCM configuration file for accessing the component registry:
 # Create the OCM config with your GitHub credentials
 cat <<EOF > .ocmconfig
 type: generic.config.ocm.software/v1
-    configurations:
-      - type: credentials.config.ocm.software
-        consumers:
-          - identities:
-              - type: OCIRegistry
-                hostname: ghcr.io
-                path: openmcp-project/*
-            credentials:
-              - type: Credentials
-                properties:
-                  username: <your-github-username>
-                  password: <your-github-token>
+configurations:
+  - type: credentials.config.ocm.software
+    consumers:
+      - identities:
+          - type: OCIRegistry
+            hostname: ghcr.io
+            path: openmcp-project/*
+        credentials:
+          - type: Credentials
+            properties:
+              username: <your-github-username>
+              password: <your-github-token>
 EOF
 ```
 
@@ -86,9 +86,38 @@ kubectl create secret docker-registry regcred \
   --namespace=obs-stack
 ```
 
-#### 4. Deploy the Observability Stack
+#### 4. Grant OCM Controller RBAC for kro Resources
 
-Apply the deployment manifests:
+The [OCM controller's service account needs permission](https://ocm.software/docs/how-to/configure-custom-rbac-for-deployers/#create-a-clusterrole-and-clusterrolebinding) to manage `ResourceGraphDefinition` resources (kro CRD) at the cluster scope.
+```bash
+kubectl apply -f - <<EOF
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: ocm-kro-resourcegraphdefinition-manager
+rules:
+- apiGroups: ["kro.run"]
+  resources: ["resourcegraphdefinitions"]
+  verbs: ["get", "list", "watch", "create", "update", "patch", "delete"]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: ocm-kro-resourcegraphdefinition-manager
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: ocm-kro-resourcegraphdefinition-manager
+subjects:
+- kind: ServiceAccount
+  name: ocm-k8s-toolkit-controller-manager
+  namespace: ocm-k8s-toolkit-system
+EOF
+```
+
+#### 5. Deploy the Observability Stack
+
+First, apply the OCM resources and wait for kro to register the `ObservabilityStack` CRD:
 
 ```bash
 kubectl apply -f - <<EOF
@@ -130,17 +159,31 @@ spec:
     byReference:
       resource:
         name: resource-graph-definition
-  interval: 1m
 ---
 apiVersion: delivery.ocm.software/v1alpha1
 kind: Deployer
 metadata:
   name: resource-graph-definition
+  namespace: obs-stack
 spec:
   resourceRef:
     name: resource-graph-definition
     namespace: obs-stack
----
+EOF
+```
+
+Wait until the `Deployer` has deployed the `ResourceGraphDefinition` and kro has registered the `ObservabilityStack` CRD. This typically takes 1–2 minutes:
+
+```bash
+kubectl wait deployer resource-graph-definition -n obs-stack \
+  --for=jsonpath='{.status.conditions[?(@.type=="Ready")].status}'=True \
+  --timeout=120s
+```
+
+Then create the stack instance:
+
+```bash
+kubectl apply -f - <<EOF
 apiVersion: kro.run/v1alpha1
 kind: ObservabilityStack
 metadata:
@@ -174,22 +217,13 @@ spec:
 EOF
 ```
 
-#### 5. Verify the Deployment
+#### 6. Verify the Deployment
 
 Monitor the deployment progress:
 
 ```bash
-# Check component status
-kubectl get component -n obs-stack
-
 # Check resource status
-kubectl get resource -n obs-stack
-
-# Check deployer status
-kubectl get deployer -n obs-stack
-
-# Check the observability stack instance
-kubectl get observabilitystack -n obs-stack
+kubectl get -n obs-stack components,resource,deployer,observabilitystacks
 
 # Verify all components are running
 kubectl get pods -n cert-manager-system
@@ -205,7 +239,7 @@ kubectl get pods -n observability-gateway-system
 kubectl get daemonset -n open-telemetry-collector-system
 ```
 
-#### 6. Access Observability Dashboards
+#### 7. Access Observability Dashboards
 
 Both Prometheus and Victoria Logs are exposed through a single shared Envoy Gateway in the `observability-gateway-system` namespace. The gateway uses HTTPS with mTLS client certificate authentication.
 
@@ -289,7 +323,7 @@ curl --cert client.crt --key client.key --insecure \
 
 4. Navigate to the dashboard URLs, accept the browser warning about the self-signed server certificate, and select the client certificate when prompted
 
-#### 7. Configure Alerting (per landscape)
+#### 8. Configure Alerting (per landscape)
 
 The observability stack deploys an Alertmanager instance as part of the base infrastructure, but the routing configuration — which notification channels receive alerts — must be provided separately for each landscape. This keeps credentials and routing decisions out of the shared stack.
 
@@ -372,7 +406,7 @@ kubectl get prometheus.monitoring.coreos.com prometheus -n prometheus-system -o 
 
 The Prometheus dashboard also shows the connected Alertmanager count under **Status → Runtime & Build Info**.
 
-#### 8. Log Collection and Cross-Cluster Ingestion
+#### 9. Log Collection and Cross-Cluster Ingestion
 
 Pod logs (stdout/stderr from all containers on every node) are automatically collected by an OpenTelemetry Collector DaemonSet running in `open-telemetry-collector-system`. It reads from `/var/log/pods` on each node and ships logs to Victoria Logs via OTLP HTTP.
 
