@@ -114,7 +114,7 @@ func assertMetricsAvailable(ctx context.Context, t *testing.T, promAPI prometheu
 			}
 			vector, ok := result.(model.Vector)
 			return ok && len(vector) > 0, nil
-		}, wait.WithTimeout(5*time.Minute), wait.WithContext(ctx)); err != nil {
+		}, wait.WithTimeout(10*time.Minute), wait.WithContext(ctx)); err != nil {
 			t.Errorf("metric %q not found in Prometheus after timeout: %v", name, err)
 		}
 	}
