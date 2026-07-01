@@ -41,10 +41,27 @@ spec:
             memory: string | default="512Mi"
             cpu: string | default="500m"
     status:
-      ready: ${!schema.spec.enabled || persesKustomization.status.conditions.exists(c, c.type == "Ready" && c.status == "True")}
-      lastAttemptedRevisionDigest: ${persesKustomization.status.lastAttemptedRevision}
+      ready: ${persesStatus.data.ready == "true"}
+      lastAttemptedRevisionDigest: ${persesStatus.data.lastAttemptedRevisionDigest}
 
   resources:
+    # Always-present sentinel ConfigMap. kro forbids status expressions from
+    # referencing schema.* or resources gated by includeWhen. This sentinel is
+    # unconditional, so the status block can reference it. Its data fields are
+    # computed in a resource template (not a status expression), where kro
+    # permits references to schema.* and conditional resources.
+    # See: https://github.com/kubernetes-sigs/kro/issues/926#issuecomment-4313907502
+    - id: persesStatus
+      template:
+        apiVersion: v1
+        kind: ConfigMap
+        metadata:
+          name: perses-status
+          namespace: ${schema.metadata.namespace}
+        data:
+          ready: '${schema.spec.enabled ? string(persesKustomization.status.conditions.exists(c, c.type == "Ready" && c.status == "True")) : "true"}'
+          lastAttemptedRevisionDigest: '${schema.spec.enabled ? persesKustomization.status.lastAttemptedRevision : ""}'
+
     - id: sharedImagePullSecret
       includeWhen:
         - ${schema.spec.enabled == true}
