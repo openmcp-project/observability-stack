@@ -20,7 +20,7 @@ require (
 require (
 	github.com/fsnotify/fsnotify v1.10.1 // indirect
 	github.com/go-logr/zapr v1.3.0 // indirect
-	github.com/openmcp-project/openmcp-operator/lib v1.0.1 // indirect
+	github.com/openmcp-project/openmcp-operator/lib v1.1.0 // indirect
 	go.uber.org/multierr v1.11.0 // indirect
 	go.uber.org/zap v1.28.0 // indirect
 	golang.org/x/exp v0.0.0-20260611194520-c48552f49976 // indirect
@@ -115,7 +115,7 @@ require (
 	github.com/opencontainers/go-digest v1.0.0 // indirect
 	github.com/opencontainers/image-spec v1.1.1 // indirect
 	github.com/openmcp-project/controller-utils v0.30.0
-	github.com/openmcp-project/opencontrolplane-runtime v0.3.0
+	github.com/openmcp-project/opencontrolplane-runtime v0.4.0
 	github.com/openmcp-project/openmcp-operator/api v1.1.0
 	github.com/pelletier/go-toml v1.9.5 // indirect
 	github.com/peterbourgon/diskv v2.0.1+incompatible // indirect
@@ -165,7 +165,7 @@ require (
 	ocm.software/open-component-model/bindings/go/runtime v0.0.8 // indirect
 	oras.land/oras-go/v2 v2.6.1 // indirect
 	sigs.k8s.io/controller-runtime v0.24.1
-	sigs.k8s.io/gateway-api v1.5.1
+	sigs.k8s.io/gateway-api v1.6.0
 	sigs.k8s.io/json v0.0.0-20250730193827-2d320260d730 // indirect
 	sigs.k8s.io/kind v0.32.0 // indirect
 	sigs.k8s.io/kustomize/api v0.21.1 // indirect

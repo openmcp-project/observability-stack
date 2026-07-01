@@ -272,12 +272,12 @@ github.com/opencontainers/image-spec v1.1.1 h1:y0fUlFfIZhPF1W537XOLg0/fcx6zcHCJw
 github.com/opencontainers/image-spec v1.1.1/go.mod h1:qpqAh3Dmcf36wStyyWU+kCeDgrGnAve2nCC8+7h8Q0M=
 github.com/openmcp-project/controller-utils v0.30.0 h1:x/lO7x6m2pI2P743psb1JT3ENw4q06PqukOq+3i0LIw=
 github.com/openmcp-project/controller-utils v0.30.0/go.mod h1:0cTnMHPjrH+FUdazOTD637KTQZ4JZ+5SSiGQkY6vC4g=
-github.com/openmcp-project/opencontrolplane-runtime v0.3.0 h1:yDOuTEFVElZmcEJ8CyLGUlo5GpjiaSr6grENcJ7DzF8=
-github.com/openmcp-project/opencontrolplane-runtime v0.3.0/go.mod h1:SSsRhFG3v4azNBy1OVe3zle0s/9/Y0MaQBVfC8p/Fh0=
+github.com/openmcp-project/opencontrolplane-runtime v0.4.0 h1:T+caBB+0XGBmB93guzX82v/7alYmZH5u/52Ty1qaIuA=
+github.com/openmcp-project/opencontrolplane-runtime v0.4.0/go.mod h1:fO4bEDAZJfZPtAKcBBtFRKH96SHPnsg/ArqrKJVTd6k=
 github.com/openmcp-project/openmcp-operator/api v1.1.0 h1:zw/knjSK7pkGuJNYOLp19nxqGy6YmOF9nGSqnG6X2cs=
 github.com/openmcp-project/openmcp-operator/api v1.1.0/go.mod h1:5JNdGyGH75zeS02WUSL2hkx40UuWaG0a5Mtmzk/yHFM=
-github.com/openmcp-project/openmcp-operator/lib v1.0.1 h1:HOtqWPKvrZ4bs7SVJsUtDCvbJfoslKDUjXvTqAdgqfE=
-github.com/openmcp-project/openmcp-operator/lib v1.0.1/go.mod h1:qwcC6fcQhnIFpYTDHY5zwg+kBFyqjM9DK2ZZoOzEoC8=
+github.com/openmcp-project/openmcp-operator/lib v1.1.0 h1:lNRDa9+ZPQeAWJ93PQpjG2zMU1oufBMDV689PXkHtf8=
+github.com/openmcp-project/openmcp-operator/lib v1.1.0/go.mod h1:XrN27weczWRbIvncCEAiIghmuSBSVCHbbA72X0CWvDU=
 github.com/openmcp-project/openmcp-testing v1.0.1 h1:c6QWGMavDv7rdivOtwjhY3lqr29fUx6bCj3cu4LcXCA=
 github.com/openmcp-project/openmcp-testing v1.0.1/go.mod h1:cQbct6chQ/WJwsiKmOCNMNYU6uvcXb3Hj9f5Ysx9080=
 github.com/pelletier/go-toml v1.9.5 h1:4yBQzkHv+7BHq2PQUZF3Mx0IYxG7LsP222s7Agd3ve8=
@@ -488,8 +488,8 @@ sigs.k8s.io/controller-runtime v0.24.1 h1:miPEwrmirImAvgME1L9qebGHrOnGJoVmVdtOU9
 sigs.k8s.io/controller-runtime v0.24.1/go.mod h1:vFkfY5fGt5xAC/sKb8IBFKgWPNKG9OUG29dR8Y2wImw=
 sigs.k8s.io/e2e-framework v0.7.0 h1:AHkySTC6MvnnMbVSxaO4z1m2MhQKNFP+2Ihs5pRNLlM=
 sigs.k8s.io/e2e-framework v0.7.0/go.mod h1:1ZgXkUSjmnf18/JgHZNEATWjv48O5lJm9aI1QIsRdbw=
-sigs.k8s.io/gateway-api v1.5.1 h1:RqVRIlkhLhUO8wOHKTLnTJA6o/1un4po4/6M1nRzdd0=
-sigs.k8s.io/gateway-api v1.5.1/go.mod h1:GvCETiaMAlLym5CovLxGjS0NysqFk3+Yuq3/rh6QL2o=
+sigs.k8s.io/gateway-api v1.6.0 h1:735YBRj5NXFrOGX0GoSjwzUIzbz8kiEOfADsqHFmHgE=
+sigs.k8s.io/gateway-api v1.6.0/go.mod h1:FVfx3t389ybeXOqvDghLbdvJdSCfI/PReqCUI3lu3mY=
 sigs.k8s.io/json v0.0.0-20250730193827-2d320260d730 h1:IpInykpT6ceI+QxKBbEflcR5EXP7sU1kvOlxwZh5txg=
 sigs.k8s.io/json v0.0.0-20250730193827-2d320260d730/go.mod h1:mdzfpAEoE6DHQEN0uh9ZbOCuHbLK5wOm7dK4ctXE9Tg=
 sigs.k8s.io/kind v0.32.0 h1:p9hscbj98u/qyrjVpjId86LI70nQmbSsipV7wCG10Xk=
