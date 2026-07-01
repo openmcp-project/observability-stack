@@ -112,7 +112,6 @@ spec:
           (certManager.status.ready == true) &&
           (metricsOperator.status.ready == true) &&
           (openTelemetryOperator.status.ready == true) &&
-          (perses.status.ready == true) &&
           (prometheusOperator.status.ready == true) &&
           (prometheus.status.ready == true) &&
           (openTelemetryCollector.status.ready == true) &&
