@@ -409,39 +409,28 @@ The Prometheus dashboard also shows the connected Alertmanager count under **Sta
 
 #### 9. Perses Dashboards
 
-[Perses](https://perses.dev) is an optional standalone dashboarding component that provides a Kubernetes-native dashboard UI on top of Prometheus and Victoria Logs.
+[Perses](https://perses.dev) is an optional dashboarding component that provides a Kubernetes-native dashboard UI on top of Prometheus and Victoria Logs. It is disabled by default.
 
-**Deploy Perses:**
-
-Apply the RGD and create a `Perses` CR in the same namespace as the rest of the stack:
+**Enable Perses:**
 
 ```bash
-kubectl apply -f resource-graph-definitions/perses.yaml
-
-kubectl apply -f - <<EOF
-apiVersion: kro.run/v1alpha1
-kind: Perses
-metadata:
-  name: perses
-  namespace: obs-stack
-spec:
-  componentRef:
-    name: obs-stack-component
-  imagePullSecretRef:
-    name: regcred
-    namespace: obs-stack
-  observabilityGatewayRef:
-    namespace: observability-gateway-system
-  openMCPGatewayRef:
-    name: default
-    namespace: openmcp-system
-EOF
+kubectl patch observabilitystack stack -n obs-stack \
+  --type=merge -p '{"spec":{"perses":{"enabled":true}}}'
 ```
 
-Wait for the CR to become active:
+Or add `perses.enabled: true` to your `ObservabilityStack` spec:
+
+```yaml
+spec:
+  # ... other fields ...
+  perses:
+    enabled: true
+```
+
+Wait for the stack to become ready:
 
 ```bash
-kubectl wait perses perses -n obs-stack \
+kubectl wait observabilitystack stack -n obs-stack \
   --for=jsonpath='{.status.ready}'=true \
   --timeout=300s
 ```

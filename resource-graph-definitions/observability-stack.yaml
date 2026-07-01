@@ -74,6 +74,16 @@ spec:
         namespace: string | default="observability-gateway-system"
         port: integer | default=8443
         clientCertCommonName: string | default="observability-client"
+      perses:
+        enabled: boolean | default=false
+        namespace: string | default="perses-system"
+        resources:
+          requests:
+            memory: string | default="128Mi"
+            cpu: string | default="50m"
+          limits:
+            memory: string | default="512Mi"
+            cpu: string | default="500m"
     status:
       certManager:
         ready: ${certManager.status.ready}
@@ -85,6 +95,8 @@ spec:
         ready: ${openTelemetryOperator.status.ready}
       openTelemetryCollector:
         ready: ${openTelemetryCollector.status.ready}
+      perses:
+        ready: ${perses.status.ready}
       prometheusOperator:
         ready: ${prometheusOperator.status.ready}
       prometheus:
@@ -97,15 +109,16 @@ spec:
         ready: ${remoteObservability.status.ready}
       ready: |-
         ${
-          (certManager.status.ready == true) && 
-          (metricsOperator.status.ready == true) && 
-          (openTelemetryOperator.status.ready == true) && 
-          (prometheusOperator.status.ready == true) && 
-          (prometheus.status.ready == true) && 
-          (openTelemetryCollector.status.ready == true) && 
-          (metrics.status.ready == true) && 
-          (victoriaLogs.status.ready == true) && 
-          (observabilityGateway.status.ready == true) && 
+          (certManager.status.ready == true) &&
+          (metricsOperator.status.ready == true) &&
+          (openTelemetryOperator.status.ready == true) &&
+          (perses.status.ready == true) &&
+          (prometheusOperator.status.ready == true) &&
+          (prometheus.status.ready == true) &&
+          (openTelemetryCollector.status.ready == true) &&
+          (metrics.status.ready == true) &&
+          (victoriaLogs.status.ready == true) &&
+          (observabilityGateway.status.ready == true) &&
           (remoteObservability.status.ready == true)
         }
 
@@ -270,3 +283,37 @@ spec:
             namespace: ${schema.spec.observabilityGateway.namespace}
       readyWhen:
         - ${remoteObservability.status.ready == true}
+
+    - id: perses
+      # NOTE: no "includeWhen"
+      # perses is always instantiated regardless of spec.perses.enabled.
+      # The enabled flag is pushed down into the Perses RGD which gates all its
+      # workload resources via includeWhen. This is a workaround for a kro bug
+      # where resources excluded by includeWhen are removed from the CEL context,
+      # making it impossible to reference their status in parent status expressions.
+      # See: https://github.com/kubernetes-sigs/kro/issues/926#issuecomment-4313907502
+      template:
+        apiVersion: kro.run/v1alpha1
+        kind: Perses
+        metadata:
+          name: perses
+          annotations:
+            dependency/observability-gateway: ${observabilityGateway.status.lastAttemptedRevisionDigest}
+            dependency/prometheus: ${prometheus.status.lastAttemptedRevisionDigest}
+            dependency/victoria-logs: ${victoriaLogs.status.lastAttemptedRevisionDigest}
+        spec:
+          componentRef: ${schema.spec.componentRef}
+          imagePullSecretRef: ${schema.spec.imagePullSecretRef}
+          openMCPGatewayRef: ${schema.spec.openMCPGatewayRef}
+          observabilityGatewayRef:
+            namespace: ${schema.spec.observabilityGateway.namespace}
+          enabled: ${schema.spec.perses.enabled}
+          forProvider:
+            namespace: ${schema.spec.perses.namespace}
+            prometheusRef:
+              namespace: ${schema.spec.prometheus.namespace}
+            victoriaLogsRef:
+              namespace: ${schema.spec.victoriaLogs.namespace}
+            resources: ${schema.spec.perses.resources}
+      readyWhen:
+        - ${perses.status.ready == true}

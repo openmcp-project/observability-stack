@@ -17,6 +17,12 @@ spec:
         namespace: string | default="openmcp-system"
       observabilityGatewayRef:
         namespace: string | default="observability-gateway-system"
+      # NOTE: enabled is intentionally a field on Perses itself rather than using includeWhen
+      # on the parent ObservabilityStack resource. kro excludes conditionally-included resources
+      # from the CEL activation context entirely, making it impossible to reference their status
+      # in the parent's status expressions or ready gate.
+      # See: https://github.com/kubernetes-sigs/kro/issues/926#issuecomment-4313907502
+      enabled: boolean | default=false
       forProvider:
         namespace: string | default="perses-system"
         prometheusRef:
@@ -35,11 +41,13 @@ spec:
             memory: string | default="512Mi"
             cpu: string | default="500m"
     status:
-      ready: ${persesKustomization.status.conditions.exists(c, c.type == "Ready" && c.status == "True")}
+      ready: ${!schema.spec.enabled || persesKustomization.status.conditions.exists(c, c.type == "Ready" && c.status == "True")}
       lastAttemptedRevisionDigest: ${persesKustomization.status.lastAttemptedRevision}
 
   resources:
     - id: sharedImagePullSecret
+      includeWhen:
+        - ${schema.spec.enabled == true}
       externalRef:
         apiVersion: v1
         kind: Secret
@@ -48,6 +56,8 @@ spec:
           namespace: ${schema.spec.imagePullSecretRef.namespace}
 
     - id: sharedGateway
+      includeWhen:
+        - ${schema.spec.enabled == true}
       externalRef:
         apiVersion: gateway.networking.k8s.io/v1
         kind: Gateway
@@ -56,6 +66,8 @@ spec:
           namespace: ${schema.spec.openMCPGatewayRef.namespace}
 
     - id: persesKustomizationResource
+      includeWhen:
+        - ${schema.spec.enabled == true}
       template:
         apiVersion: delivery.ocm.software/v1alpha1
         kind: Resource
@@ -74,6 +86,8 @@ spec:
             tag: resource.access.imageReference.toOCI().tag
 
     - id: persesImage
+      includeWhen:
+        - ${schema.spec.enabled == true}
       template:
         apiVersion: delivery.ocm.software/v1alpha1
         kind: Resource
@@ -92,6 +106,8 @@ spec:
             tag: resource.access.imageReference.toOCI().tag
 
     - id: persesOCIRepository
+      includeWhen:
+        - ${schema.spec.enabled == true}
       template:
         apiVersion: source.toolkit.fluxcd.io/v1
         kind: OCIRepository
@@ -111,6 +127,8 @@ spec:
             name: ${schema.spec.imagePullSecretRef.name}
 
     - id: persesNamespace
+      includeWhen:
+        - ${schema.spec.enabled == true}
       template:
         apiVersion: v1
         kind: Namespace
@@ -118,6 +136,8 @@ spec:
           name: ${schema.spec.forProvider.namespace}
 
     - id: persesImagePullSecret
+      includeWhen:
+        - ${schema.spec.enabled == true}
       template:
         apiVersion: v1
         kind: Secret
@@ -128,6 +148,8 @@ spec:
         data: ${sharedImagePullSecret.data}
 
     - id: persesKustomization
+      includeWhen:
+        - ${schema.spec.enabled == true}
       template:
         apiVersion: kustomize.toolkit.fluxcd.io/v1
         kind: Kustomization
