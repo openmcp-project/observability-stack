@@ -95,6 +95,9 @@ spec:
         ready: ${openTelemetryOperator.status.ready}
       openTelemetryCollector:
         ready: ${openTelemetryCollector.status.ready}
+      # NOTE: perses.ready is always true — kro v0.9.2 cannot propagate readiness
+      # from includeWhen-gated resources into status expressions.
+      # See: https://github.com/kubernetes-sigs/kro/issues/926#issuecomment-4313907502
       perses:
         ready: ${perses.status.ready}
       prometheusOperator:
