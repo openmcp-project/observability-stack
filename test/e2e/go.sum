@@ -67,8 +67,8 @@ github.com/distribution/reference v0.6.0 h1:0IXCQ5g4/QMHHkarYzh5l+u8T3t73zM5Qvfr
 github.com/distribution/reference v0.6.0/go.mod h1:BbU0aIcezP1/5jX/8MP0YiH4SdvB5Y4f/wlDRiLyi3E=
 github.com/dlclark/regexp2 v1.11.0 h1:G/nrcoOa7ZXlpoa/91N3X7mM3r8eIlMBBJZvsz/mxKI=
 github.com/dlclark/regexp2 v1.11.0/go.mod h1:DHkYz0B9wPfa6wondMfaivmHpzrQ3v9q8cnmRbL6yW8=
-github.com/docker/docker-credential-helpers v0.9.6 h1:cT2PbRPSlnMmNTfT2TDMXRyQ1KMWHG7xoTLBcn1ZNv0=
-github.com/docker/docker-credential-helpers v0.9.6/go.mod h1:v1S+hepowrQXITkEfw6o4+BMbGot02wiKpzWhGUZK6c=
+github.com/docker/docker-credential-helpers v0.9.7 h1:jaPIxEIDz5bQeghNAdzz0ETwMMnM4vzjZlxz3pWP4JA=
+github.com/docker/docker-credential-helpers v0.9.7/go.mod h1:v1S+hepowrQXITkEfw6o4+BMbGot02wiKpzWhGUZK6c=
 github.com/docker/go-events v0.0.0-20250808211157-605354379745 h1:yOn6Ze6IbYI/KAw2lw/83ELYvZh6hvsygTVkD0dzMC4=
 github.com/docker/go-events v0.0.0-20250808211157-605354379745/go.mod h1:Uw6UezgYA44ePAFQYUehOuCzmy5zmg/+nl2ZfMWGkpA=
 github.com/docker/go-metrics v0.0.1 h1:AgB/0SvBxihN0X8OR4SjsblXkbMvalQ8cjmtKQ2rQV8=
@@ -480,8 +480,8 @@ ocm.software/open-component-model/bindings/go/descriptor/v2 v2.0.3-alpha3 h1:bTb
 ocm.software/open-component-model/bindings/go/descriptor/v2 v2.0.3-alpha3/go.mod h1:miNDxmNWsrYI9f3QNZIOBrK6jVmWnyFj0Z/ZGFjR5Qk=
 ocm.software/open-component-model/bindings/go/runtime v0.0.8 h1:NIN8smq0Fs64N10UCSx7RrysIB/u8ukVF/GeT76uQRE=
 ocm.software/open-component-model/bindings/go/runtime v0.0.8/go.mod h1:sRm+ybi9yjJGAgMSUHr0xdaSobsmeU8DWGP4Xonaso8=
-ocm.software/open-component-model/kubernetes/controller v0.8.0 h1:Mt9b+GZ9AB62MAKBr69veCAn5Ak4mNGBY3c6sVvpVrk=
-ocm.software/open-component-model/kubernetes/controller v0.8.0/go.mod h1:1Dg1hyGq0KsMHtZ65+UM3JgXkeTQw9mpU3NjqkxORik=
+ocm.software/open-component-model/kubernetes/controller v0.10.0 h1:Bh9EbfjKt4vPQJfM+CkyzlRZL+cSc8yQl5kOyWP8Mvg=
+ocm.software/open-component-model/kubernetes/controller v0.10.0/go.mod h1:UTxRZ7qKGwXBELA6Sqsx1UbhPYA31PAPXK5Q3ChMpJU=
 oras.land/oras-go/v2 v2.6.1 h1:bonOEkjLfp8tt6qXWRRWP6p1F+9octchOf2EqnWB4Zs=
 oras.land/oras-go/v2 v2.6.1/go.mod h1:dhtFrFOuZuDtAVeZ9FUnaa5zfzplG3ZnFX9/uH1J/Yk=
 sigs.k8s.io/controller-runtime v0.24.1 h1:miPEwrmirImAvgME1L9qebGHrOnGJoVmVdtOU9fRfo4=
