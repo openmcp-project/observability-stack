@@ -131,6 +131,7 @@
         "ghcr.io/open-component-model/kubernetes/controller/chart"
       ],
       "groupName": "ocm-k8s-toolkit",
+      "allowedVersions": "!/.*(dev|rc).*$/",
       "automerge": false
     }
   ],
