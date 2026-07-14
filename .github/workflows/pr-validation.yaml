@@ -93,7 +93,7 @@ jobs:
       - name: Setup Go
         uses: actions/setup-go@v6
         with:
-          go-version-file: go.mod
+          go-version-file: test/e2e/go.mod
           cache-dependency-path: test/e2e/go.sum
 
       - name: Install test dependencies
