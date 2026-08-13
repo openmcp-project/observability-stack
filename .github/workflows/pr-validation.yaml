@@ -55,13 +55,13 @@ jobs:
           echo "$DEV_VERSION" > VERSION
 
       - name: Setup OCM
-        uses: open-component-model/ocm-setup-action@main
+        uses: open-component-model/ocm-setup-action@5755dc5c01c939f7dbba3bb07f9fb9b019a7a2a0 # main
 
       - name: Setup Flux CLI
-        uses: fluxcd/flux2/action@main
+        uses: fluxcd/flux2/action@da2d22d3690191a315822612085f424e4133b06a # main
 
       - name: Setup Python
-        uses: actions/setup-python@v7
+        uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7
         with:
           python-version: ${{ env.PYTHON_VERSION }}
           cache: 'pip'
@@ -91,7 +91,7 @@ jobs:
           PYTHONUNBUFFERED: "1"
 
       - name: Setup Go
-        uses: actions/setup-go@v7
+        uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e # v7
         with:
           go-version-file: test/e2e/go.mod
           cache-dependency-path: test/e2e/go.sum
