@@ -135,6 +135,61 @@ def read_version_file(repo_root: Path) -> str:
     return version
 
 
+def read_version_from_ctf(ctf_dir: Path) -> Optional[str]:
+    """
+    Read the component version string embedded in a CTF directory.
+
+    A CTF is an OCI image layout. The component descriptor is stored as a JSON
+    blob inside the layout. We extract the version by scanning index.json and
+    following refs to the descriptor blob.
+
+    Returns the version string, or None if it cannot be determined.
+    """
+    try:
+        import json
+
+        index_file = ctf_dir / "index.json"
+        if not index_file.exists():
+            return None
+
+        index = json.loads(index_file.read_text())
+        # Each manifest in the index points to a component version
+        for manifest_ref in index.get("manifests", []):
+            digest = manifest_ref.get("digest", "")
+            if not digest:
+                continue
+            algo, hex_val = digest.split(":", 1)
+            blob_path = ctf_dir / "blobs" / algo / hex_val
+            if not blob_path.exists():
+                continue
+            manifest = json.loads(blob_path.read_text())
+            # The component descriptor layer carries a specific media type
+            for layer in manifest.get("layers", []):
+                mt = layer.get("mediaType", "")
+                if "component-descriptor" not in mt:
+                    continue
+                d = layer["digest"]
+                a, h = d.split(":", 1)
+                desc_blob = ctf_dir / "blobs" / a / h
+                if not desc_blob.exists():
+                    continue
+                # descriptor blob may be gzip-compressed
+                raw = desc_blob.read_bytes()
+                try:
+                    import gzip
+                    raw = gzip.decompress(raw)
+                except Exception:
+                    pass
+                desc = json.loads(raw)
+                version = desc.get("meta", {}).get("version") or desc.get("component", {}).get("version")
+                if version:
+                    return version
+        return None
+    except Exception as e:
+        print(f"Warning: could not read version from CTF: {e}", flush=True)
+        return None
+
+
 def merge_rgd_files(repo_root: Path) -> Path:
     """
     Merge all YAML files from resource-graph-definitions directory.
@@ -212,7 +267,8 @@ def run_command(
     cmd: list,
     cwd: Optional[Path] = None,
     check: bool = True,
-    capture_output: bool = False
+    capture_output: bool = False,
+    env: Optional[dict] = None
 ) -> subprocess.CompletedProcess:
     """
     Run a shell command with real-time output streaming.
@@ -240,7 +296,8 @@ def run_command(
                 cwd=cwd,
                 check=check,
                 text=True,
-                capture_output=True
+                capture_output=True,
+                env=env
             )
 
             if result.stdout:
@@ -257,7 +314,8 @@ def run_command(
                 check=check,
                 text=True,
                 stdout=None,  # Inherit parent's stdout for streaming
-                stderr=None   # Inherit parent's stderr for streaming
+                stderr=None,  # Inherit parent's stderr for streaming
+                env=env
             )
 
             return result

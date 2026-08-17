@@ -18,6 +18,7 @@ import (
 	"sigs.k8s.io/e2e-framework/pkg/envconf"
 
 	localextensions "github.com/openmcp-project/observability-stack/extensions"
+	localregistry "github.com/openmcp-project/observability-stack/registry"
 	"github.com/openmcp-project/openmcp-testing/pkg/platformservices"
 	"github.com/openmcp-project/openmcp-testing/pkg/providers"
 	"github.com/openmcp-project/openmcp-testing/pkg/setup"
@@ -41,6 +42,28 @@ func TestMain(m *testing.M) {
 		klog.Fatalf("Failed to set environment variables from settings: %v", err)
 	}
 
+	// Start a local pull-through registry cache for ghcr.io so that kind
+	// cluster containerd nodes don't have to pull the same images repeatedly.
+	// Opt-out with E2E_SKIP_REGISTRY_CACHE=true.
+	var containerdMirrors map[string]string
+	if os.Getenv("E2E_SKIP_REGISTRY_CACHE") == "" {
+		mirror, stopRegistry, regErr := localregistry.StartPullThroughCache(
+			context.Background(), "https://ghcr.io")
+		if regErr != nil {
+			klog.Warningf("Could not start local registry cache (continuing without): %v", regErr)
+		} else {
+			defer stopRegistry()
+			klog.Infof("Using registry cache: %s -> https://ghcr.io", mirror.Endpoint)
+			containerdMirrors = map[string]string{
+				"ghcr.io": mirror.Endpoint,
+			}
+			// cluster-provider-kind creates child clusters via the host docker
+			// socket and reads KIND_CONFIG_FILE to pick up the mirror config.
+			if err := writeKindConfigWithMirrors(containerdMirrors); err != nil {
+				klog.Warningf("Could not write child kind config (child clusters won't use cache): %v", err)
+			}
+		}
+	}
 	openmcp := setup.OpenMCPSetup{
 		Namespace: "openmcp-system",
 		Operator: setup.OpenMCPOperatorSetup{
@@ -71,7 +94,8 @@ func TestMain(m *testing.M) {
 				ChartVersion: settings.MustGetSetting("OCM_K8S_TOOLKIT_VERSION"),
 			},
 		},
-		ServiceProviders: []providers.ServiceProviderSetup{},
+		ServiceProviders:  []providers.ServiceProviderSetup{},
+		ContainerdMirrors: containerdMirrors,
 	}
 	testenv = env.NewWithConfig(envconf.New().WithNamespace(openmcp.Namespace))
 	openmcp.Bootstrap(testenv)
@@ -86,8 +110,45 @@ func initLogging() {
 	flag.Parse()
 }
 
-// getVersion reads the VERSION file from the repository root
+// writeKindConfigWithMirrors writes a kind cluster config to a temp file
+// with containerdConfigPatches for the given mirrors and sets KIND_CONFIG_FILE
+// so cluster-provider-kind picks it up for child cluster creation.
+func writeKindConfigWithMirrors(mirrors map[string]string) error {
+	var b strings.Builder
+	b.WriteString(`apiVersion: kind.x-k8s.io/v1alpha4
+kind: Cluster
+nodes:
+  - role: control-plane
+    extraMounts:
+      - hostPath: /var/run/docker.sock
+        containerPath: /var/run/host-docker.sock
+containerdConfigPatches:
+`)
+	for registry, mirror := range mirrors {
+		fmt.Fprintf(&b, "- |-\n  [plugins.\"io.containerd.grpc.v1.cri\".registry.mirrors.\"%s\"]\n    endpoint = [\"%s\"]\n",
+			registry, mirror)
+	}
+	f, err := os.CreateTemp("", "kind-config-*.yaml")
+	if err != nil {
+		return err
+	}
+	if _, err := f.WriteString(b.String()); err != nil {
+		f.Close()
+		return err
+	}
+	f.Close()
+	klog.Infof("Child kind config written to %s", f.Name())
+	return os.Setenv("KIND_CONFIG_FILE", f.Name())
+}
+
+// getVersion returns the component version to test against.
+// Precedence: E2E_VERSION env var > VERSION file.
+// Use E2E_VERSION when the file has been restored by `defer git checkout VERSION`
+// after a dev build (e.g. task push:dev sets the stamped version there).
 func getVersion() (string, error) {
+	if v := os.Getenv("E2E_VERSION"); v != "" {
+		return v, nil
+	}
 	versionPath := filepath.Join("..", "..", "VERSION")
 	data, err := os.ReadFile(versionPath)
 	if err != nil {

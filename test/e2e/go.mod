@@ -4,7 +4,7 @@ go 1.26.5
 
 require (
 	github.com/kubernetes-sigs/kro v0.9.3
-	github.com/openmcp-project/openmcp-testing v1.2.0
+	github.com/openmcp-project/openmcp-testing v1.2.1-0.20260817111905-8818e070fcc5
 	github.com/prometheus/client_golang v1.24.1
 	github.com/prometheus/common v0.70.1
 	helm.sh/helm/v3 v3.21.3
