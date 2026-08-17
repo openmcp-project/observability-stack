@@ -16,10 +16,6 @@ tasks:
       - task --list
     silent: true
 
-  hello:
-    dir: test/e2e
-    cmds:
-      - go test -v cmd/main_test.go
   # ── deps ──────────────────────────────────────────────────────────────────
 
   deps:python:
