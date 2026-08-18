@@ -106,7 +106,7 @@ jobs:
 
       - name: Push OCM component to registry
         run: |
-          python3 -u ./hack/push-component.py
+          python3 -u ./hack/push-component.py --copy-resources
         env:
           PYTHONUNBUFFERED: "1"
 
@@ -234,7 +234,7 @@ jobs:
       - name: Push OCM component to registry
         if: ${{ env.SKIP != 'true' }}
         run: |
-          python3 -u ./hack/push-component.py
+          python3 -u ./hack/push-component.py --copy-resources
         env:
           PYTHONUNBUFFERED: "1"
 

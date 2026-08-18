@@ -86,7 +86,7 @@ jobs:
 
       - name: Push OCM component to registry
         run: |
-          python3 -u ./hack/push-component.py
+          python3 -u ./hack/push-component.py --copy-local-resources
         env:
           PYTHONUNBUFFERED: "1"
 
