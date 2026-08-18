@@ -1,7 +1,7 @@
 {
   "$schema": "https://docs.renovatebot.com/renovate-schema.json",
   "extends": [
-    "config:recommended",
+    "github>openmcp-project/.github:renovate-config",
     ":dependencyDashboard"
   ],
   "labels": [
@@ -15,15 +15,29 @@
   "prHourlyLimit": 5,
   "separateMajorMinor": true,
   "separateMinorPatch": false,
-  "postUpdateOptions": [
-    "gomodTidy"
-  ],
   "vulnerabilityAlerts": {
     "enabled": true,
     "labels": [
       "security"
     ]
   },
+  "enabledManagers": [
+    "dockerfile",
+    "docker-compose",
+    "github-actions",
+    "gomod",
+    "kubernetes",
+    "kustomize",
+    "custom.regex"
+  ],
+  "ignorePaths": [
+    "**/node_modules/**",
+    "**/bower_components/**",
+    "**/vendor/**",
+    "**/examples/**",
+    "**/__tests__/**",
+    "**/__fixtures__/**"
+  ],
   "packageRules": [
     {
       "description": "Group all cert-manager updates together",
@@ -131,6 +145,7 @@
         "ghcr.io/open-component-model/kubernetes/controller/chart"
       ],
       "groupName": "ocm-k8s-toolkit",
+      "allowedVersions": "!/.*(dev|rc).*$/",
       "automerge": false
     }
   ],
@@ -359,22 +374,5 @@
       "extractVersionTemplate": "^v?(?<version>.*)$",
       "autoReplaceStringTemplate": "OCM_K8S_TOOLKIT_VERSION: \"{{{newValue}}}\""
     }
-  ],
-  "ignorePaths": [
-    "**/node_modules/**",
-    "**/bower_components/**",
-    "**/vendor/**",
-    "**/examples/**",
-    "**/__tests__/**",
-    "**/__fixtures__/**"
-  ],
-  "enabledManagers": [
-    "dockerfile",
-    "docker-compose",
-    "github-actions",
-    "gomod",
-    "kubernetes",
-    "kustomize",
-    "custom.regex"
   ]
 }
