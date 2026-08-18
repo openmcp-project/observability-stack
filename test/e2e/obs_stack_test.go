@@ -89,24 +89,20 @@ func TestObsStack(t *testing.T) {
 			deployer.SetName("resource-graph-definition")
 			deployer.SetNamespace(obsStackNamespace)
 
-			if err := wait.For(conditions.Match(repository, config, conditionTypeReady, corev1.ConditionTrue), wait.WithTimeout(2*time.Minute)); err != nil {
-				t.Errorf("Repository not ready: %v", err)
+			if err := waitFor(t, "Repository obs-stack-repository Ready", conditions.Match(repository, config, conditionTypeReady, corev1.ConditionTrue), wait.WithTimeout(2*time.Minute)); err != nil {
+				t.Errorf("%v", err)
 			}
 
-			if err := wait.For(conditions.Match(component, config, conditionTypeReady, corev1.ConditionTrue), wait.WithTimeout(2*time.Minute)); err != nil {
-				t.Errorf("Component not ready: %v", err)
+			if err := waitFor(t, "Component obs-stack-component Ready", conditions.Match(component, config, conditionTypeReady, corev1.ConditionTrue), wait.WithTimeout(2*time.Minute)); err != nil {
+				t.Errorf("%v", err)
 			}
 
-			if err := wait.For(conditions.Match(resource, config, conditionTypeReady, corev1.ConditionTrue), wait.WithTimeout(2*time.Minute)); err != nil {
-				t.Errorf("Resource not ready: %v", err)
+			if err := waitFor(t, "Resource resource-graph-definition Ready", conditions.Match(resource, config, conditionTypeReady, corev1.ConditionTrue), wait.WithTimeout(2*time.Minute)); err != nil {
+				t.Errorf("%v", err)
 			}
 
-			if err := wait.For(conditions.Match(repository, config, conditionTypeReady, corev1.ConditionTrue), wait.WithTimeout(2*time.Minute)); err != nil {
-				t.Errorf("Repository not ready: %v", err)
-			}
-
-			if err := wait.For(conditions.Match(deployer, config, conditionTypeReady, corev1.ConditionTrue), wait.WithTimeout(2*time.Minute)); err != nil {
-				t.Errorf("Deployer not ready: %v", err)
+			if err := waitFor(t, "Deployer resource-graph-definition Ready", conditions.Match(deployer, config, conditionTypeReady, corev1.ConditionTrue), wait.WithTimeout(2*time.Minute)); err != nil {
+				t.Errorf("%v", err)
 			}
 
 			return ctx
@@ -115,8 +111,8 @@ func TestObsStack(t *testing.T) {
 			rgd := &krov1alpha1.ResourceGraphDefinition{}
 			rgd.SetName("obs-stack")
 
-			if err := wait.For(conditions.Match(rgd, config, conditionTypeReady, corev1.ConditionTrue), wait.WithTimeout(2*time.Minute)); err != nil {
-				t.Errorf("ResourceGraphDefinition not ready: %v", err)
+			if err := waitFor(t, "ResourceGraphDefinition obs-stack Ready", conditions.Match(rgd, config, conditionTypeReady, corev1.ConditionTrue), wait.WithTimeout(2*time.Minute)); err != nil {
+				t.Errorf("%v", err)
 			}
 
 			return ctx
@@ -140,7 +136,7 @@ func TestObsStack(t *testing.T) {
 			obsStack.SetName("stack")
 			obsStack.SetNamespace(obsStackNamespace)
 
-			if err := wait.For(func(context.Context) (done bool, err error) {
+			if err := waitFor(t, "ObservabilityStack stack ready", func(context.Context) (done bool, err error) {
 				if getErr := config.Client().Resources().Get(ctx, obsStack.GetName(), obsStack.GetNamespace(), obsStack); getErr != nil {
 					return false, err
 				}
@@ -155,7 +151,7 @@ func TestObsStack(t *testing.T) {
 
 				return ready, nil
 			}, wait.WithTimeout(20*time.Minute)); err != nil {
-				t.Errorf("ObservabilityStack not ready: %v", err)
+				t.Errorf("%v", err)
 			}
 
 			return ctx
@@ -220,7 +216,7 @@ func TestObsStack(t *testing.T) {
 			}
 
 			// wait for all AccessRequests to be granted
-			if err := wait.For(func(ctx context.Context) (done bool, err error) {
+			if err := waitFor(t, "AccessRequests granted", func(ctx context.Context) (done bool, err error) {
 				for _, ar := range ars {
 					if getErr := config.Client().Resources().Get(ctx, ar.GetName(), ar.GetNamespace(), ar); getErr != nil {
 						return false, getErr
@@ -232,7 +228,7 @@ func TestObsStack(t *testing.T) {
 				}
 				return true, nil
 			}, wait.WithTimeout(1*time.Minute)); err != nil {
-				t.Errorf("not all AccessRequests were granted: %v", err)
+				t.Errorf("%v", err)
 			}
 
 			// access each workload cluster, inject the routing information into the coredns config and kill all coredns pods to restart them with the new configuration
