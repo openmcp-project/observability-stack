@@ -6,8 +6,10 @@ This script transfers the built OCM component to the target registry.
 """
 
 import os
+import shutil
 import subprocess
 import sys
+import tempfile
 from pathlib import Path
 
 # Import common functions
@@ -39,13 +41,18 @@ def push_component(repo_root: Path, components_location: str) -> None:
     repository_context = os.environ.get("REPOSITORY_CONTEXT", "")
     print(f"Pushing component to {repository_context or components_location}...")
 
-    run_command([
-        "ocm", "transfer", "ctf",
-        "--copy-local-resources",
-        "--no-update",
-        str(ctf_dir),
-        components_location
-    ])
+    # ocm transfer ctf consumes (deletes) the source CTF directory.
+    # We copy it first so the original survives for the GH Actions cache save.
+    with tempfile.TemporaryDirectory() as tmp:
+        ctf_copy = Path(tmp) / "ctf"
+        shutil.copytree(ctf_dir, ctf_copy)
+        run_command([
+            "ocm", "transfer", "ctf",
+            "--copy-local-resources",
+            "--no-update",
+            str(ctf_copy),
+            components_location
+        ])
 
 
 def main():
