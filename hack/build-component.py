@@ -20,7 +20,6 @@ from common import (
     detect_repo_root,
     load_component_settings,
     read_version_file,
-    read_version_from_ctf,
     merge_rgd_files,
     build_ocm_vars,
     run_command,
@@ -139,30 +138,20 @@ def build_ocm_component(
     """
     Build the OCM component.
 
-    Skips the expensive upstream image pulls when a CTF directory already
-    exists and the environment variable CTF_CACHE_HIT=true is set (written
-    by the GH Actions cache step). The cached CTF keeps its original version
-    tag; callers should read that back via read_version_from_ctf().
+    Args:
+        repo_root: Path to the repository root
+        constructor_file: Path to the component constructor file
+        settings_file: Path to the settings file
+        version: Version string for the component
     """
     print("Building OCM component...")
 
     ctf_dir = repo_root / "ctf"
 
-    if os.environ.get("CTF_CACHE_HIT") == "true" and ctf_dir.exists():
-        cached_version = read_version_from_ctf(ctf_dir)
-        print(
-            f"CTF cache hit — skipping upstream image pulls. "
-            f"Cached version: {cached_version or '(unknown)'}"
-        )
-        return
-
-    # Remove stale CTF directory/file before rebuilding
-    if ctf_dir.exists() or ctf_dir.is_symlink():
+    # Remove existing CTF directory
+    if ctf_dir.exists():
         print(f"Removing existing CTF directory: {ctf_dir}")
-        if ctf_dir.is_dir() and not ctf_dir.is_symlink():
-            shutil.rmtree(ctf_dir)
-        else:
-            ctf_dir.unlink()
+        shutil.rmtree(ctf_dir)
 
     # Build variable arguments for OCM command
     kustomizations_prefix = os.environ.get("KUSTOMIZATIONS_LOCATION_PREFIX", "")
@@ -237,17 +226,6 @@ def main():
 
         # Cleanup tmp folder
         cleanup_tmp_dir(repo_root)
-
-        # Report the effective version (may differ from VERSION file on cache hit)
-        ctf_dir = repo_root / "ctf"
-        effective_version = read_version_from_ctf(ctf_dir) or version
-        if effective_version != version:
-            print(f"Effective version (from cached CTF): {effective_version}")
-        # Write to GITHUB_OUTPUT if running in GH Actions
-        github_output = os.environ.get("GITHUB_OUTPUT")
-        if github_output:
-            with open(github_output, "a") as f:
-                f.write(f"effective_version={effective_version}\n")
 
         print("Build completed successfully!")
 

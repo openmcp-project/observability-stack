@@ -98,20 +98,11 @@ jobs:
           username: ${{ github.repository_owner }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Restore CTF cache
-        id: ctf-cache
-        uses: actions/cache@5a3ec84eff668545956fd18022155c47e93e2684 # v4
-        with:
-          path: ctf
-          key: ctf-${{ hashFiles('component-settings.yaml', 'component-constructor.yaml', 'resource-graph-definitions/**', 'charts/**') }}
-
       - name: Build OCM component
-        id: build
         run: |
           python3 -u ./hack/build-component.py
         env:
           PYTHONUNBUFFERED: "1"
-          CTF_CACHE_HIT: ${{ steps.ctf-cache.outputs.cache-hit }}
 
       - name: Push OCM component to registry
         run: |
@@ -137,7 +128,7 @@ jobs:
         env:
           GITHUB_USERNAME: ${{ github.repository_owner }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          E2E_VERSION: ${{ steps.build.outputs.effective_version || steps.dev-version.outputs.dev_version }}
+          E2E_VERSION: ${{ steps.dev-version.outputs.dev_version }}
 
   release_tag:
     name: Release version
