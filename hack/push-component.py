@@ -41,7 +41,7 @@ def push_component(repo_root: Path, components_location: str) -> None:
 
     run_command([
         "ocm", "transfer", "ctf",
-        "--copy-resources",
+        "--copy-local-resources",
         "--no-update",
         str(ctf_dir),
         components_location
