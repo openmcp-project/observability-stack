@@ -18,7 +18,7 @@ spec:
         - list
         - watch
 ---
-apiVersion: metrics.openmcp.cloud/v1alpha1
+apiVersion: metrics.open-control-plane.io/v1alpha1
 kind: FederatedClusterAccess
 metadata:
   name: onboarding-cluster
