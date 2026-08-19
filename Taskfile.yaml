@@ -1,0 +1,182 @@
+version: "3"
+
+vars:
+  VERSION:
+    sh: cat VERSION
+  SHORT_SHA:
+    sh: git rev-parse --short HEAD
+  BASE_VERSION:
+    sh: cat VERSION | sed 's/-dev.*//'
+  DEV_VERSION: "{{.BASE_VERSION}}-dev-{{.SHORT_SHA}}"
+
+tasks:
+  default:
+    desc: List all tasks
+    cmds:
+      - task --list
+    silent: true
+
+  # ── deps ──────────────────────────────────────────────────────────────────
+
+  deps:python:
+    desc: Install Python dependencies
+    cmds:
+      - pip install -r hack/requirements.txt
+
+  deps:go:
+    desc: Download Go test dependencies
+    dir: test/e2e
+    cmds:
+      - go mod download
+
+  deps:
+    desc: Install all dependencies
+    deps: [deps:python, deps:go]
+
+  # ── build ─────────────────────────────────────────────────────────────────
+
+  build:component:
+    desc: Build OCM component
+    deps: [deps:python]
+    cmds:
+      - python3 -u ./hack/build-component.py
+    env:
+      PYTHONUNBUFFERED: "1"
+
+  build:
+    desc: Build OCM component (uses current VERSION file)
+    deps: [build:component]
+
+  build:dev:
+    desc: Build OCM component with a dev version (<version>-dev-<sha>)
+    cmds:
+      - echo "{{.DEV_VERSION}}" > VERSION
+      - defer: git checkout VERSION 2>&1 > /dev/null || true
+      - task: build:component
+
+  # ── push ──────────────────────────────────────────────────────────────────
+
+  push:
+    desc: Push OCM component to registry (uses current VERSION file)
+    deps: [push:component]
+
+  push:component:
+    desc: Push OCM component to registry
+    deps: [deps:python]
+    cmds:
+      - python3 -u ./hack/push-component.py
+    env:
+      PYTHONUNBUFFERED: "1"
+
+  push:dev:
+    desc: Build and push dev version of OCM component
+    cmds:
+      - echo "{{.DEV_VERSION}}" > VERSION
+      - defer: git checkout VERSION 2>&1 > /dev/null || true
+      - task: build:component
+      - task: push:component
+    env:
+      PYTHONUNBUFFERED: "1"
+
+  # ── test ──────────────────────────────────────────────────────────────────
+
+  test-e2e:
+    desc: Build+push dev component and run E2E tests
+    vars:
+      BASE_VERSION:
+        sh: cat VERSION | sed 's/-dev.*//'
+      DEV_VERSION: "{{.BASE_VERSION}}-dev-{{.SHORT_SHA}}"
+    env:
+      GITHUB_USERNAME:
+        sh: gh api user --jq .login
+      GITHUB_TOKEN:
+        sh: gh auth token
+      PYTHONUNBUFFERED: "1"
+      E2E_VERSION: "{{.DEV_VERSION}}"
+    cmds:
+      - echo "{{.DEV_VERSION}}" > VERSION
+      - defer: git checkout VERSION
+      - python3 -u ./hack/build-component.py
+      - python3 -u ./hack/push-component.py
+      - cd test/e2e && go test -v -timeout 45m ./...
+
+  # ── release ───────────────────────────────────────────────────────────────
+
+  release:set-charts-versions:
+    desc: Set Helm chart versions to match VERSION file
+    deps: [deps:python]
+    cmds:
+      - python3 -u ./hack/set-charts-versions.py
+    env:
+      PYTHONUNBUFFERED: "1"
+
+  release:validate-version:
+    desc: Validate VERSION file format (vX.Y.Z or vX.Y.Z-dev)
+    cmds:
+      - |
+        VERSION=$(cat VERSION)
+        if [[ ! "$VERSION" =~ ^v?[0-9]+\.[0-9]+\.[0-9]+(-dev(-[0-9a-f]*)?)?$ ]]; then
+          echo "❌ Invalid version format: $VERSION"
+          exit 1
+        fi
+        echo "✅ Version OK: $VERSION"
+
+  release:bump-dev:
+    desc: Bump VERSION to <current>-dev after a release
+    cmds:
+      - |
+        VERSION=$(cat VERSION | sed 's/-dev.*//')
+        echo "${VERSION}-dev" > VERSION
+        echo "Bumped VERSION to ${VERSION}-dev"
+
+  release:tag:
+    desc: Create and push a git tag for current VERSION
+    deps: [release:validate-version]
+    cmds:
+      - |
+        VERSION=$(cat VERSION)
+        git tag -a "$VERSION" -m "Release $VERSION"
+        git push origin "$VERSION"
+        echo "✅ Tagged and pushed $VERSION"
+
+  # ── prometheus-operator ───────────────────────────────────────────────────
+
+  update:prometheus-operator-bundle:
+    desc: Download prometheus-operator bundle.yaml for VERSION from component-settings.yaml
+    vars:
+      PROM_VERSION:
+        sh: grep 'PROMETHEUS_OPERATOR_IMAGE_VERSION:' component-settings.yaml | sed 's/.*"\(v[0-9.]*\)".*/\1/'
+    cmds:
+      - |
+        VERSION="{{.PROM_VERSION}}"
+        VERSION_NUMBER="${VERSION#v}"
+        echo "Downloading bundle.yaml for $VERSION"
+        curl -fsSL \
+          "https://raw.githubusercontent.com/prometheus-operator/prometheus-operator/${VERSION}/bundle.yaml" \
+          -o /tmp/bundle.yaml
+        if ! grep -q "operator.prometheus.io/version: ${VERSION_NUMBER}" /tmp/bundle.yaml; then
+          echo "❌ Downloaded bundle.yaml does not contain expected version ${VERSION_NUMBER}"
+          exit 1
+        fi
+        cat > kustomizations/prometheus-operator/operator.yaml <<'HEADER'
+        # Source: https://github.com/prometheus-operator/prometheus-operator/blob/main/bundle.yaml
+        # This file is tracked by Renovate for automatic updates
+        # renovate: datasource=github-releases depName=prometheus-operator/prometheus-operator
+        HEADER
+        cat /tmp/bundle.yaml >> kustomizations/prometheus-operator/operator.yaml
+        echo "✅ Updated kustomizations/prometheus-operator/operator.yaml to $VERSION"
+
+  # ── lint / compliance ─────────────────────────────────────────────────────
+
+  lint:reuse:
+    desc: Check REUSE license compliance
+    cmds:
+      - reuse lint
+
+  # ── version ───────────────────────────────────────────────────────────────
+
+  version:
+    desc: Print current version
+    cmds:
+      - echo "{{.VERSION}}"
+    silent: true

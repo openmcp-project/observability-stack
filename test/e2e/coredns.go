@@ -117,7 +117,7 @@ func injectGatewayRoute(ctx context.Context, t *testing.T, hostname string, gate
 	}
 
 	// wait for the coredns pods to be ready again
-	if err := wait.For(func(ctx context.Context) (done bool, err error) {
+	if err := waitFor(t, "CoreDNS pods Ready after configmap update", func(ctx context.Context) (done bool, err error) {
 		podList := &corev1.PodList{}
 		if err := access.Client().List(ctx, podList, client.InNamespace("kube-system"), client.MatchingLabels{"k8s-app": "kube-dns"}); err != nil {
 			return false, fmt.Errorf("failed to list coredns pods: %v", err)
@@ -134,6 +134,6 @@ func injectGatewayRoute(ctx context.Context, t *testing.T, hostname string, gate
 		}
 		return true, nil
 	}, wait.WithTimeout(2*time.Minute)); err != nil {
-		t.Fatalf("coredns pods did not become ready after configmap update: %v", err)
+		t.Fatalf("%v", err)
 	}
 }

@@ -29,7 +29,11 @@ func assertWorkloadLogsAvailable(ctx context.Context, t *testing.T, localPort in
 
 func assertLogsAvailable_helper(ctx context.Context, t *testing.T, localPort int, workload bool) {
 	t.Helper()
-	if err := wait.For(func(ctx context.Context) (bool, error) {
+	label := "logs in Victoria Logs (platform)"
+	if workload {
+		label = "workload cluster logs in Victoria Logs"
+	}
+	if err := waitFor(t, label, func(ctx context.Context) (bool, error) {
 		var url string
 		if workload {
 			url = fmt.Sprintf("http://localhost:%d/select/logsql/query?query=%s&limit=1&start=now-30m", localPort, urls.QueryEscape(`_stream:{k8s_cluster="openmcp-system/workload"}`))
@@ -58,6 +62,6 @@ func assertLogsAvailable_helper(ctx context.Context, t *testing.T, localPort int
 
 		return len(bytes.TrimSpace(body)) > 0, nil
 	}, wait.WithTimeout(10*time.Minute), wait.WithContext(ctx)); err != nil {
-		t.Errorf("no logs found in Victoria Logs after timeout: %v", err)
+		t.Errorf("%v", err)
 	}
 }

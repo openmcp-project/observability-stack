@@ -135,6 +135,7 @@ def read_version_file(repo_root: Path) -> str:
     return version
 
 
+
 def merge_rgd_files(repo_root: Path) -> Path:
     """
     Merge all YAML files from resource-graph-definitions directory.
@@ -212,7 +213,8 @@ def run_command(
     cmd: list,
     cwd: Optional[Path] = None,
     check: bool = True,
-    capture_output: bool = False
+    capture_output: bool = False,
+    env: Optional[dict] = None
 ) -> subprocess.CompletedProcess:
     """
     Run a shell command with real-time output streaming.
@@ -240,7 +242,8 @@ def run_command(
                 cwd=cwd,
                 check=check,
                 text=True,
-                capture_output=True
+                capture_output=True,
+                env=env
             )
 
             if result.stdout:
@@ -257,7 +260,8 @@ def run_command(
                 check=check,
                 text=True,
                 stdout=None,  # Inherit parent's stdout for streaming
-                stderr=None   # Inherit parent's stderr for streaming
+                stderr=None,  # Inherit parent's stderr for streaming
+                env=env
             )
 
             return result
