@@ -4,7 +4,7 @@ go 1.26.6
 
 require (
 	github.com/kubernetes-sigs/kro v0.9.3
-	github.com/openmcp-project/openmcp-testing v1.2.0
+	github.com/openmcp-project/openmcp-testing v1.3.0
 	github.com/prometheus/client_golang v1.24.1
 	github.com/prometheus/common v0.70.1
 	helm.sh/helm/v3 v3.21.3
@@ -51,15 +51,15 @@ require (
 	github.com/evanphx/json-patch/v5 v5.9.11 // indirect
 	github.com/exponent-io/jsonpath v0.0.0-20210407135951-1de76d718b3f // indirect
 	github.com/fatih/color v1.19.0 // indirect
-	github.com/fluxcd/flux2/v2 v2.9.2 // indirect
-	github.com/fluxcd/helm-controller/api v1.6.2 // indirect
-	github.com/fluxcd/kustomize-controller/api v1.9.3 // indirect
+	github.com/fluxcd/flux2/v2 v2.9.4 // indirect
+	github.com/fluxcd/helm-controller/api v1.6.3 // indirect
+	github.com/fluxcd/kustomize-controller/api v1.9.4 // indirect
 	github.com/fluxcd/pkg/apis/acl v0.10.0 // indirect
 	github.com/fluxcd/pkg/apis/kustomize v1.20.0 // indirect
 	github.com/fluxcd/pkg/apis/meta v1.30.1 // indirect
-	github.com/fluxcd/pkg/kustomize v1.35.3 // indirect
+	github.com/fluxcd/pkg/kustomize v1.35.4 // indirect
 	github.com/fluxcd/pkg/tar v1.2.0 // indirect
-	github.com/fluxcd/source-controller/api v1.9.3 // indirect
+	github.com/fluxcd/source-controller/api v1.9.4 // indirect
 	github.com/fxamacker/cbor/v2 v2.9.2 // indirect
 	github.com/go-errors/errors v1.5.1 // indirect
 	github.com/go-gorp/gorp/v3 v3.1.0 // indirect
