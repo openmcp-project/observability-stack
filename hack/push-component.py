@@ -46,7 +46,7 @@ def push_component(repo_root: Path, components_location: str, copy_resources: bo
     run_command([
         "ocm", "transfer", "ctf",
         resource_flag,
-        "--no-update",
+        "--overwrite",
         str(ctf_dir),
         components_location
     ])
