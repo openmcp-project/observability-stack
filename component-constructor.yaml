@@ -29,42 +29,37 @@ components:
       - name: cert-manager-controller-image
         version: ${CERT_MANAGER_VERSION}
         type: ociImage
-        input:
+        access:
           type: ociImage
-          path: "quay.io/jetstack/cert-manager-controller:${CERT_MANAGER_VERSION}"
-          repository: images/cert-manager-controller
+          imageReference: "quay.io/jetstack/cert-manager-controller:${CERT_MANAGER_VERSION}"
 
       - name: cert-manager-webhook-image
         version: ${CERT_MANAGER_VERSION}
         type: ociImage
-        input:
+        access:
           type: ociImage
-          path: "quay.io/jetstack/cert-manager-webhook:${CERT_MANAGER_VERSION}"
-          repository: images/cert-manager-webhook
+          imageReference: "quay.io/jetstack/cert-manager-webhook:${CERT_MANAGER_VERSION}"
 
       - name: cert-manager-cainjector-image
         version: ${CERT_MANAGER_VERSION}
         type: ociImage
-        input:
+        access:
           type: ociImage
-          path: "quay.io/jetstack/cert-manager-cainjector:${CERT_MANAGER_VERSION}"
-          repository: images/cert-manager-cainjector
+          imageReference: "quay.io/jetstack/cert-manager-cainjector:${CERT_MANAGER_VERSION}"
 
       - name: cert-manager-acmesolver-image
         version: ${CERT_MANAGER_VERSION}
         type: ociImage
-        input:
+        access:
           type: ociImage
-          path: "quay.io/jetstack/cert-manager-acmesolver:${CERT_MANAGER_VERSION}"
-          repository: images/cert-manager-acmesolver
+          imageReference: "quay.io/jetstack/cert-manager-acmesolver:${CERT_MANAGER_VERSION}"
 
       - name: cert-manager-startupapicheck-image
         version: ${CERT_MANAGER_VERSION}
         type: ociImage
-        input:
+        access:
           type: ociImage
-          path: "quay.io/jetstack/cert-manager-startupapicheck:${CERT_MANAGER_VERSION}"
-          repository: images/cert-manager-startupapicheck
+          imageReference: "quay.io/jetstack/cert-manager-startupapicheck:${CERT_MANAGER_VERSION}"
 
       # open telemetry operator
       - name: open-telemetry-operator-chart
@@ -78,10 +73,9 @@ components:
       - name: open-telemetry-operator-image
         version: ${OPEN_TELEMETRY_OPERATOR_IMAGE_VERSION}
         type: ociImage
-        input:
+        access:
           type: ociImage
-          path: "ghcr.io/open-telemetry/opentelemetry-operator/opentelemetry-operator:${OPEN_TELEMETRY_OPERATOR_IMAGE_VERSION}"
-          repository: images/opentelemetry-operator
+          imageReference: "ghcr.io/open-telemetry/opentelemetry-operator/opentelemetry-operator:${OPEN_TELEMETRY_OPERATOR_IMAGE_VERSION}"
 
       # open telemetry collector
       - name: open-telemetry-collector-kustomization
@@ -94,10 +88,9 @@ components:
       - name: open-telemetry-collector-image
         version: ${OPEN_TELEMETRY_COLLECTOR_IMAGE_VERSION}
         type: ociImage
-        input:
+        access:
           type: ociImage
-          path: "docker.io/otel/opentelemetry-collector-contrib:${OPEN_TELEMETRY_COLLECTOR_IMAGE_VERSION#v}"
-          repository: images/opentelemetry-collector
+          imageReference: "docker.io/otel/opentelemetry-collector-contrib:${OPEN_TELEMETRY_COLLECTOR_IMAGE_VERSION#v}"
 
       # open telemetry collector resource chart
       - name: open-telemetry-collector-resource-chart
@@ -119,18 +112,16 @@ components:
       - name: prometheus-operator-image
         version: ${PROMETHEUS_OPERATOR_IMAGE_VERSION}
         type: ociImage
-        input:
+        access:
           type: ociImage
-          path: "quay.io/prometheus-operator/prometheus-operator:${PROMETHEUS_OPERATOR_IMAGE_VERSION}"
-          repository: images/prometheus-operator
+          imageReference: "quay.io/prometheus-operator/prometheus-operator:${PROMETHEUS_OPERATOR_IMAGE_VERSION}"
 
       - name: prometheus-operator-config-reloader-image
         version: ${PROMETHEUS_OPERATOR_CONFIG_RELOADER_IMAGE_VERSION}
         type: ociImage
-        input:
+        access:
           type: ociImage
-          path: "quay.io/prometheus-operator/prometheus-config-reloader:${PROMETHEUS_OPERATOR_CONFIG_RELOADER_IMAGE_VERSION}"
-          repository: images/prometheus-config-reloader
+          imageReference: "quay.io/prometheus-operator/prometheus-config-reloader:${PROMETHEUS_OPERATOR_CONFIG_RELOADER_IMAGE_VERSION}"
 
       # prometheus
       - name: prometheus-kustomization
@@ -143,18 +134,16 @@ components:
       - name: prometheus-image
         version: ${PROMETHEUS_OPERATOR_IMAGE_VERSION}
         type: ociImage
-        input:
+        access:
           type: ociImage
-          path: "quay.io/prometheus/prometheus:${PROMETHEUS_IMAGE_VERSION}"
-          repository: images/prometheus
+          imageReference: "quay.io/prometheus/prometheus:${PROMETHEUS_IMAGE_VERSION}"
 
       - name: alertmanager-image
         version: ${ALERTMANAGER_IMAGE_VERSION}
         type: ociImage
-        input:
+        access:
           type: ociImage
-          path: "quay.io/prometheus/alertmanager:${ALERTMANAGER_IMAGE_VERSION}"
-          repository: images/alertmanager
+          imageReference: "quay.io/prometheus/alertmanager:${ALERTMANAGER_IMAGE_VERSION}"
 
       # metrics
       - name: metrics-kustomization
@@ -183,10 +172,9 @@ components:
       - name: victoria-logs-image
         version: ${VICTORIA_LOGS_IMAGE_VERSION}
         type: ociImage
-        input:
+        access:
           type: ociImage
-          path: "docker.io/victoriametrics/victoria-logs:${VICTORIA_LOGS_IMAGE_VERSION}"
-          repository: images/victoria-logs
+          imageReference: "docker.io/victoriametrics/victoria-logs:${VICTORIA_LOGS_IMAGE_VERSION}"
 
       # perses
       - name: perses-kustomization

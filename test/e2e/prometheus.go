@@ -75,7 +75,7 @@ func portForwardToPod(t *testing.T, namespace, podName string, remotePort int) (
 	}
 
 	// Wait until the application is actually accepting connections on the forwarded port.
-	if err := wait.For(func(context.Context) (bool, error) {
+	if err := waitFor(t, fmt.Sprintf("port-forward %s/%s:%d accepting connections", namespace, podName, remotePort), func(context.Context) (bool, error) {
 		conn, dialErr := net.DialTimeout("tcp", fmt.Sprintf("127.0.0.1:%d", localPort), time.Second)
 		if dialErr != nil {
 			return false, nil
@@ -107,7 +107,7 @@ func assertMetricsAvailable(ctx context.Context, t *testing.T, promAPI prometheu
 	t.Helper()
 	for _, metricName := range metrics {
 		name := metricName
-		if err := wait.For(func(ctx context.Context) (bool, error) {
+		if err := waitFor(t, fmt.Sprintf("metric %q in Prometheus", name), func(ctx context.Context) (bool, error) {
 			result, _, err := promAPI.Query(ctx, name, time.Now())
 			if err != nil {
 				return false, nil // treat as not-ready, will retry

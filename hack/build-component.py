@@ -164,21 +164,23 @@ def build_ocm_component(
 
     ocm_vars = build_ocm_vars(settings_file, base_vars)
 
-    # Build OCM command arguments
-    var_args = [f"{key}={value}" for key, value in ocm_vars.items()]
+    print(f"Building component with variables: {' '.join(f'{k}={v}' for k, v in ocm_vars.items())}")
 
-    print(f"Building component with variables: {' '.join(var_args)}")
+    env = {**os.environ, **ocm_vars}
 
-    # Execute OCM command
+    components_location = os.environ.get("COMPONENTS_LOCATION", "")
+
+    # Execute OCM command (ocm v0.48+ syntax)
     cmd = [
-        "ocm", "add", "componentversion",
+        "ocm", "add", "componentversions",
         "--create",
         "--file", str(ctf_dir),
+        "--addenv",
+        "--lookup", components_location,
         str(constructor_file),
-        "--"
-    ] + var_args
+    ]
 
-    run_command(cmd)
+    run_command(cmd, env=env)
 
 
 def cleanup_tmp_dir(repo_root: Path) -> None:
