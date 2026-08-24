@@ -205,6 +205,7 @@ spec:
     namespace: open-telemetry-operator-system
   openTelemetryCollector:
     namespace: open-telemetry-collector-system
+    clusterName: platform
   prometheusOperator:
     namespace: prometheus-operator-system
   prometheus:
@@ -406,7 +407,95 @@ kubectl get prometheus.monitoring.coreos.com prometheus -n prometheus-system -o 
 
 The Prometheus dashboard also shows the connected Alertmanager count under **Status → Runtime & Build Info**.
 
-#### 9. Log Collection and Cross-Cluster Ingestion
+#### 9. Perses Dashboards
+
+[Perses](https://perses.dev) is an optional dashboarding component that provides a Kubernetes-native dashboard UI on top of Prometheus and Victoria Logs. It is disabled by default.
+
+**Enable Perses:**
+
+```bash
+kubectl patch observabilitystack stack -n obs-stack \
+  --type=merge -p '{"spec":{"perses":{"enabled":true}}}'
+```
+
+Or add `perses.enabled: true` to your `ObservabilityStack` spec:
+
+```yaml
+spec:
+  # ... other fields ...
+  perses:
+    enabled: true
+```
+
+Wait for the stack to become ready:
+
+```bash
+kubectl wait observabilitystack stack -n obs-stack \
+  --for=jsonpath='{.status.ready}'=true \
+  --timeout=300s
+```
+
+**Access the UI:**
+
+Perses is exposed through the Observability Gateway. Get the hostname:
+
+```bash
+kubectl get httproute perses -n perses-system -o jsonpath='{.spec.hostnames[0]}'
+```
+
+The URL follows the pattern:
+
+```
+https://dashboards.<gateway-namespace>.<base-domain>:<port>
+```
+
+For local development via port-forward:
+
+```bash
+kubectl port-forward -n perses-system svc/perses 8080:8080
+```
+
+Then open: `http://localhost:8080`
+
+**Pre-provisioned resources:**
+
+The following are provisioned automatically at startup:
+
+| Resource | Name | Details |
+| --- | --- | --- |
+| `GlobalDatasource` | `prometheus` | Default datasource, proxied to `prometheus-operated.prometheus-system.svc:9090` |
+| `GlobalDatasource` | `victoria-logs` | Proxied to `victoria-logs.victoria-logs-system.svc:9428` |
+
+**Configuration options** (all have defaults, only override what you need):
+
+```yaml
+spec:
+  forProvider:
+    namespace: perses-system           # target namespace
+    prometheusRef:
+      namespace: prometheus-system
+      serviceName: prometheus-operated
+      port: 9090
+    victoriaLogsRef:
+      namespace: victoria-logs-system
+      serviceName: victoria-logs
+      port: 9428
+    resources:
+      requests:
+        memory: "128Mi"
+        cpu: "50m"
+      limits:
+        memory: "512Mi"
+        cpu: "500m"
+```
+
+An sample dashboard is included in the [`kustomizations/perses/provisioning/sample-dashboard.yaml`](kustomizations/perses/provisioning/sample-dashboard.yaml) file. You can apply it to the Perses instance:
+
+```bash
+kubectl apply -f kustomizations/perses/provisioning/sample-dashboard.yaml -n perses-system
+```
+
+#### 10. Log Collection and Cross-Cluster Ingestion
 
 Pod logs (stdout/stderr from all containers on every node) are automatically collected by an OpenTelemetry Collector DaemonSet running in `open-telemetry-collector-system`. It reads from `/var/log/pods` on each node and ships logs to Victoria Logs via OTLP HTTP.
 
