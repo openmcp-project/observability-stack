@@ -78,7 +78,7 @@ jobs:
         uses: open-component-model/ocm-setup-action@5755dc5c01c939f7dbba3bb07f9fb9b019a7a2a0 # main
 
       - name: Setup Flux CLI
-        uses: fluxcd/flux2/action@da2d22d3690191a315822612085f424e4133b06a # main
+        uses: fluxcd/flux2/action@dede56a8fdcd1e0edca28630a979a51415bb56f8 # main
 
       - name: Setup Python
         uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7
@@ -183,7 +183,7 @@ jobs:
         uses: open-component-model/ocm-setup-action@5755dc5c01c939f7dbba3bb07f9fb9b019a7a2a0 # main
 
       - name: Setup Flux CLI
-        uses: fluxcd/flux2/action@da2d22d3690191a315822612085f424e4133b06a # main
+        uses: fluxcd/flux2/action@dede56a8fdcd1e0edca28630a979a51415bb56f8 # main
 
       - name: Setup Python
         uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7
@@ -375,7 +375,7 @@ jobs:
 
       - name: Create GitHub release
         if: ${{ env.SKIP != 'true' }}
-        uses: softprops/action-gh-release@3d0d9888cb7fd7b750713d6e236d1fcb99157228 # v3
+        uses: softprops/action-gh-release@efb35369e0ad2afab669f228072c1b0d510eae64 # v3
         with:
           tag_name: ${{ env.version }}
           name: Release ${{ env.version }}
