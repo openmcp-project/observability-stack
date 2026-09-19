@@ -5,7 +5,7 @@ go 1.27.1
 require (
 	github.com/kubernetes-sigs/kro v0.9.3
 	github.com/openmcp-project/controller-utils v0.33.0
-	github.com/openmcp-project/opencontrolplane-runtime v1.3.1
+	github.com/openmcp-project/opencontrolplane-runtime v1.4.0
 	github.com/openmcp-project/openmcp-operator/api v1.4.0
 	github.com/openmcp-project/openmcp-testing v1.4.0
 	github.com/prometheus/client_golang v1.24.1
@@ -16,7 +16,7 @@ require (
 	k8s.io/client-go v0.37.0
 	k8s.io/klog/v2 v2.140.0
 	ocm.software/open-component-model/kubernetes/controller v0.15.0
-	sigs.k8s.io/controller-runtime v0.25.0
+	sigs.k8s.io/controller-runtime v0.25.1
 	sigs.k8s.io/e2e-framework v0.7.0
 	sigs.k8s.io/gateway-api v1.6.2
 	sigs.k8s.io/yaml v1.6.0
