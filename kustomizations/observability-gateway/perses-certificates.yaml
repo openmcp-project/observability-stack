@@ -1,0 +1,10 @@
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: perses-gateway-cert
+spec:
+  secretName: perses-cert
+  issuerRef:
+    name: gateway-selfsigned-issuer
+    kind: Issuer
+  dnsNames: []
