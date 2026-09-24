@@ -6,4 +6,5 @@ resources:
   - prometheus-certificates.yaml
   - victoria-logs-certificates.yaml
   - otlp-logs-certificates.yaml
+  - perses-certificates.yaml
   - client-certificates.yaml
