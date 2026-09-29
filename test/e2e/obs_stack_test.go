@@ -141,6 +141,11 @@ func TestObsStack(t *testing.T) {
 					return false, err
 				}
 
+				// Log status for diagnosis
+				if status, found, _ := unstructured.NestedMap(obsStack.Object, "status"); found {
+					t.Logf("ObservabilityStack status: %v", status)
+				}
+
 				ready, hasReady, err := unstructured.NestedBool(obsStack.Object, "status", "ready")
 				if err != nil {
 					return false, err
