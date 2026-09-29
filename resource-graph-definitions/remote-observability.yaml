@@ -487,6 +487,26 @@ spec:
           name: otlp-logs-cert
           namespace: ${schema.spec.gateway.namespace}
 
+    - id: clientCertSecretCopy
+      template:
+        apiVersion: v1
+        kind: Secret
+        metadata:
+          name: observability-client-cert
+          namespace: ${remoteObsNamespace.metadata.name}
+        type: Opaque
+        data: ${observabilityClientCertSecret.data}
+
+    - id: caCertSecretCopy
+      template:
+        apiVersion: v1
+        kind: Secret
+        metadata:
+          name: observability-ca-cert
+          namespace: ${remoteObsNamespace.metadata.name}
+        type: Opaque
+        data: ${otlpLogsCertSecret.data}
+
     - id: observabilityGateway
       externalRef:
         apiVersion: gateway.networking.k8s.io/v1
@@ -559,10 +579,10 @@ spec:
             additionalVolumes:
               - name: observability-client-cert
                 secret:
-                  secretName: ${observabilityClientCertSecret.metadata.name}
+                  secretName: ${clientCertSecretCopy.metadata.name}
               - name: observability-ca-cert
                 secret:
-                  secretName: ${otlpLogsCertSecret.metadata.name}
+                  secretName: ${caCertSecretCopy.metadata.name}
             serviceAccount:
               imagePullSecrets:
                 - name: ${otelCollectorImagePullSecret.metadata.name}
@@ -571,8 +591,8 @@ spec:
             - source:
                 name: ${otelCollectorImagePullSecret.metadata.name}
             - source:
-                name: ${observabilityClientCertSecret.metadata.name}
+                name: ${clientCertSecretCopy.metadata.name}
             - source:
-                name: ${otlpLogsCertSecret.metadata.name}
+                name: ${caCertSecretCopy.metadata.name}
       readyWhen:
         - ${otelCollectorResourceHelmDeployment.status.phase == "Ready"}
