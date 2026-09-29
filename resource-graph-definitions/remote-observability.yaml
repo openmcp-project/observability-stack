@@ -496,9 +496,9 @@ spec:
           namespace: ${remoteObsNamespace.metadata.name}
         type: Opaque
         data:
-          tls.crt: ${observabilityClientCertSecret.data["tls.crt"]}
-          tls.key: ${observabilityClientCertSecret.data["tls.key"]}
-          ca.crt: ${otlpLogsCertSecret.data["tls.crt"]}
+          tls.crt: ${base64.encode(observabilityClientCertSecret.data["tls.crt"])}
+          tls.key: ${base64.encode(observabilityClientCertSecret.data["tls.key"])}
+          ca.crt: ${base64.encode(otlpLogsCertSecret.data["tls.crt"])}
 
     - id: observabilityGateway
       externalRef:
