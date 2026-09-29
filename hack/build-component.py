@@ -169,7 +169,7 @@ def build_ocm_component(
 
     components_location = os.environ.get("COMPONENTS_LOCATION", "")
 
-    # Execute OCM command (ocm v0.48+ syntax)
+    # Execute OCM command (open-component-model/ocm v0.48+ syntax)
     cmd = [
         "ocm", "add", "componentversions",
         "--create",
@@ -178,7 +178,6 @@ def build_ocm_component(
         "--lookup", components_location,
         str(constructor_file),
     ]
-
     run_command(cmd, env=env)
 
 

@@ -63,12 +63,12 @@ spec:
       # Currently, referencing 'schema' is not possible in the status section, so we cannot determine whether the cert-manager is enabled or not.
       # This will be fixed with https://github.com/kubernetes-sigs/kro/pull/1300.
       # certManager: ${schema.spec.certManager.enabled ? ( certManagerHelmDeployment.status.observedGeneration == certManagerHelmDeployment.metadata.generation ? certManagerHelmDeployment.status.phase :"Outdated") :"Disabled"}
-      openTelemetryOperator: ${otelOperatorHelmDeployment.status.observedGeneration == otelOperatorHelmDeployment.metadata.generation ? otelOperatorHelmDeployment.status.phase :"Outdated"}
-      openTelemetryCollector: ${otelCollectorResourceHelmDeployment.status.observedGeneration == otelCollectorResourceHelmDeployment.metadata.generation ? otelCollectorResourceHelmDeployment.status.phase :"Outdated"}
+      openTelemetryOperator: ${otelOperatorHelmDeployment.status.phase}
+      openTelemetryCollector: ${otelCollectorResourceHelmDeployment.status.phase}
       ready: |-
         ${
-          otelOperatorHelmDeployment.status.observedGeneration == otelOperatorHelmDeployment.metadata.generation && otelOperatorHelmDeployment.status.phase == "Ready" &&
-          otelCollectorResourceHelmDeployment.status.observedGeneration == otelCollectorResourceHelmDeployment.metadata.generation && otelCollectorResourceHelmDeployment.status.phase == "Ready"
+          otelOperatorHelmDeployment.status.phase == "Ready" &&
+          otelCollectorResourceHelmDeployment.status.phase == "Ready"
         }
 
   resources:
@@ -487,7 +487,7 @@ spec:
           name: otlp-logs-cert
           namespace: ${schema.spec.gateway.namespace}
 
-    - id: remoteClientCertSecret
+    - id: clientCertSecretCopy
       template:
         apiVersion: v1
         kind: Secret
@@ -495,10 +495,17 @@ spec:
           name: observability-client-cert
           namespace: ${remoteObsNamespace.metadata.name}
         type: Opaque
-        data:
-          tls.crt: ${observabilityClientCertSecret.data["tls.crt"]}
-          tls.key: ${observabilityClientCertSecret.data["tls.key"]}
-          ca.crt: ${otlpLogsCertSecret.data["tls.crt"]}
+        data: ${observabilityClientCertSecret.data}
+
+    - id: caCertSecretCopy
+      template:
+        apiVersion: v1
+        kind: Secret
+        metadata:
+          name: observability-ca-cert
+          namespace: ${remoteObsNamespace.metadata.name}
+        type: Opaque
+        data: ${otlpLogsCertSecret.data}
 
     - id: observabilityGateway
       externalRef:
@@ -559,17 +566,23 @@ spec:
             endpoint: "https://${observabilityGateway.spec.listeners.filter(elem, elem.name == 'otlp-logs')[0].hostname}:${string(observabilityGateway.spec.listeners.filter(elem, elem.name == 'otlp-logs')[0].port)}/insert/opentelemetry"
             tls:
               enabled: true
-              certFile: /etc/otel/certs/tls.crt
-              keyFile: /etc/otel/certs/tls.key
-              caFile: /etc/otel/certs/ca.crt
+              certFile: /etc/otel/certs/client/tls.crt
+              keyFile: /etc/otel/certs/client/tls.key
+              caFile: /etc/otel/certs/ca/tls.crt
             additionalVolumeMounts:
               - name: observability-client-cert
-                mountPath: /etc/otel/certs
+                mountPath: /etc/otel/certs/client
+                readOnly: true
+              - name: observability-ca-cert
+                mountPath: /etc/otel/certs/ca
                 readOnly: true
             additionalVolumes:
               - name: observability-client-cert
                 secret:
-                  secretName: ${remoteClientCertSecret.metadata.name}
+                  secretName: ${clientCertSecretCopy.metadata.name}
+              - name: observability-ca-cert
+                secret:
+                  secretName: ${caCertSecretCopy.metadata.name}
             serviceAccount:
               imagePullSecrets:
                 - name: ${otelCollectorImagePullSecret.metadata.name}
@@ -578,6 +591,8 @@ spec:
             - source:
                 name: ${otelCollectorImagePullSecret.metadata.name}
             - source:
-                name: ${remoteClientCertSecret.metadata.name}
+                name: ${clientCertSecretCopy.metadata.name}
+            - source:
+                name: ${caCertSecretCopy.metadata.name}
       readyWhen:
         - ${otelCollectorResourceHelmDeployment.status.phase == "Ready"}

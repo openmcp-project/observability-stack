@@ -64,7 +64,7 @@ tasks:
     desc: Push OCM component to registry
     deps: [deps:python]
     cmds:
-      - python3 -u ./hack/push-component.py
+      - python3 -u ./hack/push-component.py --copy-resources
     env:
       PYTHONUNBUFFERED: "1"
 
@@ -97,7 +97,7 @@ tasks:
       - echo "{{.DEV_VERSION}}" > VERSION
       - defer: git checkout VERSION
       - python3 -u ./hack/build-component.py
-      - python3 -u ./hack/push-component.py
+      - python3 -u ./hack/push-component.py --copy-resources
       - cd test/e2e && go test -v -timeout 45m ./...
 
   # ── release ───────────────────────────────────────────────────────────────
