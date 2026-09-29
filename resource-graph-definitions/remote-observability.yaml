@@ -63,12 +63,12 @@ spec:
       # Currently, referencing 'schema' is not possible in the status section, so we cannot determine whether the cert-manager is enabled or not.
       # This will be fixed with https://github.com/kubernetes-sigs/kro/pull/1300.
       # certManager: ${schema.spec.certManager.enabled ? ( certManagerHelmDeployment.status.observedGeneration == certManagerHelmDeployment.metadata.generation ? certManagerHelmDeployment.status.phase :"Outdated") :"Disabled"}
-      openTelemetryOperator: ${otelOperatorHelmDeployment.status.observedGeneration == otelOperatorHelmDeployment.metadata.generation ? otelOperatorHelmDeployment.status.phase :"Outdated"}
-      openTelemetryCollector: ${otelCollectorResourceHelmDeployment.status.observedGeneration == otelCollectorResourceHelmDeployment.metadata.generation ? otelCollectorResourceHelmDeployment.status.phase :"Outdated"}
+      openTelemetryOperator: ${otelOperatorHelmDeployment.status.phase}
+      openTelemetryCollector: ${otelCollectorResourceHelmDeployment.status.phase}
       ready: |-
         ${
-          otelOperatorHelmDeployment.status.observedGeneration == otelOperatorHelmDeployment.metadata.generation && otelOperatorHelmDeployment.status.phase == "Ready" &&
-          otelCollectorResourceHelmDeployment.status.observedGeneration == otelCollectorResourceHelmDeployment.metadata.generation && otelCollectorResourceHelmDeployment.status.phase == "Ready"
+          otelOperatorHelmDeployment.status.phase == "Ready" &&
+          otelCollectorResourceHelmDeployment.status.phase == "Ready"
         }
 
   resources:

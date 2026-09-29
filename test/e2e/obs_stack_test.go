@@ -150,7 +150,7 @@ func TestObsStack(t *testing.T) {
 				}
 
 				return ready, nil
-			}, wait.WithTimeout(35*time.Minute)); err != nil {
+			}, wait.WithTimeout(20*time.Minute)); err != nil {
 				t.Errorf("%v", err)
 			}
 
