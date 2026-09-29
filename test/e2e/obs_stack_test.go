@@ -146,6 +146,19 @@ func TestObsStack(t *testing.T) {
 					t.Logf("ObservabilityStack status: %v", status)
 				}
 
+				// Log RemoteObservability CR status
+				remoteObs := &unstructured.Unstructured{}
+				remoteObs.SetGroupVersionKind(schema.GroupVersionKind{Group: "kro.run", Version: "v1alpha1", Kind: "RemoteObservability"})
+				remoteObs.SetName("remote-observability")
+				remoteObs.SetNamespace(obsStackNamespace)
+				if getErr := config.Client().Resources().Get(ctx, remoteObs.GetName(), remoteObs.GetNamespace(), remoteObs); getErr == nil {
+					if status, found, _ := unstructured.NestedMap(remoteObs.Object, "status"); found {
+						t.Logf("RemoteObservability status: %v", status)
+					}
+				} else {
+					t.Logf("RemoteObservability not found: %v", getErr)
+				}
+
 				ready, hasReady, err := unstructured.NestedBool(obsStack.Object, "status", "ready")
 				if err != nil {
 					return false, err
