@@ -487,19 +487,6 @@ spec:
           name: otlp-logs-cert
           namespace: ${schema.spec.gateway.namespace}
 
-    - id: remoteClientCertSecret
-      template:
-        apiVersion: v1
-        kind: Secret
-        metadata:
-          name: observability-client-cert
-          namespace: ${remoteObsNamespace.metadata.name}
-        type: Opaque
-        data:
-          tls.crt: ${base64.encode(observabilityClientCertSecret.data["tls.crt"])}
-          tls.key: ${base64.encode(observabilityClientCertSecret.data["tls.key"])}
-          ca.crt: ${base64.encode(otlpLogsCertSecret.data["tls.crt"])}
-
     - id: observabilityGateway
       externalRef:
         apiVersion: gateway.networking.k8s.io/v1
@@ -559,17 +546,23 @@ spec:
             endpoint: "https://${observabilityGateway.spec.listeners.filter(elem, elem.name == 'otlp-logs')[0].hostname}:${string(observabilityGateway.spec.listeners.filter(elem, elem.name == 'otlp-logs')[0].port)}/insert/opentelemetry"
             tls:
               enabled: true
-              certFile: /etc/otel/certs/tls.crt
-              keyFile: /etc/otel/certs/tls.key
-              caFile: /etc/otel/certs/ca.crt
+              certFile: /etc/otel/certs/client/tls.crt
+              keyFile: /etc/otel/certs/client/tls.key
+              caFile: /etc/otel/certs/ca/tls.crt
             additionalVolumeMounts:
               - name: observability-client-cert
-                mountPath: /etc/otel/certs
+                mountPath: /etc/otel/certs/client
+                readOnly: true
+              - name: observability-ca-cert
+                mountPath: /etc/otel/certs/ca
                 readOnly: true
             additionalVolumes:
               - name: observability-client-cert
                 secret:
-                  secretName: ${remoteClientCertSecret.metadata.name}
+                  secretName: ${observabilityClientCertSecret.metadata.name}
+              - name: observability-ca-cert
+                secret:
+                  secretName: ${otlpLogsCertSecret.metadata.name}
             serviceAccount:
               imagePullSecrets:
                 - name: ${otelCollectorImagePullSecret.metadata.name}
@@ -578,6 +571,8 @@ spec:
             - source:
                 name: ${otelCollectorImagePullSecret.metadata.name}
             - source:
-                name: ${remoteClientCertSecret.metadata.name}
+                name: ${observabilityClientCertSecret.metadata.name}
+            - source:
+                name: ${otlpLogsCertSecret.metadata.name}
       readyWhen:
         - ${otelCollectorResourceHelmDeployment.status.phase == "Ready"}
