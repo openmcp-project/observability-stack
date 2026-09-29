@@ -266,6 +266,8 @@ spec:
         spec:
           componentRef: ${schema.spec.componentRef}
           imagePullSecretRef: ${schema.spec.imagePullSecretRef}
+          certManager:
+            enabled: true
           gateway:
             namespace: ${schema.spec.observabilityGateway.namespace}
       readyWhen:
