@@ -52,6 +52,7 @@ spec:
       prometheus:
         namespace: string | default="prometheus-system"
         storage: string | default="10Gi"
+        alertmanagerExternalUrl: string | default=""
         resources:
           requests:
             memory: string | default="400Mi"

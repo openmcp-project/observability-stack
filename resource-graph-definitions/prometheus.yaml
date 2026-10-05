@@ -20,6 +20,7 @@ spec:
       forProvider:
         namespace: string | default="prometheus-system"
         storage: string | default="10Gi"
+        alertmanagerExternalUrl: string | default=""
         resources:
           requests:
             memory: string | default="400Mi"
@@ -205,5 +206,8 @@ spec:
                 path: /spec/imagePullSecrets
                 value:
                 - name: ${prometheusImagePullSecret.metadata.name}
+              - op: add
+                path: /spec/externalUrl
+                value: ${schema.spec.forProvider.alertmanagerExternalUrl}
       readyWhen:
         - ${prometheusKustomization.status.conditions.exists(c, c.type == "Ready" && c.status == "True")}

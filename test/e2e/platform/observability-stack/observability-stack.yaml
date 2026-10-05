@@ -24,6 +24,7 @@ spec:
     namespace: prometheus-operator-system
   prometheus:
     namespace: prometheus-system
+    alertmanagerExternalUrl: https://alertmanager.example.com
   victoriaLogs:
     namespace: victoria-logs-system
     retentionPeriod: "1d"

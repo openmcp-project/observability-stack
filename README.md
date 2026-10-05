@@ -180,7 +180,7 @@ kubectl wait deployer resource-graph-definition -n obs-stack \
   --timeout=120s
 ```
 
-Then create the stack instance:
+Then create the stack instance. When Alertmanager is exposed at an external URL, set `prometheus.alertmanagerExternalUrl` to that URL; omit it to use Alertmanager's default.
 
 ```bash
 kubectl apply -f - <<EOF
@@ -209,6 +209,7 @@ spec:
     namespace: prometheus-operator-system
   prometheus:
     namespace: prometheus-system
+    alertmanagerExternalUrl: https://alertmanager.example.com
   victoriaLogs:
     namespace: victoria-logs-system
   observabilityGateway:
