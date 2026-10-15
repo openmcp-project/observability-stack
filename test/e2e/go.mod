@@ -1,6 +1,6 @@
 module github.com/openmcp-project/observability-stack
 
-go 1.27.1
+go 1.27.2
 
 require (
 	github.com/kubernetes-sigs/kro v0.9.3
