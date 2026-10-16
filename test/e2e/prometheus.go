@@ -108,7 +108,7 @@ func assertMetricsAvailable(ctx context.Context, t *testing.T, promAPI prometheu
 	for _, metricName := range metrics {
 		name := metricName
 		if err := waitFor(t, fmt.Sprintf("metric %q in Prometheus", name), func(ctx context.Context) (bool, error) {
-			result, _, err := promAPI.Query(ctx, name, time.Now())
+			result, _, _, err := promAPI.Query(ctx, name, time.Now())
 			if err != nil {
 				return false, nil // treat as not-ready, will retry
 			}
