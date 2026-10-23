@@ -275,6 +275,7 @@ spec:
               repository: ${certManagerControllerImage.status.additional.registry}/${certManagerControllerImage.status.additional.repository}
               tag: ${certManagerControllerImage.status.additional.tag}
             webhook:
+              timeoutSeconds: 15
               image:
                 repository: ${certManagerWebhookImage.status.additional.registry}/${certManagerWebhookImage.status.additional.repository}
                 tag: ${certManagerWebhookImage.status.additional.tag}
