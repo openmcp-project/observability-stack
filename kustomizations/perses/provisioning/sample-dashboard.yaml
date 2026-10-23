@@ -1,0 +1,78 @@
+kind: Project
+metadata:
+  name: platform
+spec:
+  display:
+    name: Platform
+---
+kind: Dashboard
+metadata:
+  name: sample-signals
+  project: platform
+spec:
+  display:
+    name: "Sample: Metrics · Logs"
+    description: "One panel per signal type using the real cluster datasources."
+  duration: 30m
+  panels:
+    metrics:
+      kind: Panel
+      spec:
+        display:
+          name: "Metrics — CPU usage rate by container"
+          description: "rate(process_cpu_seconds_total[5m]) from Prometheus"
+        plugin:
+          kind: TimeSeriesChart
+          spec:
+            yAxis:
+              format:
+                unit: "decimal"
+                shortValues: true
+            legend:
+              position: bottom
+        queries:
+          - kind: TimeSeriesQuery
+            spec:
+              plugin:
+                kind: PrometheusTimeSeriesQuery
+                spec:
+                  datasource:
+                    kind: PrometheusDatasource
+                    name: prometheus
+                  query: "rate(process_cpu_seconds_total[5m])"
+                  seriesNameFormat: "{{namespace}}/{{container}}"
+    logs:
+      kind: Panel
+      spec:
+        display:
+          name: "Logs — cluster log stream"
+          description: "Live logs from all pods via VictoriaLogs"
+        plugin:
+          kind: LogsTable
+          spec: {}
+        queries:
+          - kind: LogQuery
+            spec:
+              plugin:
+                kind: VictoriaLogsLogQuery
+                spec:
+                  datasource:
+                    kind: VictoriaLogsDatasource
+                    name: victoria-logs
+                  query: '*'
+  layouts:
+    - kind: Grid
+      spec:
+        items:
+          - x: 0
+            y: 0
+            width: 24
+            height: 8
+            content:
+              $ref: "#/spec/panels/metrics"
+          - x: 0
+            y: 8
+            width: 24
+            height: 8
+            content:
+              $ref: "#/spec/panels/logs"
