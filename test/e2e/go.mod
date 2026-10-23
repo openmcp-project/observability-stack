@@ -4,7 +4,7 @@ go 1.27.2
 
 require (
 	github.com/kubernetes-sigs/kro v0.9.3
-	github.com/openmcp-project/controller-utils v0.33.2
+	github.com/openmcp-project/controller-utils v0.33.3
 	github.com/openmcp-project/opencontrolplane-runtime v1.4.2
 	github.com/openmcp-project/openmcp-operator/api v1.4.2
 	github.com/openmcp-project/openmcp-testing v1.4.2
