@@ -137,7 +137,7 @@ jobs:
     if: always() && !failure() && !cancelled()
     steps:
       - name: Create GitHub App token
-        uses: actions/create-github-app-token@bcd2ba49218906704ab6c1aa796996da409d3eb1 # v3
+        uses: actions/create-github-app-token@64ab729a6294000f5aa4a4bc0b73d1f32bc45510 # v3
         id: app-token
         with:
           app-id: 1312871
@@ -375,7 +375,7 @@ jobs:
 
       - name: Create GitHub release
         if: ${{ env.SKIP != 'true' }}
-        uses: softprops/action-gh-release@3d0d9888cb7fd7b750713d6e236d1fcb99157228 # v3
+        uses: softprops/action-gh-release@efb35369e0ad2afab669f228072c1b0d510eae64 # v3
         with:
           tag_name: ${{ env.version }}
           name: Release ${{ env.version }}
