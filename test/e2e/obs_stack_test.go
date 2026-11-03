@@ -167,7 +167,7 @@ func TestObsStack(t *testing.T) {
 						return false, getErr
 					}
 					if !ar.Status.IsGranted() {
-						return false, fmt.Errorf("AccessRequest '%s/%s' is not granted yet", ar.Namespace, ar.Name)
+						return false, nil
 					}
 				}
 				return true, nil
@@ -343,7 +343,7 @@ func TestObsStack(t *testing.T) {
 					}
 
 					if !ar.Status.IsGranted() {
-						return false, fmt.Errorf("AccessRequest '%s/%s' is not granted yet", ar.Namespace, ar.Name)
+						return false, nil
 					}
 				}
 				return true, nil
