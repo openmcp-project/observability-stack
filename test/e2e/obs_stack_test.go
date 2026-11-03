@@ -141,6 +141,7 @@ func TestObsStack(t *testing.T) {
 				t.Fatalf("failed to list clusters: %v", err)
 			}
 
+			ars := map[string]*clustersv1alpha1.AccessRequest{}
 			for _, cluster := range clusterList.Items {
 				if !slices.Contains(cluster.Spec.Purposes, "workload") {
 					continue
@@ -157,6 +158,21 @@ func TestObsStack(t *testing.T) {
 					t.Errorf("failed to create remote AccessRequest for cluster %s: %v", cluster.Name, err)
 				}
 				objectList = append(objectList, ar)
+				ars[fmt.Sprintf("%s/%s", cluster.Namespace, cluster.Name)] = ar
+			}
+
+			if err := waitFor(t, "remote AccessRequests granted", func(ctx context.Context) (bool, error) {
+				for _, ar := range ars {
+					if getErr := config.Client().Resources().Get(ctx, ar.GetName(), ar.GetNamespace(), ar); getErr != nil {
+						return false, getErr
+					}
+					if !ar.Status.IsGranted() {
+						return false, fmt.Errorf("AccessRequest '%s/%s' is not granted yet", ar.Namespace, ar.Name)
+					}
+				}
+				return true, nil
+			}, wait.WithTimeout(2*time.Minute)); err != nil {
+				t.Errorf("%v", err)
 			}
 			return ctx
 		}).
