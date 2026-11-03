@@ -20,6 +20,7 @@ spec:
       forProvider:
         namespace: string | default="prometheus-system"
         storage: string | default="10Gi"
+        prometheusExternalUrl: string | default=""
         alertmanagerExternalUrl: string | default=""
         resources:
           requests:
@@ -192,6 +193,9 @@ spec:
               - op: replace
                 path: /spec/resources/limits/cpu
                 value: ${schema.spec.forProvider.resources.limits.cpu}
+              - op: add
+                path: /spec/externalUrl
+                value: ${schema.spec.forProvider.prometheusExternalUrl}
               - op: replace
                 path: /spec/storage/volumeClaimTemplate/spec/resources/requests/storage
                 value: ${schema.spec.forProvider.storage}

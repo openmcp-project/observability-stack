@@ -179,6 +179,29 @@ func TestObsStack(t *testing.T) {
 			}
 			return ctx
 		}).
+		Assess("prometheus uses its configured external URL", func(ctx context.Context, t *testing.T, config *envconf.Config) context.Context {
+			prometheus := &unstructured.Unstructured{}
+			prometheus.SetGroupVersionKind(schema.GroupVersionKind{
+				Group:   "monitoring.coreos.com",
+				Version: "v1",
+				Kind:    "Prometheus",
+			})
+
+			if err := config.Client().Resources().Get(ctx, "prometheus", "prometheus-system", prometheus); err != nil {
+				t.Errorf("failed to get Prometheus: %v", err)
+				return ctx
+			}
+
+			externalURL, found, err := unstructured.NestedString(prometheus.Object, "spec", "externalUrl")
+			if err != nil {
+				t.Errorf("failed to read Prometheus external URL: %v", err)
+				return ctx
+			}
+			if !found || externalURL != "https://prometheus.example.com" {
+				t.Errorf("expected Prometheus external URL %q, got %q", "https://prometheus.example.com", externalURL)
+			}
+			return ctx
+		}).
 		WithStep("make observability gateway routable from workload cluster(s)", features.LevelAssess, func(ctx context.Context, t *testing.T, config *envconf.Config) context.Context {
 			// add types to scheme
 			if err := gatewayv1.Install(config.Client().Resources().GetScheme()); err != nil {
