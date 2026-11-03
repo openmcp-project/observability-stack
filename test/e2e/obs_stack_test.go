@@ -151,7 +151,17 @@ func TestObsStack(t *testing.T) {
 
 				return ready, nil
 			}, wait.WithTimeout(20*time.Minute)); err != nil {
-				t.Errorf("%v; status: %#v", err, obsStack.Object["status"])
+				remoteObservability := &unstructured.Unstructured{}
+				remoteObservability.SetGroupVersionKind(schema.GroupVersionKind{
+					Group:   "kro.run",
+					Version: "v1alpha1",
+					Kind:    "RemoteObservability",
+				})
+				if getErr := config.Client().Resources().Get(ctx, "remote-observability", obsStackNamespace, remoteObservability); getErr != nil {
+					t.Errorf("%v; status: %#v; failed to get RemoteObservability: %v", err, obsStack.Object["status"], getErr)
+				} else {
+					t.Errorf("%v; status: %#v; RemoteObservability status: %#v", err, obsStack.Object["status"], remoteObservability.Object["status"])
+				}
 			}
 
 			return ctx
