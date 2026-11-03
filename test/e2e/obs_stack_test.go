@@ -160,7 +160,21 @@ func TestObsStack(t *testing.T) {
 				if getErr := config.Client().Resources().Get(ctx, "remote-observability", obsStackNamespace, remoteObservability); getErr != nil {
 					t.Errorf("%v; status: %#v; failed to get RemoteObservability: %v", err, obsStack.Object["status"], getErr)
 				} else {
-					t.Errorf("%v; status: %#v; RemoteObservability status: %#v", err, obsStack.Object["status"], remoteObservability.Object["status"])
+					helmStatuses := make(map[string]any, 3)
+					for _, name := range []string{"remote-cert-manager", "remote-telemetry-operator", "remote-telemetry-collector"} {
+						helmDeployment := &unstructured.Unstructured{}
+						helmDeployment.SetGroupVersionKind(schema.GroupVersionKind{
+							Group:   "helm.open-control-plane.io",
+							Version: "v1alpha1",
+							Kind:    "HelmDeployment",
+						})
+						if getErr := config.Client().Resources().Get(ctx, name, "remote-observability-system", helmDeployment); getErr != nil {
+							helmStatuses[name] = getErr.Error()
+							continue
+						}
+						helmStatuses[name] = helmDeployment.Object["status"]
+					}
+					t.Errorf("%v; status: %#v; RemoteObservability status: %#v; HelmDeployment statuses: %#v", err, obsStack.Object["status"], remoteObservability.Object["status"], helmStatuses)
 				}
 			}
 
