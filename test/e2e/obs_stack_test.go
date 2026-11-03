@@ -126,106 +126,6 @@ func TestObsStack(t *testing.T) {
 			objectList = append(objectList, objs...)
 			return ctx
 		}).
-		Assess("observability stack is ready", func(ctx context.Context, t *testing.T, config *envconf.Config) context.Context {
-			obsStack := &unstructured.Unstructured{}
-			obsStack.SetGroupVersionKind(schema.GroupVersionKind{
-				Group:   "kro.run",
-				Version: "v1alpha1",
-				Kind:    "ObservabilityStack",
-			})
-			obsStack.SetName("stack")
-			obsStack.SetNamespace(obsStackNamespace)
-
-			if err := waitFor(t, "ObservabilityStack stack ready", func(context.Context) (done bool, err error) {
-				if getErr := config.Client().Resources().Get(ctx, obsStack.GetName(), obsStack.GetNamespace(), obsStack); getErr != nil {
-					return false, err
-				}
-
-				ready, hasReady, err := unstructured.NestedBool(obsStack.Object, "status", "ready")
-				if err != nil {
-					return false, err
-				}
-				if !hasReady {
-					return false, nil
-				}
-
-				return ready, nil
-			}, wait.WithTimeout(20*time.Minute)); err != nil {
-				remoteObservability := &unstructured.Unstructured{}
-				remoteObservability.SetGroupVersionKind(schema.GroupVersionKind{
-					Group:   "kro.run",
-					Version: "v1alpha1",
-					Kind:    "RemoteObservability",
-				})
-				if getErr := config.Client().Resources().Get(ctx, "remote-observability", obsStackNamespace, remoteObservability); getErr != nil {
-					t.Errorf("%v; status: %#v; failed to get RemoteObservability: %v", err, obsStack.Object["status"], getErr)
-				} else {
-					helmStatuses := make(map[string]any, 3)
-					for _, name := range []string{"remote-cert-manager", "remote-telemetry-operator", "remote-telemetry-collector"} {
-						helmDeployment := &unstructured.Unstructured{}
-						helmDeployment.SetGroupVersionKind(schema.GroupVersionKind{
-							Group:   "helm.open-control-plane.io",
-							Version: "v1alpha1",
-							Kind:    "HelmDeployment",
-						})
-						if getErr := config.Client().Resources().Get(ctx, name, "remote-observability-system", helmDeployment); getErr != nil {
-							helmStatuses[name] = getErr.Error()
-							continue
-						}
-						helmStatuses[name] = helmDeployment.Object["status"]
-					}
-					t.Errorf("%v; status: %#v; RemoteObservability status: %#v; HelmDeployment statuses: %#v", err, obsStack.Object["status"], remoteObservability.Object["status"], helmStatuses)
-				}
-			}
-
-			return ctx
-		}).
-		Assess("alertmanager uses its configured external URL", func(ctx context.Context, t *testing.T, config *envconf.Config) context.Context {
-			alertmanager := &unstructured.Unstructured{}
-			alertmanager.SetGroupVersionKind(schema.GroupVersionKind{
-				Group:   "monitoring.coreos.com",
-				Version: "v1",
-				Kind:    "Alertmanager",
-			})
-
-			if err := config.Client().Resources().Get(ctx, "alertmanager", "prometheus-system", alertmanager); err != nil {
-				t.Errorf("failed to get Alertmanager: %v", err)
-				return ctx
-			}
-
-			externalURL, found, err := unstructured.NestedString(alertmanager.Object, "spec", "externalUrl")
-			if err != nil {
-				t.Errorf("failed to read Alertmanager external URL: %v", err)
-				return ctx
-			}
-			if !found || externalURL != "https://alertmanager.example.com" {
-				t.Errorf("expected Alertmanager external URL %q, got %q", "https://alertmanager.example.com", externalURL)
-			}
-			return ctx
-		}).
-		Assess("prometheus uses its configured external URL", func(ctx context.Context, t *testing.T, config *envconf.Config) context.Context {
-			prometheus := &unstructured.Unstructured{}
-			prometheus.SetGroupVersionKind(schema.GroupVersionKind{
-				Group:   "monitoring.coreos.com",
-				Version: "v1",
-				Kind:    "Prometheus",
-			})
-
-			if err := config.Client().Resources().Get(ctx, "prometheus", "prometheus-system", prometheus); err != nil {
-				t.Errorf("failed to get Prometheus: %v", err)
-				return ctx
-			}
-
-			externalURL, found, err := unstructured.NestedString(prometheus.Object, "spec", "externalUrl")
-			if err != nil {
-				t.Errorf("failed to read Prometheus external URL: %v", err)
-				return ctx
-			}
-			if !found || externalURL != "https://prometheus.example.com" {
-				t.Errorf("expected Prometheus external URL %q, got %q", "https://prometheus.example.com", externalURL)
-			}
-			return ctx
-		}).
 		WithStep("make observability gateway routable from workload cluster(s)", features.LevelAssess, func(ctx context.Context, t *testing.T, config *envconf.Config) context.Context {
 			// add types to scheme
 			if err := gatewayv1.Install(config.Client().Resources().GetScheme()); err != nil {
@@ -336,6 +236,106 @@ func TestObsStack(t *testing.T) {
 				injectGatewayRoute(ctx, t, hostname, gatewayIP, access)
 			}
 
+			return ctx
+		}).
+		Assess("observability stack is ready", func(ctx context.Context, t *testing.T, config *envconf.Config) context.Context {
+			obsStack := &unstructured.Unstructured{}
+			obsStack.SetGroupVersionKind(schema.GroupVersionKind{
+				Group:   "kro.run",
+				Version: "v1alpha1",
+				Kind:    "ObservabilityStack",
+			})
+			obsStack.SetName("stack")
+			obsStack.SetNamespace(obsStackNamespace)
+
+			if err := waitFor(t, "ObservabilityStack stack ready", func(context.Context) (done bool, err error) {
+				if getErr := config.Client().Resources().Get(ctx, obsStack.GetName(), obsStack.GetNamespace(), obsStack); getErr != nil {
+					return false, err
+				}
+
+				ready, hasReady, err := unstructured.NestedBool(obsStack.Object, "status", "ready")
+				if err != nil {
+					return false, err
+				}
+				if !hasReady {
+					return false, nil
+				}
+
+				return ready, nil
+			}, wait.WithTimeout(20*time.Minute)); err != nil {
+				remoteObservability := &unstructured.Unstructured{}
+				remoteObservability.SetGroupVersionKind(schema.GroupVersionKind{
+					Group:   "kro.run",
+					Version: "v1alpha1",
+					Kind:    "RemoteObservability",
+				})
+				if getErr := config.Client().Resources().Get(ctx, "remote-observability", obsStackNamespace, remoteObservability); getErr != nil {
+					t.Errorf("%v; status: %#v; failed to get RemoteObservability: %v", err, obsStack.Object["status"], getErr)
+				} else {
+					helmStatuses := make(map[string]any, 3)
+					for _, name := range []string{"remote-cert-manager", "remote-telemetry-operator", "remote-telemetry-collector"} {
+						helmDeployment := &unstructured.Unstructured{}
+						helmDeployment.SetGroupVersionKind(schema.GroupVersionKind{
+							Group:   "helm.open-control-plane.io",
+							Version: "v1alpha1",
+							Kind:    "HelmDeployment",
+						})
+						if getErr := config.Client().Resources().Get(ctx, name, "remote-observability-system", helmDeployment); getErr != nil {
+							helmStatuses[name] = getErr.Error()
+							continue
+						}
+						helmStatuses[name] = helmDeployment.Object["status"]
+					}
+					t.Errorf("%v; status: %#v; RemoteObservability status: %#v; HelmDeployment statuses: %#v", err, obsStack.Object["status"], remoteObservability.Object["status"], helmStatuses)
+				}
+			}
+
+			return ctx
+		}).
+		Assess("alertmanager uses its configured external URL", func(ctx context.Context, t *testing.T, config *envconf.Config) context.Context {
+			alertmanager := &unstructured.Unstructured{}
+			alertmanager.SetGroupVersionKind(schema.GroupVersionKind{
+				Group:   "monitoring.coreos.com",
+				Version: "v1",
+				Kind:    "Alertmanager",
+			})
+
+			if err := config.Client().Resources().Get(ctx, "alertmanager", "prometheus-system", alertmanager); err != nil {
+				t.Errorf("failed to get Alertmanager: %v", err)
+				return ctx
+			}
+
+			externalURL, found, err := unstructured.NestedString(alertmanager.Object, "spec", "externalUrl")
+			if err != nil {
+				t.Errorf("failed to read Alertmanager external URL: %v", err)
+				return ctx
+			}
+			if !found || externalURL != "https://alertmanager.example.com" {
+				t.Errorf("expected Alertmanager external URL %q, got %q", "https://alertmanager.example.com", externalURL)
+			}
+			return ctx
+		}).
+		Assess("prometheus uses its configured external URL", func(ctx context.Context, t *testing.T, config *envconf.Config) context.Context {
+			prometheus := &unstructured.Unstructured{}
+			prometheus.SetGroupVersionKind(schema.GroupVersionKind{
+				Group:   "monitoring.coreos.com",
+				Version: "v1",
+				Kind:    "Prometheus",
+			})
+
+			if err := config.Client().Resources().Get(ctx, "prometheus", "prometheus-system", prometheus); err != nil {
+				t.Errorf("failed to get Prometheus: %v", err)
+				return ctx
+			}
+
+			externalURL, found, err := unstructured.NestedString(prometheus.Object, "spec", "externalUrl")
+			if err != nil {
+				t.Errorf("failed to read Prometheus external URL: %v", err)
+				return ctx
+			}
+			if !found || externalURL != "https://prometheus.example.com" {
+				t.Errorf("expected Prometheus external URL %q, got %q", "https://prometheus.example.com", externalURL)
+			}
 			return ctx
 		}).
 		Assess("can read metrics from prometheus", func(ctx context.Context, t *testing.T, config *envconf.Config) context.Context {
