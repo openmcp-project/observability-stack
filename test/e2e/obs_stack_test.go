@@ -148,7 +148,7 @@ func TestObsStack(t *testing.T) {
 				}
 				ar := &clustersv1alpha1.AccessRequest{
 					Spec: clustersv1alpha1.AccessRequestSpec{
-						ClusterRef: &commonapi.ObjectReference{Name: cluster.Name, Namespace: cluster.Namespace},
+						RequestRef: &commonapi.ObjectReference{Name: "wl-test", Namespace: cluster.Namespace},
 						Token:      &clustersv1alpha1.TokenConfig{RoleRefs: []commonapi.RoleRef{{Name: "cluster-admin", Kind: "ClusterRole"}}},
 					},
 				}
@@ -310,8 +310,8 @@ func TestObsStack(t *testing.T) {
 
 				ar := &clustersv1alpha1.AccessRequest{
 					Spec: clustersv1alpha1.AccessRequestSpec{
-						ClusterRef: &commonapi.ObjectReference{
-							Name:      cluster.Name,
+						RequestRef: &commonapi.ObjectReference{
+							Name:      "wl-test",
 							Namespace: cluster.Namespace,
 						},
 						Token: &clustersv1alpha1.TokenConfig{
