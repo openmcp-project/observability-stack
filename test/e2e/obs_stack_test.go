@@ -172,7 +172,7 @@ func TestObsStack(t *testing.T) {
 				}
 				return true, nil
 			}, wait.WithTimeout(2*time.Minute)); err != nil {
-				t.Errorf("%v", err)
+				t.Errorf("%v; remote AccessRequests: %#v", err, ars)
 			}
 			return ctx
 		}).
@@ -348,7 +348,7 @@ func TestObsStack(t *testing.T) {
 				}
 				return true, nil
 			}, wait.WithTimeout(1*time.Minute)); err != nil {
-				t.Errorf("%v", err)
+				t.Errorf("%v; route AccessRequests: %#v", err, ars)
 			}
 
 			// access each workload cluster, inject the routing information into the coredns config and kill all coredns pods to restart them with the new configuration
