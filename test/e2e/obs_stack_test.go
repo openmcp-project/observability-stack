@@ -126,60 +126,6 @@ func TestObsStack(t *testing.T) {
 			objectList = append(objectList, objs...)
 			return ctx
 		}).
-		WithStep("grant remote observability workload access", features.LevelAssess, func(ctx context.Context, t *testing.T, config *envconf.Config) context.Context {
-			if err := clustersv1alpha1.AddToScheme(config.Client().Resources().GetScheme()); err != nil {
-				t.Fatalf("failed to install cluster types: %v", err)
-			}
-
-			clusterList := &clustersv1alpha1.ClusterList{}
-			clusterList.SetGroupVersionKind(schema.GroupVersionKind{
-				Group:   "clusters.openmcp.cloud",
-				Version: "v1alpha1",
-				Kind:    "ClusterList",
-			})
-			if err := config.Client().Resources().List(ctx, clusterList); err != nil {
-				t.Fatalf("failed to list clusters: %v", err)
-			}
-
-			ars := map[string]*clustersv1alpha1.AccessRequest{}
-			for _, cluster := range clusterList.Items {
-				if !slices.Contains(cluster.Spec.Purposes, "workload") {
-					continue
-				}
-				ar := &clustersv1alpha1.AccessRequest{
-					Spec: clustersv1alpha1.AccessRequestSpec{
-						RequestRef: &commonapi.ObjectReference{Name: "wl-test", Namespace: cluster.Namespace},
-						Token:      &clustersv1alpha1.TokenConfig{RoleRefs: []commonapi.RoleRef{{Name: "cluster-admin", Kind: "ClusterRole"}}},
-					},
-				}
-				ar.SetName(cluster.Name + ".remote")
-				ar.SetNamespace(cluster.Namespace)
-				if err := config.Client().Resources().Create(ctx, ar); err != nil {
-					t.Errorf("failed to create remote AccessRequest for cluster %s: %v", cluster.Name, err)
-				}
-				objectList = append(objectList, ar)
-				ars[fmt.Sprintf("%s/%s", cluster.Namespace, cluster.Name)] = ar
-			}
-
-			if err := waitFor(t, "remote AccessRequests granted", func(ctx context.Context) (bool, error) {
-				for _, ar := range ars {
-					if getErr := config.Client().Resources().Get(ctx, ar.GetName(), ar.GetNamespace(), ar); getErr != nil {
-						return false, getErr
-					}
-					if !ar.Status.IsGranted() {
-						return false, nil
-					}
-				}
-				return true, nil
-			}, wait.WithTimeout(2*time.Minute)); err != nil {
-				remoteAccessRequests := make(map[string]clustersv1alpha1.AccessRequest, len(ars))
-				for key, ar := range ars {
-					remoteAccessRequests[key] = *ar
-				}
-				t.Errorf("%v; remote AccessRequests: %+v", err, remoteAccessRequests)
-			}
-			return ctx
-		}).
 		Assess("observability stack is ready", func(ctx context.Context, t *testing.T, config *envconf.Config) context.Context {
 			obsStack := &unstructured.Unstructured{}
 			obsStack.SetGroupVersionKind(schema.GroupVersionKind{
@@ -205,31 +151,7 @@ func TestObsStack(t *testing.T) {
 
 				return ready, nil
 			}, wait.WithTimeout(20*time.Minute)); err != nil {
-				remoteObservability := &unstructured.Unstructured{}
-				remoteObservability.SetGroupVersionKind(schema.GroupVersionKind{
-					Group:   "kro.run",
-					Version: "v1alpha1",
-					Kind:    "RemoteObservability",
-				})
-				if getErr := config.Client().Resources().Get(ctx, "remote-observability", obsStackNamespace, remoteObservability); getErr != nil {
-					t.Errorf("%v; status: %#v; failed to get RemoteObservability: %v", err, obsStack.Object["status"], getErr)
-				} else {
-					helmStatuses := make(map[string]any, 3)
-					for _, name := range []string{"remote-cert-manager", "remote-telemetry-operator", "remote-telemetry-collector"} {
-						helmDeployment := &unstructured.Unstructured{}
-						helmDeployment.SetGroupVersionKind(schema.GroupVersionKind{
-							Group:   "helm.open-control-plane.io",
-							Version: "v1alpha1",
-							Kind:    "HelmDeployment",
-						})
-						if getErr := config.Client().Resources().Get(ctx, name, "remote-observability-system", helmDeployment); getErr != nil {
-							helmStatuses[name] = getErr.Error()
-							continue
-						}
-						helmStatuses[name] = helmDeployment.Object["status"]
-					}
-					t.Errorf("%v; status: %#v; RemoteObservability status: %#v; HelmDeployment statuses: %#v", err, obsStack.Object["status"], remoteObservability.Object["status"], helmStatuses)
-				}
+				t.Errorf("%v", err)
 			}
 
 			return ctx
@@ -314,8 +236,8 @@ func TestObsStack(t *testing.T) {
 
 				ar := &clustersv1alpha1.AccessRequest{
 					Spec: clustersv1alpha1.AccessRequestSpec{
-						RequestRef: &commonapi.ObjectReference{
-							Name:      "wl-test",
+						ClusterRef: &commonapi.ObjectReference{
+							Name:      cluster.Name,
 							Namespace: cluster.Namespace,
 						},
 						Token: &clustersv1alpha1.TokenConfig{
@@ -347,16 +269,12 @@ func TestObsStack(t *testing.T) {
 					}
 
 					if !ar.Status.IsGranted() {
-						return false, nil
+						return false, fmt.Errorf("AccessRequest '%s/%s' is not granted yet", ar.Namespace, ar.Name)
 					}
 				}
 				return true, nil
 			}, wait.WithTimeout(1*time.Minute)); err != nil {
-				routeAccessRequests := make(map[string]clustersv1alpha1.AccessRequest, len(ars))
-				for key, ar := range ars {
-					routeAccessRequests[key] = *ar
-				}
-				t.Errorf("%v; route AccessRequests: %+v", err, routeAccessRequests)
+				t.Errorf("%v", err)
 			}
 
 			// access each workload cluster, inject the routing information into the coredns config and kill all coredns pods to restart them with the new configuration
