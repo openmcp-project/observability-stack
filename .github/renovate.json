@@ -83,7 +83,7 @@
         "patch",
         "digest"
       ],
-      "automerge": false,
+      "automerge": true,
       "automergeType": "pr"
     },
     {
