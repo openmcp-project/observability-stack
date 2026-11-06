@@ -65,23 +65,38 @@ spec:
       type: primitive
       default: Unknown
 
-    - name: tr_tc_create_mcpv2_run_status
-      fieldPath: "status.testCases[?(@.name=='createManagedControlPlaneV2')].conditions[?(@.type=='RunCompleted')].status"
+    - name: tr_tc_create_controlplane_run_status
+      fieldPath: "status.testCases[?(@.name=='createControlPlane')].conditions[?(@.type=='RunCompleted')].status"
       type: primitive
       default: Unknown
 
-    - name: tr_tc_create_mcpv2_run_reason
-      fieldPath: "status.testCases[?(@.name=='createManagedControlPlaneV2')].conditions[?(@.type=='RunCompleted')].reason"
+    - name: tr_tc_create_controlplane_run_reason
+      fieldPath: "status.testCases[?(@.name=='createControlPlane')].conditions[?(@.type=='RunCompleted')].reason"
       type: primitive
       default: Unknown
 
-    - name: tr_tc_create_mcpv2_cleanup_status
-      fieldPath: "status.testCases[?(@.name=='createManagedControlPlaneV2')].conditions[?(@.type=='CleanupCompleted')].status"
+    - name: tr_tc_create_controlplane_cleanup_status
+      fieldPath: "status.testCases[?(@.name=='createControlPlane')].conditions[?(@.type=='CleanupCompleted')].status"
       type: primitive
       default: Unknown
 
-    - name: tr_tc_create_mcpv2_cleanup_reason
-      fieldPath: "status.testCases[?(@.name=='createManagedControlPlaneV2')].conditions[?(@.type=='CleanupCompleted')].reason"
+    - name: tr_tc_create_controlplane_cleanup_reason
+      fieldPath: "status.testCases[?(@.name=='createControlPlane')].conditions[?(@.type=='CleanupCompleted')].reason"
       type: primitive
       default: Unknown
+
+    # createService produces N dynamically-named test cases ("createService/<Kind>") per run.
+    # The metrics operator emits one series per E2ETestRun and the k8s jsonpath engine supports
+    # neither regex (=~) nor nested/compound filters, so a fixed column per service is impossible.
+    # Instead we aggregate RunCompleted/CleanupCompleted statuses across ALL test cases into a
+    # slice label (JSON array, e.g. ["True","True","False"]); the alert rule regex-matches "False".
+    - name: tr_all_run_statuses
+      fieldPath: "status.testCases[*].conditions[?(@.type=='RunCompleted')].status"
+      type: slice
+      default: "[]"
+
+    - name: tr_all_cleanup_statuses
+      fieldPath: "status.testCases[*].conditions[?(@.type=='CleanupCompleted')].status"
+      type: slice
+      default: "[]"
 
