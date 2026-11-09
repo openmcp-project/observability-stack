@@ -42,7 +42,7 @@ spec:
           name: ${schema.spec.imagePullSecretRef.name}
           namespace: ${schema.spec.imagePullSecretRef.namespace}
 
-    # openMCP default gateway used to acquire the DNS base domain
+    # OpenControlPlane default gateway used to acquire the DNS base domain
     - id: sharedGateway
       externalRef:
         apiVersion: gateway.networking.k8s.io/v1
