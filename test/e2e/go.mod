@@ -4,21 +4,21 @@ go 1.27.3
 
 require (
 	github.com/kubernetes-sigs/kro v0.9.3
-	github.com/openmcp-project/controller-utils v0.33.2
+	github.com/openmcp-project/controller-utils v0.33.3
 	github.com/openmcp-project/opencontrolplane-runtime v1.4.2
-	github.com/openmcp-project/openmcp-operator/api v1.4.2
+	github.com/openmcp-project/openmcp-operator/api v1.4.4
 	github.com/openmcp-project/openmcp-testing v1.4.2
 	github.com/prometheus/client_golang v1.25.0
-	github.com/prometheus/common v0.72.1
+	github.com/prometheus/common v0.73.1
 	helm.sh/helm/v3 v3.22.1
-	k8s.io/api v0.37.1
-	k8s.io/apimachinery v0.37.1
-	k8s.io/client-go v0.37.1
+	k8s.io/api v0.37.2
+	k8s.io/apimachinery v0.37.2
+	k8s.io/client-go v0.37.2
 	k8s.io/klog/v2 v2.140.0
 	ocm.software/open-component-model/kubernetes/controller v0.15.0
 	sigs.k8s.io/controller-runtime v0.25.2
 	sigs.k8s.io/e2e-framework v0.7.0
-	sigs.k8s.io/gateway-api v1.6.3
+	sigs.k8s.io/gateway-api v1.7.0
 	sigs.k8s.io/yaml v1.6.0
 )
 
@@ -52,7 +52,7 @@ require (
 	github.com/fluxcd/helm-controller/api v1.6.5 // indirect
 	github.com/fluxcd/kustomize-controller/api v1.9.6 // indirect
 	github.com/fluxcd/pkg/apis/acl v0.10.0 // indirect
-	github.com/fluxcd/pkg/apis/kustomize v1.21.0 // indirect
+	github.com/fluxcd/pkg/apis/kustomize v1.23.0 // indirect
 	github.com/fluxcd/pkg/apis/meta v1.30.2 // indirect
 	github.com/fluxcd/pkg/kustomize v1.35.7 // indirect
 	github.com/fluxcd/pkg/tar v1.2.0 // indirect
@@ -109,6 +109,7 @@ require (
 	github.com/opencontainers/go-digest v1.0.0 // indirect
 	github.com/opencontainers/image-spec v1.1.1 // indirect
 	github.com/openmcp-project/openmcp-operator/lib v1.4.1 // indirect
+	github.com/pandatix/go-abnf v0.5.3 // indirect
 	github.com/pelletier/go-toml v1.9.5 // indirect
 	github.com/peterbourgon/diskv v2.0.1+incompatible // indirect
 	github.com/pkg/errors v0.9.1 // indirect
@@ -140,7 +141,7 @@ require (
 	golang.org/x/sys v0.49.0 // indirect
 	golang.org/x/term v0.47.0 // indirect
 	golang.org/x/text v0.43.0 // indirect
-	golang.org/x/time v0.15.0 // indirect
+	golang.org/x/time v0.16.0 // indirect
 	gomodules.xyz/jsonpatch/v2 v2.5.0 // indirect
 	google.golang.org/protobuf v1.36.12 // indirect
 	gopkg.in/evanphx/json-patch.v4 v4.13.0 // indirect
@@ -152,7 +153,7 @@ require (
 	k8s.io/component-base v0.37.1 // indirect
 	k8s.io/kube-openapi v0.0.0-20260721132016-d427ff9ee9ad // indirect
 	k8s.io/kubectl v0.37.1 // indirect
-	k8s.io/streaming v0.37.1 // indirect
+	k8s.io/streaming v0.37.2 // indirect
 	k8s.io/utils v0.0.0-20260707023825-cf1189d6abe3 // indirect
 	ocm.software/open-component-model/bindings/go/descriptor/v2 v2.0.3-alpha3 // indirect
 	ocm.software/open-component-model/bindings/go/runtime v0.0.8 // indirect
