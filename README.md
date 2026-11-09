@@ -4,14 +4,14 @@
 
 ## About this project
 
-A comprehensive observability stack for openMCP deployments, providing monitoring, metrics collection, log aggregation, and distributed tracing capabilities.
+A comprehensive observability stack for OpenControlPlane deployments, providing monitoring, metrics collection, log aggregation, and distributed tracing capabilities.
 
 The stack deploys the following components:
 
 | Component | Purpose |
 | --- | --- |
 | **cert-manager** | TLS certificate lifecycle management |
-| **metrics-operator** | openMCP metrics collection |
+| **metrics-operator** | OpenControlPlane metrics collection |
 | **OpenTelemetry Operator** | Manages OTel Collector instances |
 | **OTel Collector (Deployment)** | Scrapes Kubernetes metrics → Prometheus |
 | **OTel Collector (DaemonSet)** | Collects pod stdout/stderr logs → Victoria Logs |
@@ -253,7 +253,7 @@ Both Prometheus and Victoria Logs are exposed through a single shared Envoy Gate
 | Victoria Logs UI | `https://logs.<gateway-namespace>.<base-domain>:<port>` | Log query and UI |
 | OTLP log ingestion | `https://otlp-logs.<gateway-namespace>.<base-domain>:<port>` | Remote log ingestion (external clusters) |
 
-The `<base-domain>` is derived from the openMCP Gateway's `dns.openmcp.cloud/base-domain` annotation. With the default configuration (`observabilityGateway.namespace: observability-gateway-system`), the hostnames look like:
+The `<base-domain>` is derived from the OpenControlPlane Gateway's `dns.openmcp.cloud/base-domain` annotation. With the default configuration (`observabilityGateway.namespace: observability-gateway-system`), the hostnames look like:
 
 - `metrics.observability-gateway-system.<base-domain>:8443`
 - `logs.observability-gateway-system.<base-domain>:8443`
@@ -495,7 +495,7 @@ The `ObservabilityStack` custom resource supports the following configuration op
 - **imagePullSecretRef**: Secret for pulling container images
 - **certManager**: Configuration for cert-manager (namespace)
 - **metricsOperator**: Configuration for the metrics-operator (namespace)
-- **metrics**: Configuration for openMCP metrics collection (namespace)
+- **metrics**: Configuration for OpenControlPlane metrics collection (namespace)
 - **openTelemetryOperator**: Configuration for the OpenTelemetry Operator (namespace)
 - **openTelemetryCollector**: Configuration for the OTel Collector Deployment that scrapes metrics (namespace)
 - **prometheusOperator**: Configuration for the Prometheus Operator (namespace)
