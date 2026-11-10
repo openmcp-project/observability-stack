@@ -116,17 +116,18 @@ def push_kustomizations(repo_root: Path, version: str) -> None:
 
             oci_path = f"oci://{kustomizations_prefix}/{artifact_name}:{version}"
 
-            try:
-                run_command([
-                    "flux", "push", "artifact", oci_path,
-                    f"--path={kustomization_dir}",
-                    f"--source={git_origin}",
-                    f"--revision={revision}"
-                ])
-            except (subprocess.CalledProcessError, OSError) as e:
-                print(f"  Warning: Failed to push {artifact_name}: {e}")
+            # A failed push must abort the build: otherwise the OCM component is
+            # assembled and published referencing kustomization artifacts that
+            # never made it to the registry, and the stack silently fails to
+            # become ready when deployed.
+            run_command([
+                "flux", "push", "artifact", oci_path,
+                f"--path={kustomization_dir}",
+                f"--source={git_origin}",
+                f"--revision={revision}"
+            ])
         else:
-            print(f"  Warning: Kustomization directory not found: {kustomization_dir}")
+            raise FileNotFoundError(f"Kustomization directory not found: {kustomization_dir}")
 
 
 def build_ocm_component(
