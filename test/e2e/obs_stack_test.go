@@ -138,7 +138,7 @@ func TestObsStack(t *testing.T) {
 
 			if err := waitFor(t, "ObservabilityStack stack ready", func(context.Context) (done bool, err error) {
 				if getErr := config.Client().Resources().Get(ctx, obsStack.GetName(), obsStack.GetNamespace(), obsStack); getErr != nil {
-					return false, err
+					return false, getErr
 				}
 
 				ready, hasReady, err := unstructured.NestedBool(obsStack.Object, "status", "ready")
@@ -151,6 +151,9 @@ func TestObsStack(t *testing.T) {
 
 				return ready, nil
 			}, wait.WithTimeout(20*time.Minute)); err != nil {
+				// Dump the full status so CI logs show WHICH sub-resource is blocking readiness.
+				status, _, _ := unstructured.NestedMap(obsStack.Object, "status")
+				t.Logf("ObservabilityStack did not become ready; status: %+v", status)
 				t.Errorf("%v", err)
 			}
 
@@ -279,6 +282,11 @@ func TestObsStack(t *testing.T) {
 
 			// access each workload cluster, inject the routing information into the coredns config and kill all coredns pods to restart them with the new configuration
 			for clusterKey, ar := range ars {
+				if ar.Status.SecretRef == nil {
+					t.Errorf("AccessRequest '%s/%s' has no SecretRef (not granted); skipping cluster %s", ar.Namespace, ar.Name, clusterKey)
+					continue
+				}
+
 				kubeconfigSecret := &corev1.Secret{}
 				kubeconfigSecret.SetName(ar.Status.SecretRef.Name)
 				kubeconfigSecret.SetNamespace(ar.GetNamespace())
