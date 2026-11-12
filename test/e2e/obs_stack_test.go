@@ -138,16 +138,18 @@ func TestObsStack(t *testing.T) {
 				if listErr := config.Client().Resources().List(ctx, clusterList); listErr != nil {
 					return false, listErr
 				}
+				workloadCount := 0
 				for _, cluster := range clusterList.Items {
 					if !slices.Contains(cluster.Spec.Purposes, "workload") {
 						continue
 					}
+					workloadCount++
 					if cluster.Status.Phase != clustersv1alpha1.CLUSTER_PHASE_READY {
-						return false, fmt.Errorf("workload cluster %s/%s phase is %q, want %q",
-							cluster.Namespace, cluster.Name, cluster.Status.Phase, clustersv1alpha1.CLUSTER_PHASE_READY)
+						// return nil error so wait.For keeps polling instead of stopping immediately
+						return false, nil
 					}
 				}
-				return true, nil
+				return workloadCount > 0, nil
 			}, wait.WithTimeout(10*time.Minute)); err != nil {
 				t.Errorf("%v", err)
 			}
