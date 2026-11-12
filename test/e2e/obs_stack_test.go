@@ -126,6 +126,33 @@ func TestObsStack(t *testing.T) {
 			objectList = append(objectList, objs...)
 			return ctx
 		}).
+		Assess("workload cluster is ready", func(ctx context.Context, t *testing.T, config *envconf.Config) context.Context {
+			// Wait for all workload clusters to be Ready before checking the ObservabilityStack.
+			// remoteObservability targets workload clusters via HelmDeployment; if none are Ready
+			// yet, the deployments have no target and remoteObservability never becomes ready.
+			if err := clustersv1alpha1.AddToScheme(config.Client().Resources().GetScheme()); err != nil {
+				t.Fatalf("failed to install cluster types: %v", err)
+			}
+			if err := waitFor(t, "workload cluster Ready", func(ctx context.Context) (done bool, err error) {
+				clusterList := &clustersv1alpha1.ClusterList{}
+				if listErr := config.Client().Resources().List(ctx, clusterList); listErr != nil {
+					return false, listErr
+				}
+				for _, cluster := range clusterList.Items {
+					if !slices.Contains(cluster.Spec.Purposes, "workload") {
+						continue
+					}
+					if cluster.Status.Phase != clustersv1alpha1.CLUSTER_PHASE_READY {
+						return false, fmt.Errorf("workload cluster %s/%s phase is %q, want %q",
+							cluster.Namespace, cluster.Name, cluster.Status.Phase, clustersv1alpha1.CLUSTER_PHASE_READY)
+					}
+				}
+				return true, nil
+			}, wait.WithTimeout(10*time.Minute)); err != nil {
+				t.Errorf("%v", err)
+			}
+			return ctx
+		}).
 		Assess("observability stack is ready", func(ctx context.Context, t *testing.T, config *envconf.Config) context.Context {
 			obsStack := &unstructured.Unstructured{}
 			obsStack.SetGroupVersionKind(schema.GroupVersionKind{
