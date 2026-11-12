@@ -47,7 +47,7 @@ jobs:
 
   e2e_test:
     name: Run E2E Test
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-26.04
     needs: check_changes
     if: needs.check_changes.outputs.only_version_changed != 'true'
     steps:
@@ -115,6 +115,9 @@ jobs:
         with:
           go-version-file: test/e2e/go.mod
           cache-dependency-path: test/e2e/go.sum
+
+      - name: Configure inotify capacity for kind clusters
+        run: sudo sysctl -w fs.inotify.max_user_instances=8192
 
       - name: Install test dependencies
         run: |
