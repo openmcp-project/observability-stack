@@ -47,7 +47,7 @@ jobs:
 
   e2e_test:
     name: Run E2E Test
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-26.04
     needs: check_changes
     if: needs.check_changes.outputs.only_version_changed != 'true'
     steps:
