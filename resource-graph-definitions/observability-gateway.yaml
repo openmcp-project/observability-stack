@@ -127,6 +127,9 @@ spec:
                 path: /spec/listeners/2/hostname
                 value: otlp-logs.${schema.spec.forProvider.namespace}.${sharedGateway.metadata.annotations["dns.openmcp.cloud/base-domain"]}
               - op: replace
+                path: /spec/listeners/3/hostname
+                value: dashboards.${schema.spec.forProvider.namespace}.${sharedGateway.metadata.annotations["dns.openmcp.cloud/base-domain"]}
+              - op: replace
                 path: /spec/listeners/0/port
                 value: ${"%d".format([schema.spec.forProvider.port])}
               - op: replace
@@ -134,6 +137,9 @@ spec:
                 value: ${"%d".format([schema.spec.forProvider.port])}
               - op: replace
                 path: /spec/listeners/2/port
+                value: ${"%d".format([schema.spec.forProvider.port])}
+              - op: replace
+                path: /spec/listeners/3/port
                 value: ${"%d".format([schema.spec.forProvider.port])}
           - target:
               kind: Certificate
@@ -159,6 +165,14 @@ spec:
                 path: /spec/dnsNames
                 value:
                 - otlp-logs.${schema.spec.forProvider.namespace}.${sharedGateway.metadata.annotations["dns.openmcp.cloud/base-domain"]}
+          - target:
+              kind: Certificate
+              name: perses-gateway-cert
+            patch: |-
+              - op: add
+                path: /spec/dnsNames
+                value:
+                - dashboards.${schema.spec.forProvider.namespace}.${sharedGateway.metadata.annotations["dns.openmcp.cloud/base-domain"]}
           - target:
               kind: Certificate
               name: observability-client-ca
