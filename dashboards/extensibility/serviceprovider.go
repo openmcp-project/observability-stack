@@ -10,16 +10,12 @@ import (
 
 func NewServiceProviderDashboard() (dashboard.Builder, error) {
 	return dashboard.New("serviceproviders",
-		dashboard.ProjectName(projectName),
+		dashboard.ProjectName(ProjectName),
 		dashboard.Name("Service Providers"),
 		providerSelectorVariable("sp-"),
 		durationVariable(),
 		performancePanel(2, averageCreateAndUpdate()),
 		resourceUsagePanel(),
-		func(dashboard *dashboard.Builder) error {
-			// test
-			return nil
-		},
 		prometheusDatasource(),
 	)
 }
@@ -33,13 +29,13 @@ func averageCreateAndUpdate() panelgroup.Option {
 			query.PromQL("rate(opencontrolplane_runtime_resource_create_seconds_sum{pod=~\"$provider\"}[$duration])"+
 				"/rate(opencontrolplane_runtime_resource_create_seconds_count{pod=~\"$provider\"}[$duration])",
 				query.SeriesNameFormat("resource creation ({{pod}})"),
-				query.Datasource(prometheusDatasourceName)),
+				query.Datasource(PrometheusDatasourceName)),
 		),
 		panel.AddQuery(
 			query.PromQL("rate(opencontrolplane_runtime_resource_update_seconds_sum{pod=~\"$provider\"}[$duration])"+
 				"/rate(opencontrolplane_runtime_resource_update_seconds_count{pod=~\"$provider\"}[$duration])",
 				query.SeriesNameFormat("resource update ({{pod}})"),
-				query.Datasource(prometheusDatasourceName)),
+				query.Datasource(PrometheusDatasourceName)),
 		),
 	)
 }

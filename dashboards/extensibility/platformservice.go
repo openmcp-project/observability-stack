@@ -6,7 +6,7 @@ import (
 
 func NewPlatformServiceDashboard() (dashboard.Builder, error) {
 	return dashboard.New("platformservices",
-		dashboard.ProjectName(projectName),
+		dashboard.ProjectName(ProjectName),
 		dashboard.Name("Platform Services"),
 		providerSelectorVariable("ps-"),
 		durationVariable(),

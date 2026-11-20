@@ -15,10 +15,10 @@ import (
 	timeSerieschart "github.com/perses/plugins/timeserieschart/sdk/go"
 )
 
-const (
-	prometheusDatasourceName = "prometheus"
-	prometheusEndpoint       = "http://prometheus.monitoring:9090"
-	projectName              = "opencontrolplane"
+var (
+	PrometheusDatasourceName = "prometheus"
+	PrometheusEndpoint       = "http://prometheus.monitoring:9090"
+	ProjectName              = "opencontrolplane"
 )
 
 // DASHBOARD PANELS
@@ -40,7 +40,7 @@ func memoryUsagePanel() panelgroup.Option {
 		panel.AddQuery(
 			query.PromQL("container_memory_working_set_bytes{pod=~\"$provider\"}",
 				query.SeriesNameFormat("{{pod}}"),
-				query.Datasource(prometheusDatasourceName)),
+				query.Datasource(PrometheusDatasourceName)),
 		),
 	)
 }
@@ -53,7 +53,7 @@ func cpuUsagePanel() panelgroup.Option {
 		panel.AddQuery(
 			query.PromQL("rate(container_cpu_usage_seconds_total{pod=~\"$provider\"}[$duration])",
 				query.SeriesNameFormat("{{pod}}"),
-				query.Datasource(prometheusDatasourceName)),
+				query.Datasource(PrometheusDatasourceName)),
 		),
 	)
 }
@@ -80,7 +80,7 @@ func reconcileTimePanel() panelgroup.Option {
 			query.PromQL("rate(controller_runtime_reconcile_time_seconds_sum{pod=~\"$provider\"}[$duration])"+
 				"/rate(controller_runtime_reconcile_time_seconds_count{pod=~\"$provider\"}[$duration])",
 				query.SeriesNameFormat("{{pod}}"),
-				query.Datasource(prometheusDatasourceName)),
+				query.Datasource(PrometheusDatasourceName)),
 		),
 	)
 }
@@ -93,7 +93,7 @@ func reconcileCountPanel() panelgroup.Option {
 		panel.AddQuery(
 			query.PromQL("rate(controller_runtime_reconcile_total{pod=~\"$provider\"}[$duration])",
 				query.SeriesNameFormat("result={{result}} ({{pod}})"),
-				query.Datasource(prometheusDatasourceName)),
+				query.Datasource(PrometheusDatasourceName)),
 		),
 	)
 }
@@ -106,14 +106,14 @@ func workQueuePanel() panelgroup.Option {
 		panel.AddQuery(
 			query.PromQL("rate(workqueue_adds_total{pod=~\"$provider\"}[$duration])",
 				query.SeriesNameFormat("items added ({{pod}})"),
-				query.Datasource(prometheusDatasourceName)),
+				query.Datasource(PrometheusDatasourceName)),
 			query.PromQL("rate(workqueue_queue_duration_seconds_sum{pod=~\"$provider\"}[$duration])"+
 				"/rate(workqueue_queue_duration_seconds_count{pod=~\"$provider\"}[$duration])",
 				query.SeriesNameFormat("average duration seconds ({{pod}})"),
-				query.Datasource(prometheusDatasourceName)),
+				query.Datasource(PrometheusDatasourceName)),
 			query.PromQL("rate(workqueue_depth{pod=~\"$provider\"}[$duration])",
 				query.SeriesNameFormat("depth ({{pod}})"),
-				query.Datasource(prometheusDatasourceName)),
+				query.Datasource(PrometheusDatasourceName)),
 		),
 	)
 }
@@ -121,7 +121,7 @@ func workQueuePanel() panelgroup.Option {
 // DASHBOARD SETTINGS FUNCS
 
 func prometheusDatasource() dashboard.Option {
-	return dashboard.AddDatasource(prometheusDatasourceName, promDs.Prometheus(promDs.HTTPProxy(prometheusEndpoint)))
+	return dashboard.AddDatasource(PrometheusDatasourceName, promDs.Prometheus(promDs.HTTPProxy(PrometheusEndpoint)))
 }
 
 func providerSelectorVariable(podPrefix string) dashboard.Option {
@@ -130,7 +130,7 @@ func providerSelectorVariable(podPrefix string) dashboard.Option {
 		listVar.List(
 			promql.PrometheusPromQL(fmt.Sprintf("container_cpu_usage_seconds_total{pod=~%q}", podRegex),
 				promql.LabelName("pod"),
-				promql.Datasource(prometheusDatasourceName),
+				promql.Datasource(PrometheusDatasourceName),
 			),
 			listVar.DisplayName("Provider"),
 			listVar.AllowMultiple(true),
