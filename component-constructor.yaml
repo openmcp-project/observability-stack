@@ -176,3 +176,19 @@ components:
           type: ociImage
           imageReference: "docker.io/victoriametrics/victoria-logs:${VICTORIA_LOGS_IMAGE_VERSION}"
 
+      # perses
+      - name: perses-kustomization
+        version: ${OBSERVABILITY_STACK_VERSION}
+        type: kustomization
+        access:
+          type: ociArtifact
+          imageReference: "${KUSTOMIZATIONS_LOCATION_PREFIX}/perses:${OBSERVABILITY_STACK_VERSION}"
+
+      - name: perses-image
+        version: ${PERSES_IMAGE_VERSION}
+        type: ociImage
+        input:
+          type: ociImage
+          path: "docker.io/persesdev/perses:${PERSES_IMAGE_VERSION}"
+          repository: images/perses
+
