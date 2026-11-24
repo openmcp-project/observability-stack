@@ -1,0 +1,43 @@
+name: Dashboards
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'dashboards/**'
+  pull_request:
+    types: [opened, synchronize, reopened]
+    branches:
+      - main
+    paths:
+      - 'dashboards/**'
+
+permissions:
+  contents: read
+
+env:
+  GO_VERSION: '1.26'
+
+jobs:
+  build:
+    name: Build Dashboards
+    runs-on: ubuntu-26.04
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          persist-credentials: false
+
+      - name: Setup Go
+        uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e # v7
+        with:
+          go-version: ${{ env.GO_VERSION }}
+          cache-dependency-path: dashboards/go.sum
+
+      - name: Install percli
+        uses: perses/cli-actions/actions/install_percli@4e40806603fc10af6e1c05087fa532b1e4850085 # v0.1.0
+
+      - name: Build dashboards
+        working-directory: dashboards
+        run: percli dac build -f main.go
