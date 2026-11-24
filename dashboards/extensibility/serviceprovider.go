@@ -8,12 +8,16 @@ import (
 	timeSerieschart "github.com/perses/plugins/timeserieschart/sdk/go"
 )
 
+// NewServiceProviderDashboard visualizes service providers separately with a dedicated opencontrolplane-runtime metrics panel
+// and tenant resource status
 func NewServiceProviderDashboard() (dashboard.Builder, error) {
 	return dashboard.New("serviceproviders",
 		dashboard.ProjectName(ProjectName),
 		dashboard.Name("Service Providers"),
+		resourceSelectorVariable("service_provider_status"),
 		providerSelectorVariable("sp-"),
 		durationVariable(),
+		dashboard.AddPanelGroup("Health", resourceStatusPanel("Tenant Resources Status")),
 		performancePanel(2, averageCreateAndUpdate()),
 		resourceUsagePanel(),
 		prometheusDatasource(),

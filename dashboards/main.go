@@ -32,7 +32,7 @@ func main() {
 	// create one file that contains all dashboards
 	for i, dFunc := range dashboards {
 		exec.BuildDashboard(dFunc())
-		if i == len(dashboards) - 1 {
+		if i == len(dashboards)-1 {
 			// skip trailing separtor
 			continue
 		}
