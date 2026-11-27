@@ -163,21 +163,19 @@ def build_ocm_component(
     }
 
     ocm_vars = build_ocm_vars(settings_file, base_vars)
+    # The collector image tag has no "v" prefix, and OCM does not support ${VAR#v}.
+    ocm_vars["OPEN_TELEMETRY_COLLECTOR_IMAGE_TAG"] = ocm_vars["OPEN_TELEMETRY_COLLECTOR_IMAGE_VERSION"].removeprefix("v")
 
     print(f"Building component with variables: {' '.join(f'{k}={v}' for k, v in ocm_vars.items())}")
 
     env = {**os.environ, **ocm_vars}
 
-    components_location = os.environ.get("COMPONENTS_LOCATION", "")
-
-    # Execute OCM command (ocm v0.48+ syntax)
     cmd = [
-        "ocm", "add", "componentversions",
-        "--create",
-        "--file", str(ctf_dir),
-        "--addenv",
-        "--lookup", components_location,
-        str(constructor_file),
+        "ocm", "add", "cv",
+        "--config", str(repo_root / "ocm-config.yaml"),
+        "--constructor", str(constructor_file),
+        "--working-directory", str(repo_root),
+        "--repository", f"ctf::{ctf_dir}",
     ]
 
     run_command(cmd, env=env)

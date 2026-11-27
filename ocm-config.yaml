@@ -1,0 +1,13 @@
+type: generic.config.ocm.software/v1
+configurations:
+  - type: resolvers.config.ocm.software/v1alpha1
+    resolvers:
+      - repository:
+          type: OCIRepository/v1
+          baseUrl: ghcr.io
+          subPath: openmcp-project/components
+        componentNamePattern: "github.com/openmcp-project/metrics-operator"
+  - type: signing.config.ocm.software/v1alpha1
+    signature: default
+    signer:
+      type: SigstoreSigningConfiguration/v1alpha1

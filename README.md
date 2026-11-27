@@ -508,6 +508,30 @@ The `observabilityGateway.namespace` is used as the subdomain component for all 
 
 Adjust the namespace and configuration values in the `ObservabilityStack` resource according to your requirements.
 
+## Verifying a Release
+
+The OCM component version is signed keyless with [Sigstore](https://www.sigstore.dev/) by the release workflow.
+
+Verify a component version with the [OCM CLI](https://ocm.software). The expected signer goes into an OCM configuration file:
+
+```yaml
+# verify.yaml
+type: generic.config.ocm.software/v1
+configurations:
+  - type: signing.config.ocm.software/v1alpha1
+    signature: default
+    verifier:
+      type: SigstoreVerificationConfiguration/v1alpha1
+      certificateIdentity: https://github.com/openmcp-project/observability-stack/.github/workflows/main-update.yaml@refs/heads/main
+      certificateOIDCIssuer: https://token.actions.githubusercontent.com
+```
+
+```bash
+ocm verify cv --config verify.yaml ghcr.io/openmcp-project/components//github.com/openmcp-project/observability-stack:<version>
+```
+
+The command fails if the component version is unsigned or was signed by anything other than that workflow on the `main` branch.
+
 ## Contributing
 
 For general contribution guidelines, see the [organization-wide CONTRIBUTING.md](https://github.com/openmcp-project/.github/blob/main/CONTRIBUTING.md).

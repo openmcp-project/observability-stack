@@ -15,8 +15,11 @@ from pathlib import Path
 from common import (
     detect_repo_root,
     load_component_settings,
+    read_version_file,
     run_command,
 )
+
+COMPONENT_NAME = "github.com/openmcp-project/observability-stack"
 
 
 def push_component(repo_root: Path, components_location: str, copy_resources: bool = False) -> None:
@@ -26,8 +29,8 @@ def push_component(repo_root: Path, components_location: str, copy_resources: bo
     Args:
         repo_root: Path to the repository root
         components_location: Target registry location
-        copy_resources: When True, use --copy-resources (fetch & push all blobs).
-                        When False, use --copy-local-resources (refs only, PR mode).
+        copy_resources: When True, copy all resources into the target registry.
+                        When False, copy local blobs only and keep references (PR mode).
 
     Raises:
         SystemExit: If CTF directory is not found
@@ -40,14 +43,24 @@ def push_component(repo_root: Path, components_location: str, copy_resources: bo
         sys.exit(1)
 
     repository_context = os.environ.get("REPOSITORY_CONTEXT", "")
-    resource_flag = "--copy-resources" if copy_resources else "--copy-local-resources"
-    print(f"Pushing component to {repository_context or components_location} ({resource_flag})...")
+    component = f"{COMPONENT_NAME}:{read_version_file(repo_root)}"
+    print(f"Pushing {component} to {repository_context or components_location}...")
 
+    # ocm replaces existing versions and has no flag to prevent it.
+    if os.environ.get("OVERWRITE_COMPONENTS", "false") != "true":
+        exists = subprocess.run(
+            ["ocm", "get", "cv", f"{components_location}//{component}"],
+            check=False,
+        )
+        if exists.returncode == 0:
+            print(f"Error: {component} already exists. Set OVERWRITE_COMPONENTS to 'true' to overwrite it.")
+            sys.exit(1)
+
+    resource_flags = ["--copy-resources", "--upload-as", "ociArtifact"] if copy_resources else []
     run_command([
-        "ocm", "transfer", "ctf",
-        resource_flag,
-        "--overwrite",
-        str(ctf_dir),
+        "ocm", "transfer", "cv",
+        *resource_flags,
+        f"ctf::{ctf_dir}//{component}",
         components_location
     ])
 
