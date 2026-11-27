@@ -88,6 +88,8 @@ jobs:
 
       - name: Setup Flux CLI
         uses: fluxcd/flux2/action@da2d22d3690191a315822612085f424e4133b06a # main
+        with:
+          version: 2.10.1 # the latest lookup fails intermittently
 
       - name: Setup Python
         uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7
@@ -208,6 +210,8 @@ jobs:
 
       - name: Setup Flux CLI
         uses: fluxcd/flux2/action@da2d22d3690191a315822612085f424e4133b06a # main
+        with:
+          version: 2.10.1 # the latest lookup fails intermittently
 
       - name: Setup Python
         uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7
