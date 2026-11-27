@@ -7,3 +7,7 @@ configurations:
           baseUrl: ghcr.io
           subPath: openmcp-project/components
         componentNamePattern: "github.com/openmcp-project/metrics-operator"
+  - type: signing.config.ocm.software/v1alpha1
+    signature: default
+    signer:
+      type: SigstoreSigningConfiguration/v1alpha1

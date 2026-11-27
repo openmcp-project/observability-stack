@@ -81,6 +81,11 @@ jobs:
           chmod +x "$RUNNER_TEMP/ocm"
           echo "$RUNNER_TEMP" >> "$GITHUB_PATH"
 
+      - name: Install cosign
+        uses: sigstore/cosign-installer@881c63bd87e38389154debd8331404ce7ca8a3ab # v4.1.4
+        with:
+          cosign-release: v3.1.4
+
       - name: Setup Flux CLI
         uses: fluxcd/flux2/action@da2d22d3690191a315822612085f424e4133b06a # main
 
@@ -107,6 +112,9 @@ jobs:
           python3 -u ./hack/build-component.py
         env:
           PYTHONUNBUFFERED: "1"
+
+      - name: Sign OCM component
+        run: ocm sign cv --config ocm-config.yaml "ctf::ctf//github.com/openmcp-project/observability-stack:$(cat VERSION)"
 
       - name: Push OCM component to registry
         run: |
@@ -193,6 +201,11 @@ jobs:
           chmod +x "$RUNNER_TEMP/ocm"
           echo "$RUNNER_TEMP" >> "$GITHUB_PATH"
 
+      - name: Install cosign
+        uses: sigstore/cosign-installer@881c63bd87e38389154debd8331404ce7ca8a3ab # v4.1.4
+        with:
+          cosign-release: v3.1.4
+
       - name: Setup Flux CLI
         uses: fluxcd/flux2/action@da2d22d3690191a315822612085f424e4133b06a # main
 
@@ -241,6 +254,10 @@ jobs:
           python3 -u ./hack/build-component.py
         env:
           PYTHONUNBUFFERED: "1"
+
+      - name: Sign OCM component
+        if: ${{ env.SKIP != 'true' }}
+        run: ocm sign cv --config ocm-config.yaml "ctf::ctf//github.com/openmcp-project/observability-stack:$(cat VERSION)"
 
       - name: Push OCM component to registry
         if: ${{ env.SKIP != 'true' }}
