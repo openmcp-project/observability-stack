@@ -16,6 +16,7 @@ permissions:
 
 env:
   PYTHON_VERSION: '3.14'
+  OCM_VERSION: v0.25.0
   GO_VERSION: '1.26'
 
 jobs:
@@ -75,7 +76,10 @@ jobs:
           echo "$DEV_VERSION" > VERSION
 
       - name: Setup OCM
-        uses: open-component-model/ocm-setup-action@5755dc5c01c939f7dbba3bb07f9fb9b019a7a2a0 # v1.1.0
+        run: |
+          curl -fsSL "https://github.com/open-component-model/open-component-model/releases/download/${OCM_VERSION}/ocm-linux-amd64" --output "$RUNNER_TEMP/ocm"
+          chmod +x "$RUNNER_TEMP/ocm"
+          echo "$RUNNER_TEMP" >> "$GITHUB_PATH"
 
       - name: Setup Flux CLI
         uses: fluxcd/flux2/action@da2d22d3690191a315822612085f424e4133b06a # main
@@ -109,6 +113,7 @@ jobs:
           python3 -u ./hack/push-component.py --copy-resources
         env:
           PYTHONUNBUFFERED: "1"
+          OVERWRITE_COMPONENTS: "true" # a re-run rebuilds the same dev version
 
       - name: Setup Go
         uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e # v7
@@ -183,7 +188,10 @@ jobs:
           exit 0
 
       - name: Setup OCM
-        uses: open-component-model/ocm-setup-action@5755dc5c01c939f7dbba3bb07f9fb9b019a7a2a0 # v1.1.0
+        run: |
+          curl -fsSL "https://github.com/open-component-model/open-component-model/releases/download/${OCM_VERSION}/ocm-linux-amd64" --output "$RUNNER_TEMP/ocm"
+          chmod +x "$RUNNER_TEMP/ocm"
+          echo "$RUNNER_TEMP" >> "$GITHUB_PATH"
 
       - name: Setup Flux CLI
         uses: fluxcd/flux2/action@da2d22d3690191a315822612085f424e4133b06a # main
