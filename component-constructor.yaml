@@ -94,10 +94,9 @@ components:
       - name: open-telemetry-collector-resource-chart
         version: ${OBSERVABILITY_STACK_VERSION}
         type: helmChart
-        input:
-          type: Helm/v1
-          path: charts/open-telemetry-collector-resource
-          repository: charts/open-telemetry-collector-resource:${OBSERVABILITY_STACK_VERSION}
+        access:
+          type: OCIImage/v1
+          imageReference: "${CHARTS_LOCATION_PREFIX}/open-telemetry-collector-resource:${OBSERVABILITY_STACK_VERSION}"
 
       # prometheus operator
       - name: prometheus-operator-kustomization

@@ -6,7 +6,8 @@ This script:
 1. Loads component settings and version
 2. Merges resource graph definition files
 3. Pushes kustomization artifacts using flux
-4. Builds the OCM component
+4. Pushes helm charts using helm
+5. Builds the OCM component
 """
 
 import os
@@ -130,6 +131,30 @@ def push_kustomizations(repo_root: Path, version: str) -> None:
             raise FileNotFoundError(f"Kustomization directory not found: {kustomization_dir}")
 
 
+def push_charts(repo_root: Path) -> None:
+    """
+    Package and push the helm charts of this repository.
+
+    Raises:
+        SystemExit: If CHARTS_LOCATION_PREFIX is not set
+    """
+    charts_prefix = os.environ.get("CHARTS_LOCATION_PREFIX")
+    if not charts_prefix:
+        print("Error: CHARTS_LOCATION_PREFIX not set")
+        sys.exit(1)
+
+    print("Pushing helm charts...")
+
+    package_dir = repo_root / "tmp" / "charts"
+    for chart_dir in sorted((repo_root / "charts").iterdir()):
+        if not (chart_dir / "Chart.yaml").exists():
+            continue
+        run_command(["helm", "package", str(chart_dir), "--destination", str(package_dir)])
+
+    for package in sorted(package_dir.glob("*.tgz")):
+        run_command(["helm", "push", str(package), f"oci://{charts_prefix}"])
+
+
 def build_ocm_component(
     repo_root: Path,
     constructor_file: Path,
@@ -219,6 +244,9 @@ def main():
 
         # Push kustomization artifacts
         push_kustomizations(repo_root, version)
+
+        # A chart built from a local path stays a local blob on transfer
+        push_charts(repo_root)
 
         # Build OCM component
         build_ocm_component(repo_root, constructor_file, settings_file, version)

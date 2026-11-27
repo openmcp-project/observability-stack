@@ -1,6 +1,7 @@
 REPOSITORY_CONTEXT: ghcr.io/openmcp-project
 COMPONENTS_LOCATION: ${REPOSITORY_CONTEXT}/components
 KUSTOMIZATIONS_LOCATION_PREFIX: ${REPOSITORY_CONTEXT}/observability-stack/kustomizations
+CHARTS_LOCATION_PREFIX: ${REPOSITORY_CONTEXT}/observability-stack/charts
 
 # cert-manager
 CERT_MANAGER_VERSION: "v1.21.3"
