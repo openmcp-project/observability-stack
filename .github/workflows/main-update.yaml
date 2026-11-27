@@ -151,6 +151,7 @@ jobs:
   release_tag:
     name: Release version
     runs-on: ubuntu-latest
+    environment: release
     needs: [check_changes, e2e_test]
     if: always() && !failure() && !cancelled()
     steps:
