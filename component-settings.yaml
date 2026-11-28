@@ -7,7 +7,7 @@ CHARTS_LOCATION_PREFIX: ${REPOSITORY_CONTEXT}/observability-stack/charts
 CERT_MANAGER_VERSION: "v1.21.3"
 
 # metrics-operator
-METRICS_OPERATOR_VERSION: "v1.2.3"
+METRICS_OPERATOR_VERSION: "v1.2.4"
 
 # open telemetry operator and collector
 OPEN_TELEMETRY_OPERATOR_CHART_VERSION: "0.129.1"
